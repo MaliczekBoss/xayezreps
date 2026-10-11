@@ -5,8 +5,23 @@ import "server-only";
 
 export type Cmd = { op: string; keys: string[]; args?: (string | number)[] };
 
-const URL_ENV = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
-const TOKEN_ENV = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
+/** Dane dostępowe Upstash. Vercel pozwala nadać zmiennym własny prefiks (np. STORAGE_REST_API_URL), więc szukamy każdego. */
+function findRedisEnv() {
+  const env = process.env;
+  const pairs: [string, string][] = [
+    ["KV_REST_API_URL", "KV_REST_API_TOKEN"],
+    ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+  ];
+  for (const key of Object.keys(env)) {
+    for (const suffix of ["_REST_API_URL", "_REDIS_REST_URL"]) {
+      if (key.endsWith(suffix)) pairs.push([key, key.slice(0, -"URL".length) + "TOKEN"]);
+    }
+  }
+  const hit = pairs.find(([u, t]) => env[u]?.startsWith("https://") && env[t]);
+  return hit ? { url: env[hit[0]]!, token: env[hit[1]]! } : { url: "", token: "" };
+}
+
+const { url: URL_ENV, token: TOKEN_ENV } = findRedisEnv();
 
 export const storageKind = (): "redis" | "memory" => (URL_ENV && TOKEN_ENV ? "redis" : "memory");
 
