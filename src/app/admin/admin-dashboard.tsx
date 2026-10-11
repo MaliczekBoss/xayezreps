@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, Check, ImagePlus, LogOut, Pencil, Plus, Search, Trash, X } from "lucide-react";
+import { Check, ImagePlus, Pencil, Plus, Search, Trash, X } from "lucide-react";
 import { ProductImage } from "@/components/product-image";
-import { Logo } from "@/components/logo";
 import { Select } from "@/components/select";
 import { agents, parseSource, platformLabel } from "@/lib/agents";
 import { batches, categories, defaultWeight, type Category, type Find } from "@/lib/finds";
 import { formatMoney } from "@/lib/money";
-import { deleteFind, logout, saveFind, type FormState } from "./actions";
+import { deleteFind, saveFind, type FormState } from "./actions";
+import { AdminHeader } from "./admin-header";
 
 const field =
   "h-11 w-full rounded-xl border border-line bg-bg px-3.5 text-sm text-fg placeholder:text-dim focus:border-brand/60 focus:outline-none";
@@ -50,29 +49,7 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-      <header className="sticky top-0 z-30 -mx-4 mb-8 flex items-center gap-4 border-b border-line bg-bg/85 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
-        <Link href="/" className="shrink-0">
-          <Logo />
-        </Link>
-        <span className="hidden rounded-full border border-line bg-card px-2.5 py-1 text-xs text-muted sm:inline">Panel admina</span>
-        <div className="ml-auto flex items-center gap-2">
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3.5 text-sm text-muted hover:text-fg"
-          >
-            Zobacz stronę
-            <ArrowUpRight aria-hidden size={14} />
-          </a>
-          <form action={logout}>
-            <button type="submit" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted hover:bg-card hover:text-fg">
-              <LogOut aria-hidden size={15} />
-              Wyloguj
-            </button>
-          </form>
-        </div>
-      </header>
+      <AdminHeader active="/admin" />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         {/* Formularz */}

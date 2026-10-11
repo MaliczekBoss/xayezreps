@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Analytics } from "@/components/analytics";
 import { RatesProvider } from "@/lib/rates";
 import { getRates } from "@/lib/remote";
 import { site } from "@/lib/site";
@@ -66,6 +67,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           Przejdź do findów
         </a>
         <RatesProvider rates={rates}>{children}</RatesProvider>
+        <Analytics />
       </body>
     </html>
   );
