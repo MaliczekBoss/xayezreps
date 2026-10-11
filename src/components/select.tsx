@@ -19,7 +19,7 @@ type SelectProps = {
 };
 
 const looks = {
-  pill: "rounded-full bg-card pl-4 pr-3",
+  pill: "rounded-xl bg-card pl-4 pr-3",
   field: "rounded-xl bg-bg pl-3.5 pr-3",
 };
 
@@ -125,7 +125,7 @@ export function Select({ label, value, options, onChange, name, look = "pill", c
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? undefined : { opacity: 0, y: -4, transition: { duration: 0.1 } }}
             transition={{ duration: 0.14, ease: "easeOut" }}
-            className="absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-full rounded-2xl border border-line-strong bg-[#141821] p-1.5 shadow-[0_24px_48px_-16px_rgb(0_0_0/0.9)] focus:outline-none"
+            className="absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-full rounded-xl border border-line-strong bg-[#18181b] p-1.5 shadow-[0_24px_48px_-16px_rgb(0_0_0/0.9)] focus:outline-none"
           >
             {options.map((o, i) => (
               <li
@@ -135,12 +135,12 @@ export function Select({ label, value, options, onChange, name, look = "pill", c
                 aria-selected={i === selected}
                 onPointerMove={() => setActive(i)}
                 onClick={() => choose(i)}
-                className={`flex cursor-pointer items-center justify-between gap-6 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                className={`flex cursor-pointer items-center justify-between gap-6 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm transition-colors ${
                   i === active ? "bg-white/[0.07] text-fg" : "text-muted"
                 }`}
               >
                 {o.label}
-                {i === selected && <Check aria-hidden size={15} className="text-brand-bright" />}
+                {i === selected && <Check aria-hidden size={15} className="text-fg" />}
               </li>
             ))}
           </motion.ul>

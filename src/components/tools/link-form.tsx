@@ -53,7 +53,7 @@ export function LinkForm({ id, label, placeholder, submitLabel, defaultValue = "
         {label}
       </label>
       <div
-        className={`flex flex-col gap-2 rounded-[1.75rem] border bg-card p-2 transition-colors focus-within:border-line-strong sm:flex-row sm:items-center sm:rounded-full ${
+        className={`flex flex-col gap-2 rounded-xl border bg-card p-1.5 transition-colors focus-within:border-line-strong sm:flex-row sm:items-center ${
           error ? "border-amber-300/60" : "border-line"
         }`}
       >
@@ -82,7 +82,7 @@ export function LinkForm({ id, label, placeholder, submitLabel, defaultValue = "
                 setError(null);
                 document.getElementById(id)?.focus();
               }}
-              className="grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-bg hover:text-fg"
+              className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-bg hover:text-fg"
             >
               <X aria-hidden size={16} />
               <span className="sr-only">{t("tool.clear")}</span>
@@ -91,14 +91,14 @@ export function LinkForm({ id, label, placeholder, submitLabel, defaultValue = "
             <button
               type="button"
               onClick={paste}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm text-muted hover:bg-bg hover:text-fg"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm text-muted hover:bg-bg hover:text-fg"
             >
               <ClipboardPaste aria-hidden size={15} />
               {t("tool.paste")}
             </button>
           )}
         </div>
-        <button type="submit" className="h-11 shrink-0 rounded-full bg-brand px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-bright">
+        <button type="submit" className="h-10 shrink-0 rounded-lg bg-fg px-5 text-sm font-medium text-bg transition-colors hover:bg-white">
           {submitLabel}
         </button>
       </div>

@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 /*
-  Prosty, płaski styl: granatowo-czarne tło, karty z cienką ramką,
-  niebieskie przyciski xayez i szeryfowa kursywa w wybranych napisach.
+  Prosty, płaski styl jak cadenreps: grafitowe tło, karty z cienką ramką,
+  białe przyciski i szeryfowa kursywa w dużych nagłówkach.
 */
 /* Niskie okna (laptopy z małym ekranem, telefon w poziomie) */
 @custom-variant short (@media (max-height: 40rem));
 
 @theme {
-  /* Granatowa czerń xayez zamiast neutralnej szarości */
-  --color-bg: #0b0d12;
-  --color-card: #12151c;
-  --color-card-hover: #161a23;
-  --color-line: #1e2330;
-  --color-line-strong: #2b3242;
-  --color-fg: #eef1f7;
-  --color-muted: #8d94a5;
-  --color-dim: #5d6476;
+  /* Płaski grafit jak na cadenreps, niebieski xayez tylko w drobnych akcentach */
+  --color-bg: #111112;
+  --color-card: #18181b;
+  --color-card-hover: #1d1d21;
+  --color-line: #252528;
+  --color-line-strong: #333338;
+  --color-fg: #ececee;
+  --color-muted: #8f8f94;
+  --color-dim: #5f5f66;
   --color-brand: #3b82f6;
   --color-brand-bright: #60a5fa;
   --color-brand-deep: #1d4ed8;
-  --color-gl: #34d399;
-  --color-lcd: #070a10;
+  --color-gl: #10b981;
+  --color-lcd: #0b0b0d;
 
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
@@ -40,15 +40,15 @@
 
 /* Siatka kropek w tle strony */
 @utility dot-grid {
-  background-image: radial-gradient(rgb(148 163 184 / 0.17) 1px, transparent 1.2px);
+  background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1.2px);
   background-size: 22px 22px;
 }
 
 /* Siatka linii w tle stopki */
 @utility line-grid {
   background-image:
-    linear-gradient(to right, rgb(96 165 250 / 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(96 165 250 / 0.07) 1px, transparent 1px);
+    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 

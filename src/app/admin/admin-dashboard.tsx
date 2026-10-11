@@ -148,7 +148,7 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
           ) : (
             <ul className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
               {visible.map((f) => (
-                <li key={f.id} className={`flex items-center gap-3.5 px-3.5 py-3 sm:px-4 ${editing?.id === f.id ? "bg-brand/[0.07]" : ""}`}>
+                <li key={f.id} className={`flex items-center gap-3.5 px-3.5 py-3 sm:px-4 ${editing?.id === f.id ? "bg-white/[0.04]" : ""}`}>
                   <span className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-line bg-bg">
                     <ProductImage src={f.image} sizes="3.5rem" />
                   </span>
@@ -329,7 +329,7 @@ function FindForm({ editing, action, pending }: { editing: Find | null; action: 
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand font-semibold text-white transition-colors hover:bg-brand-bright disabled:opacity-60"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-fg font-medium text-bg transition-colors hover:bg-white disabled:opacity-60"
       >
         {editing ? <Check aria-hidden size={17} /> : <Plus aria-hidden size={17} />}
         {pending ? "Zapisywanie…" : editing ? "Zapisz zmiany" : "Dodaj item"}

@@ -1,57 +1,52 @@
-// Przykładowe wpisy do sekcji „Ostatnio wyszukiwane QC”.
-// Docelowo podepnij tu dane z QC Findera.
+import "server-only";
+
+import { cacheLife, cacheTag } from "next/cache";
+import { agents, sourceUrl } from "./agents";
+import { sortNewest } from "./finds";
+import { fetchQcPhotos } from "./remote";
+import { getFinds } from "./store";
 
 export type QcEntry = {
-  title: string;
+  id: string;
+  name: string;
+  pricePln: number;
+  /** Liczba zdjęć QC w magazynie */
   photos: number;
-  priceCny?: number;
-  source: "Weidian" | "Taobao" | "1688" | "Agent";
-  image?: string;
-  /** Link do produktu, który otwieramy w QC Finderze */
+  /** Pierwsze zdjęcie QC jako okładka */
+  cover: string;
+  /** Link do produktu w sklepie, otwierany w QC Finderze */
   url: string;
 };
 
-export const qcFeed: QcEntry[] = [
-  {
-    title: "Dior B30 – siateczkowe sneakersy low",
-    photos: 98,
-    priceCny: 151,
-    source: "Agent",
-    image: "https://si.geilicdn.com/weidian1636173600-498300000196a5bff1f00a23047e_1536_1536.jpg.webp?w=700&cp=1",
-    url: "https://usfans.com/product/3/7836232555",
-  },
-  {
-    title: "Jersey",
-    photos: 28,
-    priceCny: 63,
-    source: "Agent",
-    image: "https://si.geilicdn.com/open1762039621-252808396-603e00000196254d7cd90aa08290_800_800.jpg.webp?w=700&cp=1",
-    url: "https://www.usfans.com/product/3/7668167910",
-  },
-  {
-    title: "Torba boston w stylu retro",
-    photos: 5,
-    priceCny: 38,
-    source: "Agent",
-    image: "https://img.alicdn.com/img/ibank/O1CN01LLQaNG1FifOlmw3gi_!!2215674030521-0-cib.jpg_.webp",
-    url: "https://www.usfans.com/product/1/910810010468",
-  },
-  {
-    title: "Produkt z 1688",
-    photos: 330,
-    source: "1688",
-    url: "https://detail.1688.com/offer/899097262099.html",
-  },
-  {
-    title: "Produkt z 1688",
-    photos: 224,
-    source: "1688",
-    url: "https://detail.1688.com/offer/1023019498225.html",
-  },
-  {
-    title: "Produkt z 1688",
-    photos: 80,
-    source: "1688",
-    url: "https://detail.1688.com/offer/951843666453.html",
-  },
-];
+const FEED_SIZE = 10;
+const CANDIDATES = 20;
+
+/** Najnowsze findy, które mają prawdziwe zdjęcia QC; odświeżane co godzinę */
+export async function getQcFeed(): Promise<QcEntry[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("qc-feed");
+
+  // Kilka findów może prowadzić do tej samej aukcji (np. warianty), a zdjęcia QC są per aukcja
+  const seen = new Set<string>();
+  const finds = sortNewest(await getFinds())
+    .filter((f) => {
+      const key = `${f.source.platform}:${f.source.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, CANDIDATES);
+  const entries = await Promise.all(
+    finds.map(async (f): Promise<QcEntry | null> => {
+      try {
+        const photos = await fetchQcPhotos(agents[0].productUrl(f.source));
+        if (!photos?.length) return null;
+        return { id: f.id, name: f.name, pricePln: f.pricePln, photos: photos.length, cover: photos[0], url: sourceUrl(f.source) };
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return entries.filter((e): e is QcEntry => e !== null).slice(0, FEED_SIZE);
+}

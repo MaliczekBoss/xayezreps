@@ -45,20 +45,18 @@ export function SiteFooter() {
   ];
 
   return (
-    <footer className="relative mt-20 overflow-hidden border-t border-line bg-[#080a0f]">
-      {/* Tło: siatka linii i niebieska poświata od dołu */}
+    <footer className="relative mt-24 overflow-hidden border-t border-line bg-[#0d0d0e]">
+      {/* Tło: delikatna siatka linii od dołu */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="line-grid absolute inset-0 [mask-image:linear-gradient(to_top,#000_10%,transparent_75%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-[32rem] bg-[radial-gradient(55%_100%_at_50%_100%,rgb(37_99_235/0.32),transparent)]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/60 to-transparent" />
+        <div className="line-grid absolute inset-0 [mask-image:linear-gradient(to_top,#000_10%,transparent_70%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Zaproszenie do społeczności */}
         <div className="flex flex-col gap-8 border-b border-line py-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-[34rem]">
             <h2 className="text-[clamp(2rem,4.2vw,3rem)] font-semibold leading-[1.05] tracking-[-0.035em]">
-              {t("footer.join1")} <span className="fancy text-[1.12em] text-brand-bright">{t("footer.join2")}</span>
+              {t("footer.join1")} <span className="fancy text-[1.1em] text-muted">{t("footer.join2")}</span>
             </h2>
             <p className="mt-3 text-muted">{t("footer.joinText")}</p>
           </div>
@@ -82,8 +80,8 @@ export function SiteFooter() {
           <div className="col-span-2 lg:col-span-1">
             <Logo />
             <p className="mt-4 max-w-[17rem] text-sm leading-relaxed text-muted">{t("footer.tagline")}</p>
-            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-line bg-card/60 px-3 py-1.5 text-xs text-muted">
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-gl shadow-[0_0_8px_var(--color-gl)]" />
+            <p className="mt-5 inline-flex items-center gap-2 rounded-lg border border-line bg-card px-3 py-1.5 text-xs text-muted">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-gl" />
               {t("footer.trust", { n: site.buyers })}
             </p>
           </div>
@@ -118,7 +116,7 @@ export function SiteFooter() {
             <span>© 2026 xayezreps</span>
             <a
               href="#"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card/60 px-3.5 font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-card px-3.5 font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
             >
               <ArrowUp aria-hidden size={13} />
               {t("footer.top")}
@@ -129,8 +127,8 @@ export function SiteFooter() {
 
       {/* Ogromny napis przycięty dołem strony */}
       <div aria-hidden="true" className="relative -mt-4 select-none overflow-hidden sm:-mt-14">
-        <p className="mx-auto max-w-6xl translate-y-[22%] whitespace-nowrap px-4 text-center text-[clamp(4.5rem,20vw,17.5rem)] leading-[0.85] tracking-[-0.06em] sm:px-6">
-          <span className="bg-[linear-gradient(180deg,rgb(147_197_253/0.55),rgb(59_130_246/0.05)_85%)] bg-clip-text text-transparent">
+        <p className="mx-auto max-w-7xl translate-y-[22%] whitespace-nowrap px-4 text-center text-[clamp(4.5rem,20vw,17.5rem)] leading-[0.85] tracking-[-0.06em] sm:px-6 lg:px-8">
+          <span className="bg-[linear-gradient(180deg,rgb(255_255_255/0.2),rgb(255_255_255/0.02)_85%)] bg-clip-text text-transparent">
             <span className="fancy pr-[0.04em] text-[1.1em]">xayez</span>
             <span className="font-semibold">reps</span>
           </span>

@@ -50,7 +50,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0d12",
+  themeColor: "#111112",
   colorScheme: "dark",
 };
 
@@ -65,13 +65,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Przejdź do findów
         </a>
-        {/* Tło całej strony: kropki przytwierdzone do ekranu i miękkie niebieskie poświaty */}
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-          <div className="dot-grid absolute inset-0 [mask-image:radial-gradient(ellipse_75%_70%_at_50%_35%,#000_25%,transparent_80%)]" />
-          <div className="absolute -top-56 left-1/2 h-[38rem] w-[72rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(59_130_246/0.16),transparent)]" />
-          <div className="absolute -left-56 top-[40%] size-[34rem] rounded-full bg-[radial-gradient(closest-side,rgb(29_78_216/0.12),transparent)]" />
-          <div className="absolute -right-48 bottom-[-8rem] size-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(96_165_250/0.09),transparent)]" />
-        </div>
         <RatesProvider rates={rates}>{children}</RatesProvider>
       </body>
     </html>

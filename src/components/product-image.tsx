@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 // Hosty skonfigurowane w next.config.ts – inne zdjęcia pokazujemy bez optymalizacji
-const OPTIMIZED_HOSTS = ["cdn.xayezreps.com", "xayezreps.pl", "si.geilicdn.com", "img.alicdn.com"];
+const OPTIMIZED_HOSTS = ["cdn.xayezreps.com", "xayezreps.pl", "si.geilicdn.com", "img.alicdn.com", "kk-oss-wh-hk.kakobuy.com"];
 
 function canOptimize(src: string) {
   if (src.startsWith("/")) return true;

@@ -62,7 +62,7 @@ export function ShipCalculator() {
             value={Math.min(grams, 10000)}
             onChange={(e) => set(Number(e.target.value))}
             aria-label={t("ship.weight")}
-            className="mt-5 w-full accent-brand"
+            className="mt-5 w-full accent-fg"
           />
 
           <p className="mt-6 text-sm text-muted">{t("ship.add")}</p>
@@ -72,7 +72,7 @@ export function ShipCalculator() {
                 key={c}
                 type="button"
                 onClick={() => set(grams + defaultWeight[c])}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-[0.8125rem] text-muted transition-colors hover:border-line-strong hover:text-fg"
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-card px-3 text-[0.8125rem] text-muted transition-colors hover:border-line-strong hover:text-fg"
               >
                 <Plus aria-hidden size={13} />
                 {f.category(c)}

@@ -12,7 +12,7 @@ import { PageHeader } from "../page";
 import { LinkForm } from "./link-form";
 
 const action =
-  "inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3.5 text-[0.8125rem] font-medium text-fg transition-colors hover:border-line-strong";
+  "inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-card px-3.5 text-[0.8125rem] font-medium text-fg transition-colors hover:border-line-strong";
 
 export function LinkConverter() {
   const { t, agent } = useFormat();
@@ -57,13 +57,13 @@ export function LinkConverter() {
               return (
                 <li key={a.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-5">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-line bg-bg">
+                    <span className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-line bg-bg">
                       <Image src={a.logo} alt="" fill sizes="2.5rem" className="object-contain p-1" />
                     </span>
                     <div className="min-w-0">
                       <p className="font-semibold">
                         {a.name}
-                        {a.id === agent.id && <span className="ml-2 text-xs font-medium text-brand-bright">{t("conv.default")}</span>}
+                        {a.id === agent.id && <span className="ml-2 rounded-[5px] bg-gl px-[7px] py-[3px] text-[10px] font-bold text-white">{t("conv.default")}</span>}
                       </p>
                       <p className="truncate text-sm text-dim">{link.replace(/^https:\/\/(www\.)?/, "")}</p>
                     </div>
@@ -77,7 +77,7 @@ export function LinkConverter() {
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer sponsored"
-                      className={`${action} ${a.id === agent.id ? "border-brand bg-brand text-white hover:border-brand-bright hover:bg-brand-bright" : ""}`}
+                      className={`${action} ${a.id === agent.id ? "border-fg bg-fg text-bg hover:bg-white" : ""}`}
                     >
                       {t("conv.open")}
                       <span className="sr-only">
@@ -96,7 +96,7 @@ export function LinkConverter() {
             </a>
             <Link
               href={`${site.routes.qcFinder}?url=${encodeURIComponent(sourceUrl(source))}`}
-              className="inline-flex items-center gap-1.5 text-brand-bright underline decoration-brand/40 underline-offset-4 hover:decoration-brand-bright"
+              className="inline-flex items-center gap-1.5 text-fg underline decoration-line-strong underline-offset-4 hover:decoration-fg"
             >
               <Camera aria-hidden size={15} />
               {t("conv.qc")}

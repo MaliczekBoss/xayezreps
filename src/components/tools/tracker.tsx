@@ -148,7 +148,7 @@ function TrackResult({ number }: { number: string }) {
           <ol className="mt-4">
             {state.events.map((e, i) => (
               <li key={i} className="relative border-l border-line pb-6 pl-6 last:pb-0">
-                <span aria-hidden="true" className={`absolute -left-[5px] top-1.5 size-[9px] rounded-full ${i === 0 ? "bg-brand-bright" : "bg-line-strong"}`} />
+                <span aria-hidden="true" className={`absolute -left-[5px] top-1.5 size-[9px] rounded-full ${i === 0 ? "bg-gl" : "bg-line-strong"}`} />
                 <p className={i === 0 ? "font-semibold" : "text-muted"}>{e.text}</p>
                 <p className="mt-0.5 text-sm text-dim">{[when(e.time), e.place].filter(Boolean).join(", ")}</p>
               </li>
@@ -168,8 +168,8 @@ function TrackResult({ number }: { number: string }) {
                 href={l.url(encodeURIComponent(number))}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex h-11 items-center rounded-full px-5 text-sm font-semibold transition-colors ${
-                  i === 0 ? "bg-brand text-white hover:bg-brand-bright" : "border border-line-strong text-fg hover:border-fg"
+                className={`inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium transition-colors ${
+                  i === 0 ? "bg-fg text-bg hover:bg-white" : "border border-line bg-card text-fg hover:border-line-strong"
                 }`}
               >
                 {l.name}

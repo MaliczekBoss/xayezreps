@@ -14,7 +14,7 @@ export function LoginForm() {
         <label htmlFor="password" className="text-sm font-medium">
           Hasło
         </label>
-        <div className="mt-2 flex h-12 items-center gap-2.5 rounded-xl border border-line bg-bg px-4 focus-within:border-brand/60">
+        <div className="mt-2 flex h-12 items-center gap-2.5 rounded-xl border border-line bg-bg px-4 focus-within:border-line-strong">
           <Lock aria-hidden size={16} className="shrink-0 text-dim" />
           <input
             id="password"
@@ -43,7 +43,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand font-semibold text-white transition-colors hover:bg-brand-bright disabled:opacity-60"
+        className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-fg font-medium text-bg transition-colors hover:bg-white disabled:opacity-60"
       >
         {pending ? "Logowanie…" : "Zaloguj się"}
       </button>

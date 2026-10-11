@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useFormat } from "@/lib/use-format";
 
+/** Szerokość karty w rzędzie, jak na cadenreps */
+export const cardSlot = "w-[176px] shrink-0 snap-start sm:w-[200px] md:w-[218px]";
+
 type CarouselProps = {
   label: string;
   children: ReactNode;
@@ -41,25 +44,25 @@ export function Carousel({ label, children }: CarouselProps) {
   };
 
   const arrow =
-    "absolute top-[38%] z-10 hidden size-10 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-black/60 text-white backdrop-blur transition-opacity hover:bg-black/80 md:grid";
+    "absolute top-[34%] z-10 hidden size-9 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-[#111112]/80 text-white backdrop-blur transition-colors hover:bg-[#111112] md:grid";
 
   return (
-    <div className="relative mt-6">
+    <div className="relative mt-5">
       <ul
         ref={track}
         aria-label={label}
-        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:gap-4 sm:px-6 [&::-webkit-scrollbar]:hidden"
+        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:-mx-8 lg:scroll-px-8 lg:px-8 [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </ul>
       {!edges.start && (
-        <button type="button" className={`${arrow} -left-3`} onClick={() => go(-1)}>
+        <button type="button" className={`${arrow} -left-4`} onClick={() => go(-1)}>
           <ChevronLeft aria-hidden size={18} />
           <span className="sr-only">{t("carousel.prev")}</span>
         </button>
       )}
       {!edges.end && (
-        <button type="button" className={`${arrow} -right-3`} onClick={() => go(1)}>
+        <button type="button" className={`${arrow} -right-4`} onClick={() => go(1)}>
           <ChevronRight aria-hidden size={18} />
           <span className="sr-only">{t("carousel.next")}</span>
         </button>

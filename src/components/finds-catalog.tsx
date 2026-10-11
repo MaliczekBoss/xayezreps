@@ -13,13 +13,13 @@ import { btnPrimary } from "./ui";
 
 type Sort = "popular" | "newest" | "priceAsc" | "priceDesc";
 const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc"];
-const PAGE = 24;
+const PAGE = 30;
 
 const normalize = (s: string) =>
   s.toLocaleLowerCase("pl").normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/ł/g, "l");
 
 const field =
-  "h-11 rounded-full border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-brand/60 focus:outline-none";
+  "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
 export function FindsCatalog({ finds }: { finds: Find[] }) {
   const f = useFormat();
@@ -104,7 +104,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
                 setQuery("");
                 setParam("q", "");
               }}
-              className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-muted hover:bg-bg hover:text-fg"
+              className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted hover:bg-bg hover:text-fg"
             >
               <X aria-hidden size={14} />
               <span className="sr-only">{t("finds.reset")}</span>
@@ -138,8 +138,8 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
               type="button"
               aria-pressed={active}
               onClick={() => setParam("category", c)}
-              className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-[0.8125rem] font-medium transition-colors ${
-                active ? "border-brand bg-brand/15 text-fg" : "border-line text-muted hover:border-line-strong hover:text-fg"
+              className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border px-3.5 text-[0.8125rem] font-medium transition-colors ${
+                active ? "border-fg bg-fg text-bg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"
               }`}
             >
               {c ? f.category(c) : t("finds.all")}
@@ -165,7 +165,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
         </div>
       ) : (
         <>
-          <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
             {visible.map((item) => (
               <li key={item.id}>
                 <ProductCard find={item} />
@@ -177,7 +177,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
               <button
                 type="button"
                 onClick={() => setLimit((l) => l + PAGE)}
-                className="inline-flex h-11 items-center rounded-full border border-line bg-card px-6 text-sm font-semibold hover:border-line-strong"
+                className="inline-flex h-11 items-center rounded-xl border border-line bg-card px-6 text-sm font-semibold hover:border-line-strong"
               >
                 {t("finds.more")}
               </button>

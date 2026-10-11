@@ -123,7 +123,7 @@ function QcResult({ source, f }: { source: ProductSource; f: ReturnType<typeof u
             href={f.buyUrl(source)}
             target="_blank"
             rel="noopener noreferrer sponsored"
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-bright"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-fg px-4 text-sm font-medium text-bg hover:bg-white"
           >
             {t("card.buy", { agent: f.agent.name })}
             <span className="sr-only">{t("newTab")}</span>

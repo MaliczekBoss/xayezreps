@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFormat } from "@/lib/use-format";
 import { Lightbox } from "./lightbox";
+import { ProductImage } from "./product-image";
 import { SectionTitle } from "./ui";
 
 type State = { status: "loading" } | { status: "error" } | { status: "ready"; photos: string[] };
@@ -31,20 +32,18 @@ export function QcGallery({ productUrl, titleId }: { productUrl: string; titleId
   }, [productUrl]);
 
   const photos = state.status === "ready" ? state.photos : [];
-  const [first, ...rest] = t("product.qc").split(" ");
-
   return (
     <>
-      <SectionTitle id={titleId} title={[first, rest.join(" ")]} count={photos.length || undefined} />
+      <SectionTitle id={titleId} title={[t("product.qc"), ""]} count={photos.length || undefined} />
 
       {state.status === "loading" && (
         <div className="mt-6">
           <p className="sr-only" aria-live="polite">
             {t("product.qcLoading")}
           </p>
-          <div aria-hidden="true" className="grid animate-pulse grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          <div aria-hidden="true" className="grid animate-pulse grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6">
             {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-card" />
+              <div key={i} className="aspect-square rounded-[10px] bg-card" />
             ))}
           </div>
         </div>
@@ -58,16 +57,15 @@ export function QcGallery({ productUrl, titleId }: { productUrl: string; titleId
 
       {photos.length > 0 && (
         <>
-          <ul className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          <ul className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6">
             {photos.slice(0, limit).map((src, i) => (
               <li key={src}>
                 <button
                   type="button"
                   onClick={() => setOpen(i)}
-                  className="block aspect-square w-full cursor-zoom-in overflow-hidden rounded-xl bg-card"
+                  className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[10px] border border-line bg-card"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- zdjęcia z magazynów agentów, bez optymalizacji */}
-                  <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" className="size-full object-cover transition-opacity hover:opacity-85" />
+                  <ProductImage src={src} sizes="(min-width: 1024px) 12rem, 33vw" className="transition-opacity hover:opacity-85" />
                   <span className="sr-only">{t("qcf.photoOf", { i: i + 1, n: photos.length })}</span>
                 </button>
               </li>
@@ -77,9 +75,9 @@ export function QcGallery({ productUrl, titleId }: { productUrl: string; titleId
             <button
               type="button"
               onClick={() => setLimit((l) => l + STEP * 2)}
-              className="mt-5 text-sm font-semibold text-brand-bright underline-offset-4 hover:underline"
+              className="mt-3 flex h-11 w-full items-center justify-center rounded-xl border border-line bg-card text-[13px] font-semibold uppercase tracking-[0.04em] text-fg transition-colors hover:border-line-strong"
             >
-              {t("product.qcMore")} ({photos.length - limit})
+              {t("product.loadMoreQc")} ({photos.length - limit})
             </button>
           )}
         </>

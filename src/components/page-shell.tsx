@@ -7,7 +7,7 @@ export function PageShell({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto min-h-[60vh] max-w-6xl px-4 pb-10 pt-28 sm:px-6 sm:pt-36">{children}</main>
+      <main className="mx-auto min-h-[60vh] max-w-7xl px-4 pb-10 pt-28 sm:px-6 lg:px-8 sm:pt-36">{children}</main>
       <SiteFooter />
     </>
   );

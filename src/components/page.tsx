@@ -45,10 +45,10 @@ export function PageHeader({ crumbs, title, lead, children }: PageHeaderProps) {
   return (
     <header className="pb-8">
       <Breadcrumbs items={crumbs} />
-      <h1 className="mt-6 text-[clamp(2.4rem,5.5vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
-        {title[0]} <span className="fancy text-[1.12em] text-brand-bright">{title[1]}</span>
+      <h1 className="mt-6 text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
+        {title[0]} <span className="fancy text-[1.1em] text-muted">{title[1]}</span>
       </h1>
-      {lead && <p className="mt-4 max-w-[38rem] text-lg leading-relaxed text-muted">{lead}</p>}
+      {lead && <p className="mt-4 max-w-[38rem] text-[1.0625rem] leading-relaxed text-muted">{lead}</p>}
       {children}
     </header>
   );

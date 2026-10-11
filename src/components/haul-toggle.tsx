@@ -16,8 +16,8 @@ export function HaulToggle({ find, className = "" }: { find: HaulFind; className
       onClick={() => haulActions.toggle(find)}
       aria-pressed={inHaul}
       title={inHaul ? t("toggle.remove") : t("toggle.add")}
-      className={`grid size-8 place-items-center rounded-full border backdrop-blur transition-colors ${
-        inHaul ? "border-brand bg-brand text-white" : "border-white/15 bg-black/60 text-white hover:border-white/40 hover:bg-black/80"
+      className={`grid size-8 place-items-center rounded-lg border backdrop-blur transition-colors ${
+        inHaul ? "border-fg bg-fg text-bg" : "border-white/10 bg-[#18181b]/80 text-fg hover:border-white/30"
       } ${className}`}
     >
       {inHaul ? <Check aria-hidden size={15} strokeWidth={3} /> : <Plus aria-hidden size={15} strokeWidth={2.5} />}

@@ -19,7 +19,7 @@ export function HaulSection({ embedded = false }: { embedded?: boolean }) {
   const summary = summarize(haul);
 
   return (
-    <section id="paczka" aria-labelledby="paczka-title" className={embedded ? "py-10" : "mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12"}>
+    <section id="paczka" aria-labelledby="paczka-title" className={embedded ? "py-10" : "mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8"}>
       <SectionTitle id="paczka-title" title={[f.t("haul.title1"), f.t("haul.title2")]}>
         <p className="mt-1.5 max-w-[36rem] text-sm text-muted">{f.t("haul.lead")}</p>
       </SectionTitle>

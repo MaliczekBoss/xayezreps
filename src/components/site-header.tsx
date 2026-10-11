@@ -136,8 +136,8 @@ export function SiteHeader() {
           className={`pointer-events-auto w-full overflow-hidden rounded-[28px] border backdrop-blur-xl transition-[max-width,background-color,border-color,box-shadow] duration-500 ease-[var(--ease-out-soft)] ${
             compact
               ? // Na komputerze zwarta wyspa musi zmieścić logo, 4 linki, ustawienia i paczkę – także z powiadomieniem
-                `${notice ? "max-w-[36rem] lg:max-w-[60rem] xl:max-w-[63.5rem]" : "max-w-[22rem] md:max-w-[25rem] lg:max-w-[60rem] xl:max-w-[63.5rem]"} border-line-strong bg-[#090b10]/90 shadow-[0_16px_40px_-14px_rgb(0_0_0/0.9)]`
-              : "max-w-6xl border-line bg-card/70"
+                `${notice ? "max-w-[36rem] lg:max-w-[60rem] xl:max-w-[63.5rem]" : "max-w-[22rem] md:max-w-[25rem] lg:max-w-[60rem] xl:max-w-[63.5rem]"} border-line-strong bg-[#141416]/92 shadow-[0_16px_40px_-14px_rgb(0_0_0/0.9)]`
+              : "max-w-[76rem] border-line bg-card/80"
           }`}
         >
           <div className="flex h-14 items-center gap-4 pl-4 pr-2 sm:pl-5">
@@ -282,7 +282,7 @@ export function SiteHeader() {
                       <a
                         href={notice.action.href}
                         onClick={() => setNotice(null)}
-                        className="shrink-0 rounded-full bg-brand px-3.5 py-2 text-xs font-semibold text-white hover:bg-brand-bright"
+                        className="shrink-0 rounded-full bg-fg px-3.5 py-2 text-xs font-semibold text-bg hover:bg-white"
                       >
                         {notice.action.label}
                       </a>

@@ -31,7 +31,7 @@ export function Guide() {
         <ol className="border-t border-line">
           {steps.map((s, i) => (
             <li key={s.title} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 border-b border-line py-7 sm:grid-cols-[4rem_minmax(0,1fr)]">
-              <span aria-hidden="true" className="fancy text-[2.5rem] leading-none text-brand-bright sm:text-[3rem]">
+              <span aria-hidden="true" className="fancy text-[2.5rem] leading-none text-muted sm:text-[3rem]">
                 {i + 1}
               </span>
               <div>
@@ -43,7 +43,7 @@ export function Guide() {
                       href={site.partner.signupUrl}
                       target="_blank"
                       rel="noopener noreferrer sponsored"
-                      className="inline-flex h-11 items-center rounded-full bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-bright"
+                      className="inline-flex h-11 items-center rounded-xl bg-fg px-5 text-sm font-medium text-bg hover:bg-white"
                     >
                       {t("guide.cta", { agent: site.partner.name })}
                       <span className="sr-only">, {t("newTab")}</span>
@@ -52,7 +52,7 @@ export function Guide() {
                   </div>
                 )}
                 {s.link && (
-                  <Link href={s.link.href} className="mt-3 inline-block text-sm font-semibold text-brand-bright underline decoration-brand/40 underline-offset-4 hover:decoration-brand-bright">
+                  <Link href={s.link.href} className="mt-3 inline-block text-sm font-medium text-fg underline decoration-line-strong underline-offset-4 hover:decoration-fg">
                     {t(s.link.label)}
                   </Link>
                 )}

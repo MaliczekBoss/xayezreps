@@ -39,7 +39,7 @@ export function PromoPopup() {
 
   return (
     <Modal open={open} onClose={close} labelledBy="oferta-tytul" className="max-w-[30rem]">
-      <div className="relative overflow-hidden rounded-[1.75rem] border border-brand/35 bg-card p-6 shadow-[0_40px_120px_-30px_rgb(37_99_235/0.55)] sm:p-7 short:p-5">
+      <div className="relative overflow-hidden rounded-2xl border border-brand/35 bg-card p-6 shadow-[0_40px_120px_-30px_rgb(37_99_235/0.55)] sm:p-7 short:p-5">
         {/* Tło: poświata i siatka */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute -top-32 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(59_130_246/0.35),transparent)]" />
@@ -98,7 +98,7 @@ export function PromoPopup() {
             {t("promo.text2")}
           </p>
 
-          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand/[0.07] p-3.5 short:hidden">
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-brand/30 bg-brand/[0.07] p-3.5 short:hidden">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/20 text-brand-bright">
               <Flame aria-hidden size={18} />
             </span>
@@ -111,7 +111,7 @@ export function PromoPopup() {
             target="_blank"
             rel="noopener noreferrer sponsored"
             onClick={close}
-            className="group mt-5 inline-flex h-14 w-full short:mt-4 short:h-12 items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(180deg,#60a5fa,#3b82f6_55%,#2563eb)] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_14px_40px_-10px_rgb(59_130_246/0.85)] transition-[filter,transform] hover:-translate-y-px hover:brightness-110"
+            className="group mt-5 inline-flex h-14 w-full short:mt-4 short:h-12 items-center justify-center gap-2.5 rounded-xl bg-[linear-gradient(180deg,#60a5fa,#3b82f6_55%,#2563eb)] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_14px_40px_-10px_rgb(59_130_246/0.85)] transition-[filter,transform] hover:-translate-y-px hover:brightness-110"
           >
             <Sparkles aria-hidden size={17} />
             {t("promo.cta")}
