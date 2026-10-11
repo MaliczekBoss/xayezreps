@@ -18,7 +18,7 @@ export type FormState = { error?: string; ok?: string; savedId?: string };
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!adminConfigured()) {
-    return { error: "Panel nie jest skonfigurowany. Ustaw ADMIN_PASSWORD w pliku .env.local i uruchom serwer ponownie." };
+    return { error: "Panel nie jest skonfigurowany. Na Vercelu dodaj ADMIN_PASSWORD i ADMIN_SECRET w Settings → Environment Variables i zrób Redeploy (lokalnie: plik .env.local i restart serwera)." };
   }
   const password = String(formData.get("password") ?? "");
   if (!checkPassword(password)) {
