@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/*
+  Prosty, płaski styl: granatowo-czarne tło, karty z cienką ramką,
+  niebieskie przyciski xayez i szeryfowa kursywa w wybranych napisach.
+*/
+@theme {
+  /* Granatowa czerń xayez zamiast neutralnej szarości */
+  --color-bg: #0b0d12;
+  --color-card: #12151c;
+  --color-card-hover: #161a23;
+  --color-line: #1e2330;
+  --color-line-strong: #2b3242;
+  --color-fg: #eef1f7;
+  --color-muted: #8d94a5;
+  --color-dim: #5d6476;
+  --color-brand: #3b82f6;
+  --color-brand-bright: #60a5fa;
+  --color-brand-deep: #1d4ed8;
+  --color-gl: #34d399;
+  --color-lcd: #070a10;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* Szeryfowa kursywa do wybranych napisów */
+@utility fancy {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Siatka kropek w tle strony */
+@utility dot-grid {
+  background-image: radial-gradient(rgb(148 163 184 / 0.17) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+/* Siatka linii w tle stopki */
+@utility line-grid {
+  background-image:
+    linear-gradient(to right, rgb(96 165 250 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(96 165 250 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mała etykieta na zdjęciu produktu */
+@utility tag {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    overflow-x: clip;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--color-brand);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-bright);
+    outline-offset: 2px;
+  }
+
+  [id] {
+    scroll-margin-top: 8rem;
+  }
+}
+
+/* Okna dialogowe (ustawienia, oferta): zawsze na środku ekranu, z przyciemnionym tłem */
+@layer components {
+  dialog.modal {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    max-height: 100dvh;
+    overflow-y: auto;
+    background: transparent;
+    color: inherit;
+    /* miejsce na cień karty, żeby nie był ucięty */
+    padding: 2.5rem 0;
+    border: 0;
+  }
+
+  dialog.modal::backdrop {
+    background: rgb(4 6 11 / 0.72);
+    backdrop-filter: blur(6px);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    dialog.modal[open] {
+      animation: modal-in 320ms var(--ease-out-soft) both;
+    }
+    dialog.modal[open]::backdrop {
+      animation: backdrop-in 320ms ease both;
+    }
+    .float {
+      animation: float 6s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  50% {
+    translate: 0 -8px;
+  }
+}
