@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, BadgeCheck, Check, Eye, ShieldCheck, ShoppingBag, Store } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Check, ShoppingBag } from "lucide-react";
 import { agents, platformLabel, sourceUrl } from "@/lib/agents";
 import type { Find } from "@/lib/finds";
-import { haulActions, useHaul } from "@/lib/haul";
+import { haulActions, shippingCost, useHaul, withPackaging } from "@/lib/haul";
 import { useFormat } from "@/lib/use-format";
 import { Carousel } from "./carousel";
+import { Lightbox } from "./lightbox";
 import { Breadcrumbs } from "./page";
 import { ProductCard } from "./product-card";
 import { ProductImage } from "./product-image";
@@ -28,9 +30,11 @@ type ItemDetails = {
   qcCount: number;
 };
 
-const chip = (active: boolean) =>
-  `inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-sm transition-colors ${
-    active ? "border-brand bg-brand/15 text-fg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"
+const COLOR_LIMIT = 13;
+
+const option = (active: boolean) =>
+  `inline-flex h-10 min-w-11 items-center justify-center rounded-lg border px-3 text-sm transition-colors ${
+    active ? "border-fg text-fg" : "border-line text-muted hover:border-line-strong hover:text-fg"
   }`;
 
 export function ProductDetail({ find, related }: { find: Find; related: Find[] }) {
@@ -41,9 +45,12 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
   const link = sourceUrl(find.source);
 
   const [details, setDetails] = useState<ItemDetails | null>(null);
+  const [failed, setFailed] = useState<Set<string>>(() => new Set());
   const [active, setActive] = useState(find.image);
+  const [zoom, setZoom] = useState<number | null>(null);
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
+  const [allColors, setAllColors] = useState(false);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -54,47 +61,84 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
     return () => ctrl.abort();
   }, [link]);
 
+  // Zdjęcie z findu, zdjęcia sklepu i kilka z opisu (tabele rozmiarów); bez tych, które się nie wczytały
   const gallery = useMemo(() => {
     const all = [find.image, ...(details?.images ?? []), ...(details?.descriptionImages ?? []).slice(0, 4)];
-    return [...new Set(all)].slice(0, 9);
-  }, [find.image, details]);
+    return [...new Set(all)].filter((src) => !failed.has(src)).slice(0, 12);
+  }, [find.image, details, failed]);
 
-  // Druga waluta obok głównej ceny, jak na xayezreps.com
+  const markFailed = (src: string) => {
+    setFailed((prev) => new Set(prev).add(src));
+    if (src === active) setActive(find.image);
+  };
+
+  // Druga waluta obok głównej ceny: euro przy złotówkach, złotówki przy innych walutach
   const secondary =
     f.settings.currency === "PLN"
       ? new Intl.NumberFormat(f.locale, { style: "currency", currency: "EUR" }).format(find.pricePln * f.rates.EUR)
       : new Intl.NumberFormat(f.locale, { style: "currency", currency: "PLN", maximumFractionDigits: 0 }).format(find.pricePln);
 
-  const otherAgents = agents.filter((a) => a.id !== f.agent.id);
   const dateFmt = new Intl.DateTimeFormat(f.locale, { day: "numeric", month: "long", year: "numeric" });
+  const shipping = shippingCost(withPackaging(find.weightGrams), "standard");
+  const range = details?.priceRangeCny;
+  const colors = details?.colors ?? [];
+  const shownColors = allColors || colors.length <= COLOR_LIMIT + 1 ? colors : colors.slice(0, COLOR_LIMIT);
+
+  const facts: [string, ReactNode][] = [
+    ...(details?.seller ? [[t("product.seller"), details.seller] as [string, string]] : []),
+    ...(range ? [[t("product.sourcePrice"), range[0] === range[1] ? `¥${range[0]}` : `¥${range[0]}–${range[1]}`] as [string, string]] : []),
+    ...(details?.domesticShipCny ? [[t("qcf.domestic"), `¥${details.domesticShipCny}`] as [string, string]] : []),
+    [t("product.weight"), `≈ ${f.weight(find.weightGrams, "g")}`],
+    [
+      t("product.shipping"),
+      <Link key="ship" href="/tools/ship" className="underline decoration-line-strong underline-offset-4 hover:decoration-fg">
+        ≈ {f.money(shipping)}
+      </Link>,
+    ],
+    [
+      t("product.source"),
+      <a key="src" href={link} target="_blank" rel="noopener noreferrer" className="underline decoration-line-strong underline-offset-4 hover:decoration-fg">
+        {platformLabel[find.source.platform]}
+      </a>,
+    ],
+    [t("product.added"), dateFmt.format(new Date(find.createdAt))],
+    [t("product.views"), String(find.views)],
+  ];
 
   return (
     <>
-      <Breadcrumbs items={[{ label: t("footer.finds"), href: "/finds" }, { label: find.name }]} />
+      <Breadcrumbs
+        items={[
+          { label: t("footer.finds"), href: "/finds" },
+          { label: f.category(find.category), href: `/finds?category=${encodeURIComponent(find.category)}` },
+          { label: find.name },
+        ]}
+      />
 
-      <div className="mt-6 grid items-start gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
-        {/* Galeria */}
-        <div className="lg:sticky lg:top-28">
-          <div className="relative aspect-square overflow-hidden rounded-[1.75rem] border border-line bg-card">
-            <ProductImage src={active} alt={find.name} sizes="(min-width: 1024px) 34rem, 100vw" preload />
-            <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-gl/40 bg-black/70 px-2.5 py-1 text-xs font-semibold text-gl backdrop-blur">
-              <BadgeCheck aria-hidden size={14} />
-              {t("product.qcVerified")}
-            </span>
-          </div>
+      <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+        {/* Galeria: miniatury z boku na komputerze, pod spodem na telefonie */}
+        <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:flex-row-reverse">
+          <button
+            type="button"
+            onClick={() => setZoom(Math.max(0, gallery.indexOf(active)))}
+            className="relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-2xl bg-card"
+          >
+            <ProductImage src={active} alt={find.name} sizes="(min-width: 1024px) 34rem, 100vw" preload onError={() => markFailed(active)} />
+            <span className="sr-only">{t("product.zoom")}</span>
+          </button>
           {gallery.length > 1 && (
-            <ul className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6">
+            <ul className="-mx-4 flex shrink-0 gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:max-h-[34rem] lg:w-[4.5rem] lg:flex-col lg:overflow-y-auto">
               {gallery.map((src, i) => (
-                <li key={src}>
+                <li key={src} className="shrink-0">
                   <button
                     type="button"
                     onClick={() => setActive(src)}
                     aria-pressed={active === src}
-                    className={`relative block aspect-square w-full overflow-hidden rounded-xl border-2 bg-card transition-colors ${
-                      active === src ? "border-brand" : "border-transparent hover:border-line-strong"
+                    className={`relative block size-16 overflow-hidden rounded-lg bg-card transition-opacity lg:size-[4.5rem] ${
+                      active === src ? "opacity-100 ring-1 ring-fg ring-offset-2 ring-offset-bg" : "opacity-55 hover:opacity-100"
                     }`}
                   >
-                    <ProductImage src={src} sizes="6rem" />
+                    <ProductImage src={src} sizes="4.5rem" onError={() => markFailed(src)} />
                     <span className="sr-only">{t("qcf.photoOf", { i: i + 1, n: gallery.length })}</span>
                   </button>
                 </li>
@@ -104,183 +148,152 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
         </div>
 
         {/* Informacje */}
-        <div>
-          <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-brand/40 bg-brand/15 px-3 py-1 text-xs font-semibold text-brand-bright">{find.batch}</span>
-            <span className="rounded-full border border-line bg-card px-3 py-1 text-xs text-muted">{f.category(find.category)}</span>
-          </div>
-          <h1 className="mt-4 text-[clamp(2rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em]">{find.name}</h1>
-
-          <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="text-[2.25rem] font-bold tracking-[-0.03em] tabular">{f.money(find.pricePln)}</span>
-            <span className="font-mono text-sm text-muted tabular">≈ {secondary}</span>
+        <div className="min-w-0">
+          <p className="text-sm text-muted">
+            <Link href={`/finds?category=${encodeURIComponent(find.category)}`} className="hover:text-fg">
+              {f.category(find.category)}
+            </Link>
+            <span aria-hidden="true" className="mx-2 text-dim">
+              /
+            </span>
+            <Link href={`/finds?batch=${encodeURIComponent(find.batch)}`} className="hover:text-fg">
+              {find.batch}
+            </Link>
           </p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <Eye aria-hidden size={15} />
-              {find.views} {t("card.views")}
-            </span>
-            <span>
-              {t("product.added")}: {dateFmt.format(new Date(find.createdAt))}
-            </span>
+          <h1 className="mt-2 text-[clamp(1.875rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] [overflow-wrap:anywhere]">{find.name}</h1>
+
+          <p className="mt-4 flex flex-wrap items-baseline gap-x-3">
+            <span className="text-[2rem] font-semibold tracking-[-0.03em] tabular">{f.money(find.pricePln)}</span>
+            <span className="text-muted tabular">≈ {secondary}</span>
           </p>
+          {details && !details.available && <p className="mt-2 text-sm font-medium text-amber-300">{t("product.unavailable")}</p>}
 
-          {/* Sprzedawca */}
-          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-line bg-card p-3.5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand/15 text-brand-bright">
-              <Store aria-hidden size={19} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">{details?.seller ?? t("product.store", { platform: platformLabel[find.source.platform] })}</p>
-              <p className="text-xs text-muted">
-                {details
-                  ? `${t("product.sourcePrice")}: ${
-                      details.priceRangeCny[0] === details.priceRangeCny[1]
-                        ? `¥${details.priceRangeCny[0]}`
-                        : `¥${details.priceRangeCny[0]}–${details.priceRangeCny[1]}`
-                    }`
-                  : t("product.detailsLoading")}
-              </p>
-            </div>
-            <a
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full border border-line px-3 text-xs font-medium text-muted hover:text-fg"
-            >
-              {t("product.openSource")}
-              <ArrowUpRight aria-hidden size={13} />
-            </a>
-          </div>
-
-          {/* Warianty */}
-          {details && details.colors.length > 0 && (
-            <fieldset className="mt-6">
-              <legend className="text-sm font-semibold">{t("product.colors")}</legend>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {details.colors.map((c) => (
+          {colors.length > 0 && (
+            <fieldset className="mt-7">
+              <legend className="text-sm text-muted">
+                {t("product.color")}
+                {color && <span className="ml-2 text-fg">{color}</span>}
+              </legend>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {shownColors.map((c) =>
+                  c.image ? (
+                    <button
+                      key={c.name}
+                      type="button"
+                      aria-pressed={color === c.name}
+                      title={c.name}
+                      onClick={() => {
+                        setColor(c.name);
+                        setActive(c.image!);
+                      }}
+                      className={`relative size-14 overflow-hidden rounded-lg border transition-colors ${
+                        color === c.name ? "border-fg" : "border-line hover:border-line-strong"
+                      }`}
+                    >
+                      <Image src={c.image} alt="" fill sizes="3.5rem" unoptimized className="object-cover" />
+                      <span className="sr-only">{c.name}</span>
+                    </button>
+                  ) : (
+                    <button key={c.name} type="button" aria-pressed={color === c.name} onClick={() => setColor(c.name)} className={option(color === c.name)}>
+                      {c.name}
+                    </button>
+                  ),
+                )}
+                {shownColors.length < colors.length && (
                   <button
-                    key={c.name}
                     type="button"
-                    aria-pressed={color === c.name}
-                    onClick={() => {
-                      setColor(c.name);
-                      if (c.image) setActive(c.image);
-                    }}
-                    className={chip(color === c.name)}
+                    onClick={() => setAllColors(true)}
+                    className="grid size-14 place-items-center rounded-lg border border-dashed border-line-strong text-sm font-semibold text-muted hover:border-fg hover:text-fg"
                   >
-                    {c.image && (
-                      <span className="relative size-6 overflow-hidden rounded-md bg-bg">
-                        <Image src={c.image} alt="" fill sizes="1.5rem" unoptimized className="object-cover" />
-                      </span>
-                    )}
-                    {c.name}
+                    +{colors.length - shownColors.length}
+                    <span className="sr-only">{t("product.allColors")}</span>
                   </button>
-                ))}
+                )}
               </div>
             </fieldset>
           )}
+
           {details && details.sizes.length > 0 && (
-            <fieldset className="mt-5">
-              <legend className="text-sm font-semibold">{t("product.sizes")}</legend>
-              <div className="mt-2.5 flex flex-wrap gap-2">
+            <fieldset className="mt-6">
+              <legend className="text-sm text-muted">{t("product.size")}</legend>
+              <div className="mt-3 flex flex-wrap gap-2">
                 {details.sizes.map((s) => (
-                  <button key={s} type="button" aria-pressed={size === s} onClick={() => setSize(s)} className={`${chip(size === s)} min-w-12 justify-center`}>
+                  <button key={s} type="button" aria-pressed={size === s} onClick={() => setSize(s)} className={option(size === s)}>
                     {s}
                   </button>
                 ))}
               </div>
             </fieldset>
           )}
-          {details && (
-            <p className={`mt-5 inline-flex items-center gap-2 text-sm font-medium ${details.available ? "text-gl" : "text-amber-300"}`}>
-              <span aria-hidden="true" className={`size-2 rounded-full ${details.available ? "bg-gl" : "bg-amber-300"}`} />
-              {details.available ? t("product.available") : t("product.unavailable")}
-            </p>
-          )}
 
-          {/* Zakup */}
-          <div className="mt-5 flex gap-2.5">
+          <div className="mt-8 grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto]">
             <a
               href={f.buyUrl(find.source)}
               target="_blank"
               rel="noopener noreferrer sponsored"
-              className="inline-flex h-14 flex-1 items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(180deg,#60a5fa,#3b82f6_55%,#2563eb)] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_14px_40px_-12px_rgb(59_130_246/0.8)] transition-[filter] hover:brightness-110"
+              className="inline-flex h-13 items-center justify-center gap-2.5 rounded-full bg-brand px-6 font-semibold text-white transition-colors hover:bg-brand-bright"
             >
-              <span className="relative size-6 overflow-hidden rounded-md bg-black/30">
-                <Image src={f.agent.logo} alt="" fill sizes="1.5rem" className="object-contain p-0.5" />
+              <span className="relative size-5 overflow-hidden rounded bg-white/15">
+                <Image src={f.agent.logo} alt="" fill sizes="1.25rem" className="object-contain p-px" />
               </span>
               {t("card.buy", { agent: f.agent.name })}
-              <ArrowUpRight aria-hidden size={17} />
               <span className="sr-only">{t("newTab")}</span>
             </a>
             <button
               type="button"
               onClick={() => haulActions.toggle(find)}
               aria-pressed={inHaul}
-              title={inHaul ? t("toggle.remove") : t("toggle.add")}
-              className={`grid size-14 shrink-0 place-items-center rounded-full border transition-colors ${
-                inHaul ? "border-brand bg-brand text-white" : "border-line bg-card text-fg hover:border-brand/60"
+              className={`inline-flex h-13 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition-colors ${
+                inHaul ? "border-brand text-brand-bright" : "border-line-strong text-fg hover:border-fg"
               }`}
             >
-              {inHaul ? <Check aria-hidden size={20} strokeWidth={2.5} /> : <ShoppingBag aria-hidden size={20} />}
-              <span className="sr-only">{inHaul ? t("toggle.removeSr", { name: find.name }) : t("toggle.addSr", { name: find.name })}</span>
+              {inHaul ? <Check aria-hidden size={17} strokeWidth={2.5} /> : <ShoppingBag aria-hidden size={17} />}
+              {inHaul ? t("toggle.remove") : t("toggle.add")}
             </button>
           </div>
 
-          <p className="mt-4 text-xs text-muted">{t("product.agentsText")}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {otherAgents.map((a) => (
-              <a
-                key={a.id}
-                href={a.productUrl(find.source)}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-card pl-1.5 pr-3 text-[0.8125rem] text-muted transition-colors hover:border-line-strong hover:text-fg"
-              >
-                <span className="relative size-6 overflow-hidden rounded-full bg-black/40">
-                  <Image src={a.logo} alt="" fill sizes="1.5rem" className="object-contain p-0.5" />
-                </span>
-                {a.name}
-                <ArrowUpRight aria-hidden size={12} />
-              </a>
-            ))}
-          </div>
+          <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <span className="text-muted">{t("product.otherAgents")}</span>
+            {agents
+              .filter((a) => a.id !== f.agent.id)
+              .map((a) => (
+                <a
+                  key={a.id}
+                  href={a.productUrl(find.source)}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="inline-flex items-center gap-1.5 text-fg underline decoration-line-strong underline-offset-4 hover:decoration-fg"
+                >
+                  <span className="relative size-4 overflow-hidden rounded-sm">
+                    <Image src={a.logo} alt="" fill sizes="1rem" className="object-contain" />
+                  </span>
+                  {a.name}
+                </a>
+              ))}
+          </p>
 
-          <div className="mt-6 flex gap-3 rounded-2xl border border-gl/25 bg-gl/[0.06] p-4">
-            <ShieldCheck aria-hidden size={19} className="mt-0.5 shrink-0 text-gl" />
-            <div>
-              <p className="text-sm font-semibold">{t("product.qcVerified")}</p>
-              <p className="mt-1 text-sm text-muted">{t("product.qcVerifiedText")}</p>
-            </div>
-          </div>
-
-          {/* Szczegóły */}
-          <dl className="mt-6 divide-y divide-line rounded-2xl border border-line bg-card text-sm">
-            {[
-              [t("product.category"), f.category(find.category)],
-              [t("product.batch"), find.batch],
-              [t("product.weight"), `≈ ${f.weight(find.weightGrams, "g")}`],
-              [t("product.source"), `${platformLabel[find.source.platform]} #${find.source.id}`],
-              ...(details?.domesticShipCny ? [[t("qcf.domestic"), `¥${details.domesticShipCny}`]] : []),
-            ].map(([label, value]) => (
-              <div key={label} className="flex items-center justify-between gap-4 px-4 py-3">
-                <dt className="text-muted">{label}</dt>
-                <dd className="text-right font-medium tabular">{value}</dd>
+          <dl className="mt-8 border-t border-line text-sm">
+            {facts.map(([label, value]) => (
+              <div key={label} className="flex items-baseline justify-between gap-6 border-b border-line py-3">
+                <dt className="shrink-0 text-muted">{label}</dt>
+                <dd className="min-w-0 truncate text-right tabular">{value}</dd>
               </div>
             ))}
           </dl>
+          {!details && (
+            <p className="mt-3 text-xs text-dim" aria-live="polite">
+              {t("product.detailsLoading")}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Zdjęcia QC */}
-      <section aria-labelledby="qc-photos" className="mt-16">
+      <section aria-labelledby="qc-photos" className="mt-20">
         <QcGallery productUrl={link} titleId="qc-photos" />
       </section>
 
-      {/* Podobne */}
       {related.length > 0 && (
-        <section aria-labelledby="related-title" className="mt-16">
+        <section aria-labelledby="related-title" className="mt-20">
           <SectionTitle id="related-title" title={[t("product.related1"), t("product.related2")]} count={related.length} />
           <Carousel label={`${t("product.related1")} ${t("product.related2")}`}>
             {related.map((item) => (
@@ -291,6 +304,8 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
           </Carousel>
         </section>
       )}
+
+      <Lightbox id="product-lightbox" photos={gallery} index={zoom} onIndex={setZoom} onClose={() => setZoom(null)} />
     </>
   );
 }

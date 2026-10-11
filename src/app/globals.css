@@ -4,6 +4,9 @@
   Prosty, płaski styl: granatowo-czarne tło, karty z cienką ramką,
   niebieskie przyciski xayez i szeryfowa kursywa w wybranych napisach.
 */
+/* Niskie okna (laptopy z małym ekranem, telefon w poziomie) */
+@custom-variant short (@media (max-height: 40rem));
+
 @theme {
   /* Granatowa czerń xayez zamiast neutralnej szarości */
   --color-bg: #0b0d12;
@@ -66,6 +69,8 @@
   html {
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) var(--color-bg);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -111,6 +116,13 @@
     /* miejsce na cień karty, żeby nie był ucięty */
     padding: 2.5rem 0;
     border: 0;
+    scrollbar-width: none;
+  }
+
+  @media (max-height: 40rem) {
+    dialog.modal {
+      padding: 0.75rem 0;
+    }
   }
 
   dialog.modal::backdrop {

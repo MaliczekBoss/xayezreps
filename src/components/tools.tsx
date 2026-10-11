@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { SectionTitle } from "./ui";
 
-const tools: { icon: LucideIcon; title: DictKey; text: DictKey; href: string }[] = [
+export const tools: { icon: LucideIcon; title: DictKey; text: DictKey; href: string }[] = [
   { icon: Link2, title: "tools.converter", text: "tools.converterText", href: site.routes.linkConverter },
   { icon: Truck, title: "tools.tracking", text: "tools.trackingText", href: site.routes.tracking },
   { icon: Camera, title: "tools.qc", text: "tools.qcText", href: site.routes.qcFinder },

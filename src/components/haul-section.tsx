@@ -12,13 +12,14 @@ import { SectionTitle, btnPrimary } from "./ui";
 
 const LIMIT_GRAMS = 10000;
 
-export function HaulSection() {
+/** Waga i paragon paczki; `embedded` – bez własnego kontenera, gdy sekcja stoi na podstronie */
+export function HaulSection({ embedded = false }: { embedded?: boolean }) {
   const f = useFormat();
   const haul = useHaul();
   const summary = summarize(haul);
 
   return (
-    <section id="paczka" aria-labelledby="paczka-title" className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+    <section id="paczka" aria-labelledby="paczka-title" className={embedded ? "py-10" : "mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12"}>
       <SectionTitle id="paczka-title" title={[f.t("haul.title1"), f.t("haul.title2")]}>
         <p className="mt-1.5 max-w-[36rem] text-sm text-muted">{f.t("haul.lead")}</p>
       </SectionTitle>
