@@ -437,6 +437,7 @@ function pageLabel(path: string, names: Record<string, string>) {
     "/tools": "Narzędzia",
     "/tools/link": "Konwerter linków",
     "/tools/qc": "QC Finder",
+    "/tools/photo": "Szukaj po zdjęciu",
     "/tools/tracking": "Śledzenie paczek",
     "/tools/ship": "Kalkulator wysyłki",
     "/sellers": "Sprzedawcy",

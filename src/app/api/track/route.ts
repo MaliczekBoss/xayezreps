@@ -23,7 +23,10 @@ export async function POST(request: Request) {
 
   const sid = String(body.sid ?? "");
   if (!SESSION_ID.test(sid)) return done();
-  const src = isSource(body.src) ? body.src : "other";
+  // Przeglądarki w aplikacjach TikTok, Instagram i Facebook zwykle nie podają, skąd przyszedł ruch – rozpoznajemy je po nazwie
+  const inApp = /musical_ly|BytedanceWebview|TikTok/i.test(ua) ? "tiktok" : /Instagram/i.test(ua) ? "instagram" : /FBAN|FBAV|FB_IAB/i.test(ua) ? "facebook" : null;
+  const claimed = isSource(body.src) ? body.src : "other";
+  const src = claimed === "direct" && inApp ? inApp : claimed;
   const dur = Math.min(MAX_DUR_S, Math.max(0, Math.round(Number(body.dur) || 0)));
 
   let event: TrackEvent | null = null;

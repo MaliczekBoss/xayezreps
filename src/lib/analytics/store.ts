@@ -3,7 +3,8 @@ import "server-only";
 // Magazyn statystyk: Upstash Redis przez REST, a bez konfiguracji – pamięć procesu (tylko do testów lokalnych).
 // Wszystkie komendy jednej operacji idą jednym skryptem Lua, więc wejście na stronę to jedna komenda w rozliczeniu Upstash.
 
-export type Cmd = { op: string; keys: string[]; args?: (string | number)[] };
+/** `when`: wykonaj tylko, jeśli komenda o tym indeksie zwróciła 1 (np. SADD dodał nowy element) */
+export type Cmd = { op: string; keys: string[]; args?: (string | number)[]; when?: number };
 
 /** Dane dostępowe Upstash. Vercel pozwala nadać zmiennym własny prefiks (np. STORAGE_REST_API_URL), więc szukamy każdego. */
 function findRedisEnv() {
@@ -32,16 +33,21 @@ export async function run(cmds: Cmd[]): Promise<unknown[]> {
 
 /* ---------- Upstash Redis ---------- */
 
-// Wykonuje listę komend podaną w ARGV[1]: [op, liczba kluczy, indeksy kluczy…, argumenty…]
+// Wykonuje listę komend podaną w ARGV[1]: [warunek, op, liczba kluczy, indeksy kluczy…, argumenty…].
+// Warunek 0 = zawsze, n = tylko gdy komenda n zwróciła 1.
 const SCRIPT = `
 local cmds = cjson.decode(ARGV[1])
 local out = {}
 for i, c in ipairs(cmds) do
-  local args = {}
-  local nk = c[2]
-  for j = 1, nk do args[j] = KEYS[c[2 + j]] end
-  for j = 3 + nk, #c do args[#args + 1] = c[j] end
-  out[i] = redis.call(c[1], unpack(args))
+  if c[1] > 0 and out[c[1]] ~= 1 then
+    out[i] = false
+  else
+    local args = {}
+    local nk = c[3]
+    for j = 1, nk do args[j] = KEYS[c[3 + j]] end
+    for j = 4 + nk, #c do args[#args + 1] = c[j] end
+    out[i] = redis.call(c[2], unpack(args))
+  end
 end
 return out
 `;
@@ -64,6 +70,7 @@ async function runRedis(cmds: Cmd[]): Promise<unknown[]> {
     const keys: string[] = [];
     const index = new Map<string, number>();
     const encoded = cmds.map((c) => [
+      c.when === undefined ? 0 : c.when + 1,
       c.op,
       c.keys.length,
       ...c.keys.map((k) => {
@@ -100,7 +107,19 @@ function get<T>(map: Map<string, T>, key: string, make: () => T) {
 }
 
 async function runMemory(cmds: Cmd[]): Promise<unknown[]> {
-  return cmds.map(({ op, keys, args = [] }) => {
+  const out: unknown[] = [];
+  for (const { op, keys, args = [], when } of cmds) {
+    if (when !== undefined && out[when] !== 1) {
+      out.push(null);
+      continue;
+    }
+    out.push(memCommand(op, keys, args));
+  }
+  return out;
+}
+
+function memCommand(op: string, keys: string[], args: (string | number)[]): unknown {
+  {
     const [key] = keys;
     switch (op) {
       case "HINCRBY": {
@@ -117,6 +136,12 @@ async function runMemory(cmds: Cmd[]): Promise<unknown[]> {
         const before = s.size;
         args.forEach((a) => s.add(String(a)));
         return s.size > before ? 1 : 0;
+      }
+      case "SADD": {
+        const s = get(mem.hll, key, () => new Set<string>());
+        const before = s.size;
+        args.forEach((a) => s.add(String(a)));
+        return s.size - before;
       }
       case "PFCOUNT": {
         const all = new Set<string>();
@@ -141,7 +166,7 @@ async function runMemory(cmds: Cmd[]): Promise<unknown[]> {
       default:
         throw new Error(`Nieobsługiwana komenda: ${op}`);
     }
-  });
+  }
 }
 
 /** Spłaszczona odpowiedź HGETALL na obiekt liczb */

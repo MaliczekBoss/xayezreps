@@ -53,9 +53,9 @@ export function HeroSearch() {
             spellCheck={false}
             className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] text-fg placeholder:text-dim focus:outline-none"
           />
-          <a href={site.routes.qcFinder} className="text-dim transition-colors hover:text-fg" title={t("header.qcSearch")}>
+          <a href={site.routes.photoSearch} className="text-dim transition-colors hover:text-fg" title={t("header.photoSearch")}>
             <Camera aria-hidden size={16} />
-            <span className="sr-only">{t("header.qcSearch")}</span>
+            <span className="sr-only">{t("header.photoSearch")}</span>
           </a>
         </div>
         <button type="submit" className={`${btnPrimary} h-11 px-4 text-sm`}>

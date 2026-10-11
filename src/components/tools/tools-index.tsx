@@ -11,11 +11,11 @@ export function ToolsIndex() {
   return (
     <>
       <PageHeader crumbs={[{ label: t("nav.tools") }]} title={[t("tools.title1"), t("tools.title2")]} lead={t("tools.lead")} />
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {tools.map((tool) => {
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {tools.map((tool, i) => {
           const Icon = tool.icon;
           return (
-            <li key={tool.href}>
+            <li key={tool.href} className={i === 0 ? "sm:col-span-2" : ""}>
               <Link href={tool.href} className="group flex h-full flex-col rounded-xl border border-line bg-card p-5 transition-colors hover:border-line-strong">
                 <span className="grid size-10 place-items-center rounded-lg border border-line bg-bg">
                   <Icon aria-hidden size={18} />

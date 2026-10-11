@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowUpRight, BookOpen, Calculator, Camera, Link2, Store, Truck, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, BookOpen, Calculator, Camera, ImageUp, Link2, Store, Truck, type LucideIcon } from "lucide-react";
 import type { DictKey } from "@/lib/dict";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { SectionTitle } from "./ui";
 
 export const tools: { icon: LucideIcon; title: DictKey; text: DictKey; href: string }[] = [
+  { icon: ImageUp, title: "tools.photo", text: "tools.photoText", href: site.routes.photoSearch },
   { icon: Link2, title: "tools.converter", text: "tools.converterText", href: site.routes.linkConverter },
   { icon: Truck, title: "tools.tracking", text: "tools.trackingText", href: site.routes.tracking },
   { icon: Camera, title: "tools.qc", text: "tools.qcText", href: site.routes.qcFinder },
@@ -21,11 +22,11 @@ export function Tools() {
   return (
     <section id="narzedzia" aria-labelledby="narzedzia-title" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <SectionTitle id="narzedzia-title" title={[t("tools.title1"), t("tools.title2")]} href={site.routes.tools} linkLabel={t("rows.seeAll")} />
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {tools.map((tool) => {
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {tools.map((tool, i) => {
           const Icon = tool.icon;
           return (
-            <li key={tool.title}>
+            <li key={tool.title} className={i === 0 ? "sm:col-span-2" : ""}>
               <a href={tool.href} className="group flex h-full items-start gap-4 rounded-xl border border-line bg-card p-4 transition-colors hover:border-line-strong">
                 <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-line bg-bg text-fg">
                   <Icon aria-hidden size={18} />

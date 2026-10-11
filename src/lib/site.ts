@@ -36,6 +36,7 @@ export const site = {
     linkConverter: "/tools/link",
     tracking: "/tools/tracking",
     qcFinder: "/tools/qc",
+    photoSearch: "/tools/photo",
     shipCalculator: "/tools/ship",
     product: (id: string) => `/product/${id}`,
     seller: (slug: string) => `/sellers/${slug}`,

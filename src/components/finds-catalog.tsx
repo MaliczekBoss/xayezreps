@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Camera, Search, X } from "lucide-react";
 import type { DictKey } from "@/lib/dict";
 import { batches, categories, sortNewest, sortPopular, type Find } from "@/lib/finds";
+import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { PageHeader } from "./page";
 import { ProductCard } from "./product-card";
@@ -109,6 +111,16 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
               <X aria-hidden size={14} />
               <span className="sr-only">{t("finds.reset")}</span>
             </button>
+          )}
+          {!query && (
+            <Link
+              href={site.routes.photoSearch}
+              title={t("header.photoSearch")}
+              className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-dim hover:bg-bg hover:text-fg"
+            >
+              <Camera aria-hidden size={16} />
+              <span className="sr-only">{t("header.photoSearch")}</span>
+            </Link>
           )}
         </div>
         <div className="flex gap-2">

@@ -5,6 +5,7 @@ import { run, storageKind, toCounts, type Cmd } from "./store";
 
 // Klucze: xs:h:{rrrrmmddgg} i xs:d:{rrrrmmdd} – liczniki godzinowe i dzienne,
 // xs:uh / xs:ud – HyperLogLog unikalnych odwiedzających, xs:ref|geo|dev|pg|ag:{dzień} – rozbicia,
+// xs:seen:{dzień} – odwiedzający już policzeni w rozbiciach tego dnia,
 // xs:m:{minuta} – odsłony na minutę do wykresu „na żywo”, xs:live – sesje aktywne w ostatnich 30 minutach.
 
 const TZ = "Europe/Warsaw";
@@ -64,9 +65,13 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
     if (e.isNew) {
       incr(H, "s");
       incr(D, "s");
-      incr(`xs:ref:${day}`, e.src);
-      incr(`xs:geo:${day}`, v.country);
-      incr(`xs:dev:${day}`, v.device);
+    }
+    // Źródło, kraj i urządzenie liczymy raz na odwiedzającego dziennie – przy jego pierwszej odsłonie tego dnia
+    const seen = cmds.push({ op: "SADD", keys: [`xs:seen:${day}`], args: [v.id] }) - 1;
+    cmds.push({ op: "EXPIRE", keys: [`xs:seen:${day}`], args: [2 * 86400] });
+    for (const [kind, field] of [["ref", e.src], ["geo", v.country], ["dev", v.device]] as const) {
+      cmds.push({ op: "HINCRBY", keys: [`xs:${kind}:${day}`], args: [field, 1], when: seen });
+      touched.add(`xs:${kind}:${day}`);
     }
     if (e.n === 2) {
       incr(H, "ms");
