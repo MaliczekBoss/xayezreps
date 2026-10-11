@@ -335,7 +335,7 @@ function LineChart({ report }: { report: StatsReport }) {
   const cur = report.current.map((b) => (b.future ? null : b.uv));
   const prev = report.previous.map((b) => b.uv);
   const n = Math.max(cur.length, 2);
-  const max = niceMax(Math.max(...prev, ...cur.map((v) => v ?? 0), 4));
+  const { max, step: tickStep } = niceScale(Math.max(...prev, ...cur.map((v) => v ?? 0), 4));
   const x = (i: number) => pad.left + (i / (n - 1)) * (width - pad.left - pad.right);
   const y = (v: number) => pad.top + (1 - v / max) * (height - pad.top - pad.bottom);
 
@@ -353,7 +353,7 @@ function LineChart({ report }: { report: StatsReport }) {
     if (n - 1 - Math.max(...labelled) < step * 0.75) labelled.delete(Math.max(...labelled));
     labelled.add(n - 1);
   }
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(max * f));
+  const ticks = Array.from({ length: Math.round(max / tickStep) + 1 }, (_, i) => i * tickStep);
 
   const onMove = (e: PointerEvent<SVGRectElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -417,10 +417,13 @@ function LineChart({ report }: { report: StatsReport }) {
   );
 }
 
-function niceMax(v: number) {
-  const pow = 10 ** Math.floor(Math.log10(v));
-  const n = v / pow;
-  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
+/** Okrągła skala osi Y: krok 1, 2 albo 5 × 10ⁿ, około 4–5 linii */
+function niceScale(v: number) {
+  const rough = v / 4;
+  const pow = 10 ** Math.floor(Math.log10(rough));
+  const n = rough / pow;
+  const step = Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow);
+  return { step, max: Math.ceil(v / step) * step };
 }
 
 /* ---------- Rozbicia ---------- */

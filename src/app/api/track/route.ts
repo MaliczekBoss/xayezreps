@@ -46,8 +46,11 @@ export async function POST(request: Request) {
     device: /iPad|Tablet/i.test(ua) ? "tablet" : /Mobi|Android|iPhone/i.test(ua) ? "mobile" : "desktop",
   };
 
+  // Tylko lokalnie: zdarzenie z podaną datą, żeby dało się przetestować porównanie z poprzednim okresem
+  const at = process.env.NODE_ENV === "development" && typeof body.at === "number" ? body.at : Date.now();
+
   try {
-    await record(event, visitor);
+    await record(event, visitor, at);
   } catch (e) {
     console.error("[stats] zapis nie powiódł się:", e);
   }
