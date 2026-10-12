@@ -1,8 +1,14 @@
 // Powiadomienia wyświetlane w dynamicznej wyspie w nagłówku.
 
-export type NoticeIcon = "copy" | "remove" | "truck" | "alert" | "undo";
+export type NoticeIcon = "copy" | "remove" | "truck" | "alert" | "undo" | "heart";
 
-export type NoticeAction = { label: string; href?: string; onClick?: () => void };
+export type NoticeAction = {
+  label: string;
+  href?: string;
+  /** Link do innej strony – otwiera się w nowej karcie */
+  external?: boolean;
+  onClick?: () => void;
+};
 
 export type IslandNotice = {
   id: number;
@@ -10,6 +16,10 @@ export type IslandNotice = {
   text?: string;
   /** Miniatura produktu; bez niej wyspa pokazuje ikonę */
   image?: string;
+  /** Obrazek to logo – pokazujemy je w całości na białym tle */
+  logo?: boolean;
+  /** Krzyżyk zamykający powiadomienie; wywoływany po kliknięciu */
+  onDismiss?: () => void;
   icon?: NoticeIcon;
   tone?: "brand" | "success" | "neutral" | "warning";
   action?: NoticeAction;

@@ -26,6 +26,14 @@ const { url: URL_ENV, token: TOKEN_ENV } = findRedisEnv();
 
 export const storageKind = (): "redis" | "memory" => (URL_ENV && TOKEN_ENV ? "redis" : "memory");
 
+/** Pojedyncza komenda Redis (tylko gdy Upstash jest skonfigurowany) – do zapisu dokumentów i zdjęć */
+export async function redisCall(args: (string | number)[]): Promise<unknown> {
+  if (storageKind() !== "redis") throw new Error("Upstash Redis nie jest skonfigurowany");
+  const reply = (await rest("", args.map(String))) as { result?: unknown; error?: string };
+  if (reply.error) throw new Error(`Redis: ${reply.error}`);
+  return reply.result ?? null;
+}
+
 export async function run(cmds: Cmd[]): Promise<unknown[]> {
   if (cmds.length === 0) return [];
   return storageKind() === "redis" ? runRedis(cmds) : runMemory(cmds);
@@ -60,7 +68,7 @@ async function rest(path: string, body: unknown) {
     headers: { Authorization: `Bearer ${TOKEN_ENV}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
     cache: "no-store",
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(15000),
   });
   return res.json() as Promise<unknown>;
 }

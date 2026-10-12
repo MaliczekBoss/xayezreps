@@ -19,6 +19,8 @@ export function SiteFooter() {
       title: "footer.browse",
       links: [
         { label: "footer.finds", href: site.routes.finds },
+        { label: "footer.outfits", href: site.routes.outfits },
+        { label: "footer.favorites", href: site.routes.favorites },
         { label: "sort.newest", href: `${site.routes.finds}?sort=newest` },
         { label: "sort.popular", href: `${site.routes.finds}?sort=popular` },
         { label: "footer.sellers", href: site.routes.sellers },

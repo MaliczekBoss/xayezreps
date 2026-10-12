@@ -1,0 +1,104 @@
+[
+  {
+    "id": "o-moncler-winter",
+    "title": "Zimowy fit z Monclerem",
+    "author": "xayezreps",
+    "image": "",
+    "createdAt": "2026-10-12T10:00:00.000Z",
+    "parts": [
+      {
+        "findId": "694",
+        "x": 50,
+        "y": 30
+      },
+      {
+        "findId": "1484",
+        "x": 50,
+        "y": 40
+      },
+      {
+        "findId": "2448",
+        "x": 50,
+        "y": 65
+      },
+      {
+        "findId": "112",
+        "x": 50,
+        "y": 92
+      },
+      {
+        "findId": "1399",
+        "x": 50,
+        "y": 8
+      }
+    ]
+  },
+  {
+    "id": "o-corteiz-daily",
+    "title": "Corteiz na co dzień",
+    "author": "xayezreps",
+    "image": "",
+    "createdAt": "2026-10-11T10:00:00.000Z",
+    "parts": [
+      {
+        "findId": "1045",
+        "x": 50,
+        "y": 30
+      },
+      {
+        "findId": "2063",
+        "x": 50,
+        "y": 40
+      },
+      {
+        "findId": "2130",
+        "x": 50,
+        "y": 65
+      },
+      {
+        "findId": "109",
+        "x": 50,
+        "y": 92
+      },
+      {
+        "findId": "1405",
+        "x": 50,
+        "y": 8
+      }
+    ]
+  },
+  {
+    "id": "o-summer",
+    "title": "Letni zestaw na miasto",
+    "author": "xayezreps",
+    "image": "",
+    "createdAt": "2026-10-10T10:00:00.000Z",
+    "parts": [
+      {
+        "findId": "2090",
+        "x": 50,
+        "y": 30
+      },
+      {
+        "findId": "294",
+        "x": 50,
+        "y": 60
+      },
+      {
+        "findId": "0",
+        "x": 50,
+        "y": 92
+      },
+      {
+        "findId": "1106",
+        "x": 50,
+        "y": 8
+      },
+      {
+        "findId": "333",
+        "x": 50,
+        "y": 14
+      }
+    ]
+  }
+]

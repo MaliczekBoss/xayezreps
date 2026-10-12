@@ -2,7 +2,8 @@ import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 import { agents, sourceUrl } from "./agents";
-import { sortNewest } from "./finds";
+import { readDoc } from "./docstore";
+import { sortNewest, type Find } from "./finds";
 import { fetchQcPhotos } from "./remote";
 import { getFinds } from "./store";
 
@@ -18,35 +19,61 @@ export type QcEntry = {
   url: string;
 };
 
+type QcInfo = { count: number; cover: string | null };
+
 const FEED_SIZE = 10;
-const CANDIDATES = 20;
+const CONCURRENCY = 6;
 
-/** Najnowsze findy, które mają prawdziwe zdjęcia QC; odświeżane co godzinę */
-export async function getQcFeed(): Promise<QcEntry[]> {
+const sourceKey = (f: Pick<Find, "source">) => `${f.source.platform}:${f.source.id}`;
+
+/**
+ * Liczba zdjęć QC i okładka dla każdej aukcji z katalogu. Pobieranie ~200 aukcji trwa,
+ * więc wynik trzymamy w cache przez dzień (i odświeżamy po zmianach w katalogu).
+ */
+export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   "use cache";
-  cacheLife("hours");
-  cacheTag("qc-feed");
+  cacheLife("days");
+  cacheTag("qc-index", "finds");
 
-  // Kilka findów może prowadzić do tej samej aukcji (np. warianty), a zdjęcia QC są per aukcja
-  const seen = new Set<string>();
-  const finds = sortNewest(await getFinds())
-    .filter((f) => {
-      const key = `${f.source.platform}:${f.source.id}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, CANDIDATES);
-  const entries = await Promise.all(
-    finds.map(async (f): Promise<QcEntry | null> => {
+  // Czytamy prosto z magazynu, a nie przez getFinds(): strony wołają getFinds() równolegle,
+  // a funkcja z "use cache" nie może czekać na obietnicę utworzoną poza nią
+  const finds = await readDoc<Find>("finds");
+  const sources = [...new Map(finds.map((f) => [sourceKey(f), f])).values()];
+  const index: Record<string, QcInfo> = {};
+  let next = 0;
+
+  const worker = async () => {
+    while (next < sources.length) {
+      const f = sources[next++];
       try {
         const photos = await fetchQcPhotos(agents[0].productUrl(f.source));
-        if (!photos?.length) return null;
-        return { id: f.id, name: f.name, pricePln: f.pricePln, photos: photos.length, cover: photos[0], url: sourceUrl(f.source) };
+        index[sourceKey(f)] = { count: photos?.length ?? 0, cover: photos?.[0] ?? null };
       } catch {
-        return null;
+        index[sourceKey(f)] = { count: 0, cover: null };
       }
-    }),
-  );
-  return entries.filter((e): e is QcEntry => e !== null).slice(0, FEED_SIZE);
+    }
+  };
+  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+  return index;
+}
+
+/** Dokleja do findów liczbę zdjęć QC (pole qc) */
+export function withQc(finds: Find[], index: Record<string, QcInfo>): Find[] {
+  return finds.map((f) => ({ ...f, qc: index[sourceKey(f)]?.count ?? 0 }));
+}
+
+/** Najnowsze findy, które mają prawdziwe zdjęcia QC – do rzędu na stronie głównej */
+export async function getQcFeed(): Promise<QcEntry[]> {
+  const [finds, index] = await Promise.all([getFinds(), getQcIndex()]);
+  const seen = new Set<string>();
+  const entries: QcEntry[] = [];
+  for (const f of sortNewest(finds)) {
+    const key = sourceKey(f);
+    const info = index[key];
+    if (seen.has(key) || !info?.cover) continue;
+    seen.add(key);
+    entries.push({ id: f.id, name: f.name, pricePln: f.pricePln, photos: info.count, cover: info.cover, url: sourceUrl(f.source) });
+    if (entries.length === FEED_SIZE) break;
+  }
+  return entries;
 }

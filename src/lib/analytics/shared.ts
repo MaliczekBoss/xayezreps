@@ -68,7 +68,7 @@ export function classifySource(referrer: string, utm: string | null, ownHost: st
 }
 
 // Ścieżki, które liczymy osobno; wszystko inne trafia do „/inne”, żeby nikt nie zaśmiecił statystyk
-const PATHS = /^\/(?:finds|tools(?:\/(?:link|qc|tracking|ship|photo))?|sellers(?:\/[a-z0-9-]{1,60})?|tutorial|product\/[a-z0-9-]{1,40})?$/i;
+const PATHS = /^\/(?:finds|favorites|outfits(?:\/[a-z0-9-]{1,40})?|tools(?:\/(?:link|qc|tracking|ship|photo))?|sellers(?:\/[a-z0-9-]{1,60})?|tutorial|product\/[a-z0-9-]{1,40})?$/i;
 
 export function normalizePath(path: string) {
   const clean = (path.split(/[?#]/)[0] || "/").replace(/\/+$/, "") || "/";

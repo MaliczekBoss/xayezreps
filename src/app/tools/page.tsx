@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/page-shell";
 import { ToolsIndex } from "@/components/tools/tools-index";
+import { getToolPreviews } from "@/lib/tool-previews";
 
 export const metadata: Metadata = {
   title: "Narzędzia",
@@ -8,10 +9,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools" },
 };
 
-export default function ToolsPage() {
+export default async function ToolsPage() {
+  const previews = await getToolPreviews();
   return (
     <PageShell>
-      <ToolsIndex />
+      <ToolsIndex previews={previews} />
     </PageShell>
   );
 }

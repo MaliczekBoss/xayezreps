@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isUploadName, readImage } from "@/lib/docstore";
 
 const TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -9,20 +9,16 @@ const TYPES: Record<string, string> = {
   gif: "image/gif",
 };
 
-/** Zdjęcia wgrane w panelu admina (data/uploads) */
+/** Zdjęcia wgrane w panelu admina (z Upstash Redis albo z folderu data/uploads) */
 export async function GET(_request: Request, ctx: RouteContext<"/uploads/[file]">) {
   const { file } = await ctx.params;
   const name = path.basename(file);
   const type = TYPES[name.split(".").pop()?.toLowerCase() ?? ""];
-  if (!type || !/^[\w-]+\.\w+$/.test(name)) return new Response("Nie znaleziono", { status: 404 });
+  if (!type || !isUploadName(name)) return new Response("Nie znaleziono", { status: 404 });
 
-  try {
-    const data = await readFile(path.join(process.cwd(), "data", "uploads", name));
-    return new Response(new Uint8Array(data), {
-      headers: { "Content-Type": type, "Cache-Control": "public, max-age=31536000, immutable" },
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Response("Nie znaleziono", { status: 404 });
-    throw error;
-  }
+  const data = await readImage(name);
+  if (!data) return new Response("Nie znaleziono", { status: 404 });
+  return new Response(new Uint8Array(data), {
+    headers: { "Content-Type": type, "Cache-Control": "public, max-age=31536000, immutable" },
+  });
 }

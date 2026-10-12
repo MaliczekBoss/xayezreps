@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Copy,
+  Heart,
   Menu,
   Search,
   Settings2,
@@ -22,6 +23,7 @@ import { DiscordIcon } from "./discord-icon";
 import { Logo } from "./logo";
 import { SettingsModal } from "./settings-modal";
 import { parseSource } from "@/lib/agents";
+import { useFavorites } from "@/lib/favorites";
 import { summarize, useHaul } from "@/lib/haul";
 import { notify, onNotify, type IslandNotice, type NoticeIcon } from "@/lib/notify";
 import { site } from "@/lib/site";
@@ -33,6 +35,7 @@ const icons: Record<NoticeIcon, LucideIcon> = {
   truck: Truck,
   alert: TriangleAlert,
   undo: Undo2,
+  heart: Heart,
 };
 
 const toneText: Record<NonNullable<IslandNotice["tone"]>, string> = {
@@ -61,13 +64,18 @@ export function SiteHeader() {
   const menuButton = useRef<HTMLButtonElement>(null);
   const timer = useRef<number | undefined>(undefined);
 
+  const favorites = useFavorites();
+  const favCount = Object.keys(favorites).length;
+
   const links = [
     { href: site.routes.finds, label: t("nav.browse") },
+    { href: site.routes.outfits, label: t("nav.outfits") },
     { href: site.routes.qcFinder, label: t("nav.qc") },
     { href: site.routes.tools, label: t("nav.tools") },
     { href: site.routes.sellers, label: t("nav.sellers") },
-    { href: site.routes.tutorial, label: t("nav.guide") },
   ];
+  // Na telefonie menu mieści więcej pozycji niż pasek na komputerze
+  const mobileLinks = [...links, { href: site.routes.favorites, label: t("nav.favorites") }, { href: site.routes.tutorial, label: t("nav.guide") }];
 
   useEffect(() => {
     document.documentElement.lang = f.settings.lang;
@@ -136,7 +144,7 @@ export function SiteHeader() {
           className={`pointer-events-auto w-full overflow-hidden rounded-[28px] border backdrop-blur-xl transition-[max-width,background-color,border-color,box-shadow] duration-500 ease-[var(--ease-out-soft)] ${
             compact
               ? // Na komputerze zwarta wyspa musi zmieścić logo, 4 linki, ustawienia i paczkę – także z powiadomieniem
-                `${notice ? "max-w-[36rem] lg:max-w-[60rem] xl:max-w-[63.5rem]" : "max-w-[22rem] md:max-w-[25rem] lg:max-w-[60rem] xl:max-w-[63.5rem]"} border-line-strong bg-[#141416]/92 shadow-[0_16px_40px_-14px_rgb(0_0_0/0.9)]`
+                `${notice ? "max-w-[36rem] lg:max-w-[60rem] xl:max-w-[63.5rem]" : "max-w-[22rem] md:max-w-[27.5rem] lg:max-w-[60rem] xl:max-w-[63.5rem]"} border-line-strong bg-[#141416]/92 shadow-[0_16px_40px_-14px_rgb(0_0_0/0.9)]`
               : "max-w-[76rem] border-line bg-card/80"
           }`}
         >
@@ -207,6 +215,21 @@ export function SiteHeader() {
                 <DiscordIcon />
                 <span className="sr-only">{t("nav.discord")}</span>
               </a>
+              <Link
+                href={site.routes.favorites}
+                className="relative hidden size-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/[0.06] hover:text-fg md:grid"
+                title={t("nav.favorites")}
+              >
+                <Heart aria-hidden size={18} className={favCount ? "fill-current text-fg" : ""} />
+                {favCount > 0 && (
+                  <span aria-hidden="true" className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-fg px-1 text-[10px] font-bold leading-none text-bg tabular">
+                    {favCount > 99 ? "99+" : favCount}
+                  </span>
+                )}
+                <span className="sr-only">
+                  {t("nav.favorites")}: {favCount}
+                </span>
+              </Link>
               <button
                 type="button"
                 onClick={() => setSettingsOpen(true)}
@@ -265,8 +288,8 @@ export function SiteHeader() {
               >
                 <div className="flex items-center gap-3 px-3 pb-3 pt-0.5">
                   {notice.image ? (
-                    <span className="relative size-10 shrink-0 overflow-hidden rounded-full border border-line bg-bg">
-                      <Image src={notice.image} alt="" fill sizes="2.5rem" className="object-cover" />
+                    <span className={`relative size-10 shrink-0 overflow-hidden border ${notice.logo ? "rounded-xl border-white/20 bg-white" : "rounded-full border-line bg-bg"}`}>
+                      <Image src={notice.image} alt="" fill sizes="2.5rem" className={notice.logo ? "object-contain p-0.5" : "object-cover"} />
                     </span>
                   ) : (
                     <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-bg text-muted">
@@ -281,10 +304,15 @@ export function SiteHeader() {
                     (notice.action.href ? (
                       <a
                         href={notice.action.href}
-                        onClick={() => setNotice(null)}
-                        className="shrink-0 rounded-full bg-fg px-3.5 py-2 text-xs font-semibold text-bg hover:bg-white"
+                        {...(notice.action.external ? { target: "_blank", rel: "noopener noreferrer sponsored" } : {})}
+                        onClick={() => {
+                          notice.action?.onClick?.();
+                          setNotice(null);
+                        }}
+                        className="shrink-0 whitespace-nowrap rounded-full bg-fg px-3.5 py-2 text-xs font-semibold text-bg hover:bg-white"
                       >
                         {notice.action.label}
+                        {notice.action.external && <span className="sr-only">, {t("newTab")}</span>}
                       </a>
                     ) : (
                       <button
@@ -297,6 +325,19 @@ export function SiteHeader() {
                         {notice.action.label}
                       </button>
                     ))}
+                  {notice.onDismiss && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        notice.onDismiss?.();
+                        setNotice(null);
+                      }}
+                      className="grid size-8 shrink-0 place-items-center rounded-full text-muted hover:bg-white/[0.08] hover:text-fg"
+                    >
+                      <X aria-hidden size={15} />
+                      <span className="sr-only">{t("promo.close")}</span>
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -315,7 +356,7 @@ export function SiteHeader() {
                 className="lg:hidden"
               >
                 <ul className="border-t border-line p-2">
-                  {[...links, { href: site.socials.discord, label: t("nav.discord") }].map((l) => {
+                  {[...mobileLinks, { href: site.socials.discord, label: t("nav.discord") }].map((l) => {
                     const external = l.href.startsWith("http");
                     return (
                       <li key={l.href}>

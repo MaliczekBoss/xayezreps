@@ -11,6 +11,7 @@ import { haulActions, shippingCost, useHaul, withPackaging } from "@/lib/haul";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { Carousel, cardSlot } from "./carousel";
+import { FavoriteButton } from "./favorite-button";
 import { Lightbox } from "./lightbox";
 import { ProductCard } from "./product-card";
 import { ProductImage } from "./product-image";
@@ -226,6 +227,7 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
               {inHaul ? <Check aria-hidden size={16} strokeWidth={2.5} /> : <ShoppingBag aria-hidden size={16} />}
               {inHaul ? t("toggle.remove") : t("toggle.add")}
             </button>
+            <FavoriteButton find={find} withLabel />
             <button
               type="button"
               onClick={() => copyWithNotice(`${site.url}${site.routes.product(find.id)}`, { title: t("product.linkCopied"), text: find.name, image: find.image })}

@@ -13,6 +13,8 @@ export type Find = {
   source: ProductSource;
   /** Data dodania (ISO), według niej sortujemy „Najnowsze” */
   createdAt: string;
+  /** Liczba zdjęć QC w magazynie – doklejana na stronach, nie zapisywana w katalogu */
+  qc?: number;
 };
 
 export const categories = [

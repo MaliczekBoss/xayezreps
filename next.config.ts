@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   experimental: {
     // Zdjęcia z panelu admina mogą mieć do 4 MB
-    serverActions: { bodySizeLimit: "5mb" },
+    serverActions: { bodySizeLimit: "9mb" },
   },
   images: {
     remotePatterns: [

@@ -37,6 +37,9 @@ export const site = {
     tracking: "/tools/tracking",
     qcFinder: "/tools/qc",
     photoSearch: "/tools/photo",
+    favorites: "/favorites",
+    outfits: "/outfits",
+    outfit: (id: string) => `/outfits/${id}`,
     shipCalculator: "/tools/ship",
     product: (id: string) => `/product/${id}`,
     seller: (slug: string) => `/sellers/${slug}`,
@@ -44,6 +47,15 @@ export const site = {
 } as const;
 
 // Kalkulator paczki – kwoty orientacyjne w złotówkach. Zaktualizuj, gdy agent zmieni cennik.
+/**
+ * Oferty partnerów pokazywane co jakiś czas jako powiadomienie w dynamicznej wyspie.
+ * url: link rejestracyjny z waszym kodem polecającym.
+ */
+export const islandPromos = [
+  { id: "cnfans", name: "CNFans", logo: "/agents/cnfans.png", url: "https://cnfans.com/register/" },
+  { id: "usfans", name: "USFans", logo: "/agents/usfans.png", url: "https://www.usfans.com/register?ref=xayez" },
+] as const;
+
 export const pricing = {
   // Dostawa od sprzedawcy do magazynu agenta, za każdy przedmiot
   domesticPlnPerItem: 7,

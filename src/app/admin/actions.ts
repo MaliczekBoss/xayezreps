@@ -1,8 +1,6 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -10,7 +8,9 @@ import { parseSource } from "@/lib/agents";
 import { isAdmin } from "@/lib/auth";
 import { SESSION_COOKIE, SESSION_MAX_AGE_S, adminConfigured, checkPassword, createSessionToken } from "@/lib/auth-token";
 import { batches, categories, defaultWeight, type Batch, type Category, type Find } from "@/lib/finds";
-import { FINDS_TAG, UPLOADS_DIR, getFindsFresh, saveFinds } from "@/lib/store";
+import { removeImage, storeImage } from "@/lib/docstore";
+import { MAX_OUTFIT_PARTS, type Outfit, type OutfitPart } from "@/lib/outfits";
+import { FINDS_TAG, OUTFITS_TAG, getFindsFresh, getOutfitsFresh, saveFinds, saveOutfits } from "@/lib/store";
 
 export type FormState = { error?: string; ok?: string; savedId?: string };
 
@@ -43,36 +43,22 @@ export async function logout() {
 
 /* ---------- Produkty ---------- */
 
-const IMAGE_TYPES: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/avif": "avif",
-  "image/gif": "gif",
-};
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 const num = (v: FormDataEntryValue | null) => {
   const s = String(v ?? "").trim().replace(",", ".");
   return s === "" ? null : Number(s);
 };
 
+/** Zdjęcie z formularza: zmniejszone do WEBP i zapisane w magazynie */
 async function storeUpload(file: File) {
-  const ext = IMAGE_TYPES[file.type];
-  if (!ext) throw new Error("Zdjęcie musi być w formacie JPG, PNG, WEBP, AVIF albo GIF.");
-  if (file.size > MAX_IMAGE_BYTES) throw new Error("Zdjęcie może mieć najwyżej 4 MB.");
-  await mkdir(UPLOADS_DIR, { recursive: true });
-  const name = `${randomUUID()}.${ext}`;
-  await writeFile(path.join(process.cwd(), "data", "uploads", name), Buffer.from(await file.arrayBuffer()));
-  return `/uploads/${name}`;
-}
-
-async function removeUpload(image: string) {
-  if (!image.startsWith("/uploads/")) return;
+  if (!IMAGE_TYPES.includes(file.type)) throw new Error("Zdjęcie musi być w formacie JPG, PNG, WEBP, AVIF albo GIF.");
+  if (file.size > MAX_IMAGE_BYTES) throw new Error("Zdjęcie może mieć najwyżej 8 MB.");
   try {
-    await unlink(path.join(process.cwd(), "data", "uploads", path.basename(image)));
+    return await storeImage(await file.arrayBuffer());
   } catch {
-    // Plik mógł już zniknąć – nic nie szkodzi
+    throw new Error("Nie udało się zapisać zdjęcia. Spróbuj z innym plikiem.");
   }
 }
 
@@ -133,9 +119,9 @@ export async function saveFind(_prev: FormState, formData: FormData): Promise<Fo
   try {
     await saveFinds(next);
   } catch {
-    return { error: "Nie udało się zapisać pliku z produktami." };
+    return { error: "Nie udało się zapisać produktów. Spróbuj ponownie." };
   }
-  if (existing && existing.image !== find.image) await removeUpload(existing.image);
+  if (existing && existing.image !== find.image) await removeImage(existing.image);
 
   updateTag(FINDS_TAG);
   return { ok: existing ? `Zapisano zmiany: ${find.name}` : `Dodano: ${find.name}`, savedId: find.id };
@@ -150,9 +136,91 @@ export async function deleteFind(_prev: FormState, formData: FormData): Promise<
   try {
     await saveFinds(list.filter((f) => f.id !== id));
   } catch {
-    return { error: "Nie udało się zapisać pliku z produktami." };
+    return { error: "Nie udało się zapisać produktów. Spróbuj ponownie." };
   }
-  await removeUpload(target.image);
+  await removeImage(target.image);
   updateTag(FINDS_TAG);
   return { ok: `Usunięto: ${target.name}` };
+}
+
+/* ---------- Outfity ---------- */
+
+export async function saveOutfit(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await isAdmin())) return { error: "Sesja wygasła. Zaloguj się ponownie." };
+
+  const id = String(formData.get("id") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim();
+  const author = String(formData.get("author") ?? "").trim();
+  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
+  const imageFile = formData.get("imageFile");
+  let rawParts: unknown;
+  try {
+    rawParts = JSON.parse(String(formData.get("parts") ?? "[]"));
+  } catch {
+    return { error: "Nie udało się odczytać części outfitu." };
+  }
+
+  if (!title || title.length > 100) return { error: "Podaj tytuł (do 100 znaków)." };
+  if (author.length > 60) return { error: "Autor może mieć najwyżej 60 znaków." };
+  if (imageUrl && !/^https?:\/\//i.test(imageUrl) && !imageUrl.startsWith("/uploads/")) return { error: "Link do zdjęcia musi zaczynać się od https://." };
+
+  const finds = await getFindsFresh();
+  const ids = new Set(finds.map((f) => f.id));
+  const clamp = (n: unknown) => Math.min(100, Math.max(0, Math.round(Number(n) * 10) / 10 || 0));
+  const parts: OutfitPart[] = (Array.isArray(rawParts) ? rawParts : [])
+    .filter((p): p is Record<string, unknown> => Boolean(p) && typeof p === "object" && ids.has(String((p as Record<string, unknown>).findId)))
+    .slice(0, MAX_OUTFIT_PARTS)
+    .map((p) => ({
+      findId: String(p.findId),
+      x: clamp(p.x),
+      y: clamp(p.y),
+      ...(typeof p.label === "string" && p.label.trim() ? { label: p.label.trim().slice(0, 60) } : {}),
+    }));
+  if (parts.length === 0) return { error: "Dodaj co najmniej jedną część i wybierz do niej find z katalogu." };
+
+  const list = await getOutfitsFresh();
+  const existing = id ? list.find((o) => o.id === id) : undefined;
+  if (id && !existing) return { error: "Tego outfitu już nie ma. Odśwież stronę." };
+
+  let image = imageUrl;
+  try {
+    if (imageFile instanceof File && imageFile.size > 0) image = await storeUpload(imageFile);
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+
+  const outfit: Outfit = {
+    id: existing?.id ?? `o${randomUUID().slice(0, 8)}`,
+    title,
+    author: author || "xayezreps",
+    image,
+    parts,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  };
+  const next = existing ? list.map((o) => (o.id === outfit.id ? outfit : o)) : [outfit, ...list];
+  try {
+    await saveOutfits(next);
+  } catch {
+    return { error: "Nie udało się zapisać outfitów. Spróbuj ponownie." };
+  }
+  if (existing?.image && existing.image !== outfit.image) await removeImage(existing.image);
+
+  updateTag(OUTFITS_TAG);
+  return { ok: existing ? `Zapisano zmiany: ${outfit.title}` : `Dodano outfit: ${outfit.title}`, savedId: outfit.id };
+}
+
+export async function deleteOutfit(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await isAdmin())) return { error: "Sesja wygasła. Zaloguj się ponownie." };
+  const id = String(formData.get("id") ?? "");
+  const list = await getOutfitsFresh();
+  const target = list.find((o) => o.id === id);
+  if (!target) return { error: "Tego outfitu już nie ma." };
+  try {
+    await saveOutfits(list.filter((o) => o.id !== id));
+  } catch {
+    return { error: "Nie udało się zapisać outfitów. Spróbuj ponownie." };
+  }
+  if (target.image) await removeImage(target.image);
+  updateTag(OUTFITS_TAG);
+  return { ok: `Usunięto outfit: ${target.title}` };
 }

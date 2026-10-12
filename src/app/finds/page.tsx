@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FindsCatalog } from "@/components/finds-catalog";
 import { PageShell } from "@/components/page-shell";
+import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getFinds } from "@/lib/store";
 
 export const metadata: Metadata = {
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function FindsPage() {
-  const finds = await getFinds();
+  const [raw, qcIndex] = await Promise.all([getFinds(), getQcIndex()]);
+  const finds = withQc(raw, qcIndex);
   return (
     <PageShell>
       <Suspense fallback={<CatalogSkeleton />}>

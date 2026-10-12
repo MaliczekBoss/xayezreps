@@ -175,6 +175,15 @@ export const haulActions = {
       },
     });
   },
+  /** Kilka rzeczy naraz (np. cały outfit) – jedno powiadomienie zamiast kilku */
+  addMany(finds: HaulFind[], title: string) {
+    if (finds.length === 0) return;
+    const items = { ...state.items };
+    for (const find of finds) items[find.id] = { qty: Math.min((items[find.id]?.qty ?? 0) + 1, MAX_QTY), find: toHaulFind(find) };
+    commit({ ...state, items });
+    const f = formatNow();
+    notify({ tone: "brand", title, text: f.pieces(finds.length), image: finds[0].image, action: haulAction() });
+  },
   toggle(find: HaulFind) {
     if (state.items[find.id]) haulActions.remove(find.id);
     else haulActions.add(find);

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Analytics } from "@/components/analytics";
+import { IslandPromos } from "@/components/island-promos";
 import { RatesProvider } from "@/lib/rates";
 import { getRates } from "@/lib/remote";
 import { site } from "@/lib/site";
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <RatesProvider rates={rates}>{children}</RatesProvider>
         <Analytics />
+        <IslandPromos />
       </body>
     </html>
   );

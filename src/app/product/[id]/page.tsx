@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { PageShell } from "@/components/page-shell";
 import { ProductDetail } from "@/components/product-detail";
 import { sortPopular } from "@/lib/finds";
+import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getFinds } from "@/lib/store";
 
 export async function generateStaticParams() {
@@ -35,7 +36,7 @@ export default function ProductPage({ params }: PageProps<"/product/[id]">) {
 
 async function ProductContent({ params }: { params: PageProps<"/product/[id]">["params"] }) {
   const { id } = await params;
-  const finds = await getFinds();
+  const finds = withQc(await getFinds(), await getQcIndex());
   const find = finds.find((f) => f.id === id);
   if (!find) notFound();
   const related = sortPopular(finds.filter((f) => f.category === find.category && f.id !== find.id)).slice(0, 12);

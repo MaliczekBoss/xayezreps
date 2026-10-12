@@ -8,10 +8,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Tools } from "@/components/tools";
 import { NEW_FOR_DAYS, sortNewest, sortPopular } from "@/lib/finds";
-import { getQcFeed } from "@/lib/qc-feed";
+import { getQcFeed, getQcIndex, withQc } from "@/lib/qc-feed";
 import { getSellers } from "@/lib/remote";
+import { getToolPreviews } from "@/lib/tool-previews";
 import { site } from "@/lib/site";
-import { getFinds } from "@/lib/store";
+import { getFinds, getOutfits } from "@/lib/store";
+import { OutfitsRow } from "@/components/outfits";
+import { resolveOutfits } from "@/lib/outfits";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ROW = 16;
@@ -19,7 +22,8 @@ const ROW = 16;
 const CATEGORY_ROWS = ["Buty", "Bluzy", "Koszulki"] as const;
 
 export default async function Home() {
-  const [finds, qcFeed, sellers] = await Promise.all([getFinds(), getQcFeed(), getSellers()]);
+  const [raw, qcIndex, qcFeed, sellers, outfits, toolPreviews] = await Promise.all([getFinds(), getQcIndex(), getQcFeed(), getSellers(), getOutfits(), getToolPreviews()]);
+  const finds = withQc(raw, qcIndex);
   const newest = sortNewest(finds);
   const popular = sortPopular(finds);
 
@@ -34,9 +38,10 @@ export default async function Home() {
       <SiteHeader />
       <PromoPopup />
       <main>
-        <Hero finds={finds} />
+        <Hero finds={finds} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newest.slice(0, ROW)} newIds={newIds} />
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popular.slice(0, ROW)} newIds={newIds} />
+        <OutfitsRow outfits={resolveOutfits(outfits, finds).slice(0, 10)} />
         <QcFeed entries={qcFeed} />
         <SellersRow sellers={sellerCards} />
         {CATEGORY_ROWS.map((c) => {
@@ -53,7 +58,7 @@ export default async function Home() {
           ) : null;
         })}
         <HaulSection />
-        <Tools />
+        <Tools previews={toolPreviews} />
       </main>
       <SiteFooter />
     </>

@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Camera } from "lucide-react";
 import type { Find } from "@/lib/finds";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
+import { FavoriteButton } from "./favorite-button";
 import { HaulToggle } from "./haul-toggle";
 import { ProductImage } from "./product-image";
 
@@ -20,10 +22,20 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
           className="transition-transform duration-300 group-hover:scale-[1.03]"
         />
         {isNew && <span className="absolute left-2.5 top-2.5 rounded-[5px] bg-gl px-[7px] py-[3px] text-[10px] font-bold leading-none text-white">{t("card.new")}</span>}
-        <HaulToggle find={find} className="absolute right-2 top-2 z-10" />
+        <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">
+          <FavoriteButton find={find} />
+          <HaulToggle find={find} />
+        </div>
         <span className="absolute bottom-2.5 left-2.5 rounded-[5px] bg-[#18181b]/80 px-[7px] py-[3px] text-[10px] uppercase leading-[15px] tracking-[1px] text-muted backdrop-blur">
           {f.category(find.category)}
         </span>
+        {Boolean(find.qc) && (
+          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-[5px] bg-[#18181b]/80 px-[7px] py-[3px] text-[10px] font-semibold leading-[15px] text-fg backdrop-blur tabular">
+            <Camera aria-hidden size={11} />
+            <span aria-hidden="true">{t("card.qc", { n: find.qc ?? 0 })}</span>
+            <span className="sr-only">{t("card.qcSr", { n: find.qc ?? 0 })}</span>
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1 px-[15px] pb-3 pt-[13px]">
