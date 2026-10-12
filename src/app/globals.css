@@ -151,6 +151,29 @@
   }
 }
 
+/* Wejście na stronę główną: elementy w .intro grają raz, każdy z opóźnieniem --d */
+@media (prefers-reduced-motion: no-preference) {
+  .intro .intro-rise {
+    animation: intro-rise 0.75s var(--ease-out-soft) var(--d, 0ms) both;
+  }
+  .intro .intro-fade {
+    animation: intro-fade 0.6s var(--ease-out-soft) var(--d, 0ms) both;
+  }
+}
+
+@keyframes intro-rise {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
 @keyframes marquee {
   to {
     transform: translateX(-50%);

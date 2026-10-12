@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Camera, Copy, Search } from "lucide-react";
@@ -15,11 +15,29 @@ import { btnPrimary } from "./ui";
  * Szukajka z hero: tekst szuka findów, a link z Weidiana, Taobao, 1688
  * albo od innego agenta od razu zamienia na link do wybranego agenta.
  */
-export function HeroSearch() {
+export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const f = useFormat();
   const { t } = f;
   const router = useRouter();
   const [value, setValue] = useState("");
+  const placeholder = t("search.placeholder");
+  // Przy wejściu na stronę podpowiedź wpisuje się litera po literze (null = cała)
+  const [typed, setTyped] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!typeIn || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let n = 0;
+    let timer = window.setTimeout(() => {
+      setTyped(0);
+      const tick = () => {
+        n += 1;
+        setTyped(n >= placeholder.length ? null : n);
+        if (n < placeholder.length) timer = window.setTimeout(tick, 26);
+      };
+      timer = window.setTimeout(tick, 900);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [typeIn, placeholder]);
   const source = parseSource(value);
   const converted = source ? f.buyUrl(source) : null;
 
@@ -48,7 +66,7 @@ export function HeroSearch() {
             id="szukaj"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={t("search.placeholder")}
+            placeholder={typed === null ? placeholder : placeholder.slice(0, typed)}
             autoComplete="off"
             spellCheck={false}
             className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] text-fg placeholder:text-dim focus:outline-none"
