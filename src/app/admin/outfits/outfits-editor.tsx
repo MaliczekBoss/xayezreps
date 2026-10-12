@@ -4,7 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState, type MouseEvent }
 import { Crosshair, ImagePlus, Pencil, Plus, Trash, X } from "lucide-react";
 import { ProductImage } from "@/components/product-image";
 import type { Find } from "@/lib/finds";
-import { MAX_OUTFIT_PARTS, type Outfit, type OutfitPart } from "@/lib/outfits";
+import { hasPoint, MAX_OUTFIT_PARTS, type Outfit, type OutfitPart } from "@/lib/outfits";
 import { deleteOutfit, saveOutfit, type FormState } from "../actions";
 import { AdminHeader } from "../admin-header";
 
@@ -202,7 +202,7 @@ function OutfitForm({ editing, byId, finds, action, pending }: FormProps) {
           <div onClick={onPhotoClick} className={`relative mx-auto aspect-[4/5] max-w-sm overflow-hidden rounded-xl border bg-bg ${placing !== null ? "cursor-crosshair border-fg" : "cursor-copy border-line"}`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- podgląd zdjęcia przed zapisem */}
             <img src={preview} alt="Podgląd zdjęcia outfitu" className="size-full object-cover" />
-            {parts.map((p, i) => (
+            {parts.map((p, i) => hasPoint(p) && (
               <span
                 key={i}
                 style={{ left: `${p.x}%`, top: `${p.y}%` }}
@@ -219,7 +219,7 @@ function OutfitForm({ editing, byId, finds, action, pending }: FormProps) {
         <button
           type="button"
           disabled={parts.length >= MAX_OUTFIT_PARTS}
-          onClick={() => setParts((list) => [...list, { findId: "", x: 50, y: 50 }])}
+          onClick={() => setParts((list) => [...list, { findId: "" }])}
           className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-bg px-3.5 text-sm font-medium hover:border-line-strong disabled:opacity-50"
         >
           <Plus aria-hidden size={15} />

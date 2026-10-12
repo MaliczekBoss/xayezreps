@@ -140,6 +140,20 @@
     .float {
       animation: float 6s ease-in-out infinite;
     }
+    /* Ściana zdjęć QC: taśma przesuwa się o połowę (druga połowa to kopia), stoi po najechaniu */
+    .marquee {
+      animation: marquee 90s linear infinite;
+    }
+    .marquee:hover,
+    .marquee:focus-within {
+      animation-play-state: paused;
+    }
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
   }
 }
 

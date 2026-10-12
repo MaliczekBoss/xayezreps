@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import { OutfitDetail } from "@/components/outfits";
 import { PageShell } from "@/components/page-shell";
 import { ToolSkeleton } from "@/components/tools/tool-skeleton";
-import { resolveOutfits } from "@/lib/outfits";
+import { resolveOutfits, summarizeOutfits } from "@/lib/outfits";
+import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getFinds, getOutfits } from "@/lib/store";
 
 export async function generateStaticParams() {
@@ -36,9 +37,15 @@ export default function OutfitPage({ params }: PageProps<"/outfits/[id]">) {
 
 async function OutfitContent({ params }: { params: PageProps<"/outfits/[id]">["params"] }) {
   const { id } = await params;
-  const [outfits, finds] = await Promise.all([getOutfits(), getFinds()]);
-  const all = resolveOutfits(outfits, finds);
-  const outfit = all.find((o) => o.id === id);
+  const [outfits, raw, qcIndex] = await Promise.all([getOutfits(), getFinds(), getQcIndex()]);
+  const finds = withQc(raw, qcIndex);
+  const own = outfits.find((o) => o.id === id);
+  const [outfit] = own ? resolveOutfits([own], finds) : [];
   if (!outfit) notFound();
-  return <OutfitDetail outfit={outfit} more={all.filter((o) => o.id !== id).slice(0, 10)} />;
+  // Więcej outfitów tego samego rodzaju (dla niej / dla niego)
+  const more = summarizeOutfits(
+    outfits.filter((o) => o.id !== id && (o.gender ?? "boy") === (own?.gender ?? "boy")),
+    finds,
+  ).slice(0, 12);
+  return <OutfitDetail outfit={outfit} more={more} />;
 }

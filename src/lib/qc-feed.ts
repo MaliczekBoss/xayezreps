@@ -21,7 +21,7 @@ export type QcEntry = {
 
 type QcInfo = { count: number; cover: string | null };
 
-const FEED_SIZE = 10;
+const FEED_SIZE = 16;
 const CONCURRENCY = 6;
 
 const sourceKey = (f: Pick<Find, "source">) => `${f.source.platform}:${f.source.id}`;

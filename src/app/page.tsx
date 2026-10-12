@@ -14,12 +14,12 @@ import { getToolPreviews } from "@/lib/tool-previews";
 import { site } from "@/lib/site";
 import { getFinds, getOutfits } from "@/lib/store";
 import { OutfitsRow } from "@/components/outfits";
-import { resolveOutfits } from "@/lib/outfits";
+import { summarizeOutfits } from "@/lib/outfits";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ROW = 16;
 // Kategorie z własnym rzędem na stronie głównej, jak na cadenreps
-const CATEGORY_ROWS = ["Buty", "Bluzy", "Koszulki"] as const;
+const CATEGORY_ROWS = ["Buty", "Bluzy"] as const;
 
 export default async function Home() {
   const [raw, qcIndex, qcFeed, sellers, outfits, toolPreviews] = await Promise.all([getFinds(), getQcIndex(), getQcFeed(), getSellers(), getOutfits(), getToolPreviews()]);
@@ -41,9 +41,10 @@ export default async function Home() {
         <Hero finds={finds} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newest.slice(0, ROW)} newIds={newIds} />
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popular.slice(0, ROW)} newIds={newIds} />
-        <OutfitsRow outfits={resolveOutfits(outfits, finds).slice(0, 10)} />
         <QcFeed entries={qcFeed} />
+        <OutfitsRow outfits={summarizeOutfits(outfits, raw).slice(0, 12)} />
         <SellersRow sellers={sellerCards} />
+        <HaulSection />
         {CATEGORY_ROWS.map((c) => {
           const items = popular.filter((f) => f.category === c).slice(0, ROW);
           return items.length >= 4 ? (
@@ -57,7 +58,6 @@ export default async function Home() {
             />
           ) : null;
         })}
-        <HaulSection />
         <Tools previews={toolPreviews} />
       </main>
       <SiteFooter />

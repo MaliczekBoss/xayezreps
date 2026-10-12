@@ -8,7 +8,7 @@ import { parseSource } from "@/lib/agents";
 import { isAdmin } from "@/lib/auth";
 import { SESSION_COOKIE, SESSION_MAX_AGE_S, adminConfigured, checkPassword, createSessionToken } from "@/lib/auth-token";
 import { batches, categories, defaultWeight, type Batch, type Category, type Find } from "@/lib/finds";
-import { removeImage, storeImage } from "@/lib/docstore";
+import { markDeleted, removeImage, storeImage } from "@/lib/docstore";
 import { MAX_OUTFIT_PARTS, type Outfit, type OutfitPart } from "@/lib/outfits";
 import { FINDS_TAG, OUTFITS_TAG, getFindsFresh, getOutfitsFresh, saveFinds, saveOutfits } from "@/lib/store";
 
@@ -135,6 +135,7 @@ export async function deleteFind(_prev: FormState, formData: FormData): Promise<
   if (!target) return { error: "Tego itemu już nie ma." };
   try {
     await saveFinds(list.filter((f) => f.id !== id));
+    await markDeleted("finds", id);
   } catch {
     return { error: "Nie udało się zapisać produktów. Spróbuj ponownie." };
   }
@@ -172,8 +173,7 @@ export async function saveOutfit(_prev: FormState, formData: FormData): Promise<
     .slice(0, MAX_OUTFIT_PARTS)
     .map((p) => ({
       findId: String(p.findId),
-      x: clamp(p.x),
-      y: clamp(p.y),
+      ...(typeof p.x === "number" && typeof p.y === "number" ? { x: clamp(p.x), y: clamp(p.y) } : {}),
       ...(typeof p.label === "string" && p.label.trim() ? { label: p.label.trim().slice(0, 60) } : {}),
     }));
   if (parts.length === 0) return { error: "Dodaj co najmniej jedną część i wybierz do niej find z katalogu." };
@@ -217,6 +217,7 @@ export async function deleteOutfit(_prev: FormState, formData: FormData): Promis
   if (!target) return { error: "Tego outfitu już nie ma." };
   try {
     await saveOutfits(list.filter((o) => o.id !== id));
+    await markDeleted("outfits", id);
   } catch {
     return { error: "Nie udało się zapisać outfitów. Spróbuj ponownie." };
   }

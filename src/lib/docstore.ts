@@ -1,6 +1,6 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
@@ -8,31 +8,50 @@ import { redisCall, storageKind } from "./analytics/store";
 
 // Dane panelu admina (produkty, outfity) i wgrane zdjęcia.
 // Z Upstash Redis (Vercel) wszystko siedzi w bazie; bez niego – w plikach w folderze data (lokalnie, VPS).
-// Pusta baza przy pierwszym odczycie wypełnia się zawartością pliku z repozytorium.
+// Plik z repozytorium jest „źródłem nowości”: gdy się zmieni (nowe wdrożenie), jego nowe pozycje
+// trafiają do bazy, ale zmiany zrobione w panelu i usunięte tam pozycje zostają nietknięte.
 
 export type DocName = "finds" | "outfits";
+
+type WithId = { id: string };
+
+// Przykładowe outfity z pierwszej wersji strony – zastąpione outfitami z xayezreps.com
+const RETIRED: Record<DocName, string[]> = {
+  finds: [],
+  outfits: ["o-moncler-winter", "o-corteiz-daily", "o-summer"],
+};
 
 // Stałe ścieżki (bez zmiennych), żeby przy wdrożeniu dołączyć tylko te pliki, a nie cały projekt
 const fileOf = (name: DocName) =>
   name === "finds" ? path.join(process.cwd(), "data", "finds.json") : path.join(process.cwd(), "data", "outfits.json");
 
-async function readFileDoc<T>(name: DocName): Promise<T[]> {
+async function readFileRaw(name: DocName): Promise<string> {
   try {
-    const raw = name === "finds" ? await readFile(path.join(process.cwd(), "data", "finds.json"), "utf-8") : await readFile(path.join(process.cwd(), "data", "outfits.json"), "utf-8");
-    return JSON.parse(raw) as T[];
+    return name === "finds" ? await readFile(path.join(process.cwd(), "data", "finds.json"), "utf-8") : await readFile(path.join(process.cwd(), "data", "outfits.json"), "utf-8");
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return "[]";
     throw error;
   }
 }
 
-export async function readDoc<T>(name: DocName): Promise<T[]> {
-  if (storageKind() !== "redis") return readFileDoc<T>(name);
-  const raw = await redisCall(["GET", `xd:${name}`]);
-  if (typeof raw === "string") return JSON.parse(raw) as T[];
-  const seed = await readFileDoc<T>(name);
-  await redisCall(["SET", `xd:${name}`, JSON.stringify(seed)]);
-  return seed;
+export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
+  const fileRaw = await readFileRaw(name);
+  if (storageKind() !== "redis") return JSON.parse(fileRaw) as T[];
+
+  const version = createHash("sha1").update(fileRaw).digest("hex").slice(0, 16);
+  const [raw, seeded] = await Promise.all([redisCall(["GET", `xd:${name}`]), redisCall(["GET", `xd:${name}:seed`])]);
+  if (typeof raw === "string" && seeded === version) return JSON.parse(raw) as T[];
+
+  // Pierwsze uruchomienie albo nowa wersja pliku: dokładamy nowe pozycje z repozytorium
+  const fromFile = JSON.parse(fileRaw) as T[];
+  const current = typeof raw === "string" ? (JSON.parse(raw) as T[]) : [];
+  const deleted = new Set(((await redisCall(["SMEMBERS", `xd:${name}:deleted`])) as string[] | null) ?? []);
+  const retired = new Set(RETIRED[name]);
+  const known = new Set(current.map((x) => x.id));
+  const merged = [...current.filter((x) => !retired.has(x.id)), ...fromFile.filter((x) => !known.has(x.id) && !deleted.has(x.id) && !retired.has(x.id))];
+  await redisCall(["SET", `xd:${name}`, JSON.stringify(merged)]);
+  await redisCall(["SET", `xd:${name}:seed`, version]);
+  return merged;
 }
 
 export async function writeDoc<T>(name: DocName, list: T[]) {
@@ -44,6 +63,11 @@ export async function writeDoc<T>(name: DocName, list: T[]) {
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(`${file}.tmp`, JSON.stringify(list, null, 2), "utf-8");
   await rename(`${file}.tmp`, file);
+}
+
+/** Zapamiętuje usunięcie w panelu, żeby kolejne wdrożenie nie przywróciło tej pozycji z repozytorium */
+export async function markDeleted(name: DocName, id: string) {
+  if (storageKind() === "redis") await redisCall(["SADD", `xd:${name}:deleted`, id]);
 }
 
 /* ---------- Zdjęcia ---------- */

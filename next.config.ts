@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       // Miniatury z Weidiana i 1688 w sekcji QC
       { protocol: "https", hostname: "si.geilicdn.com", pathname: "/**" },
       { protocol: "https", hostname: "img.alicdn.com", pathname: "/**" },
+      // Zdjęcia outfitów z xayezreps.com
+      { protocol: "https", hostname: "xayezreps.com", pathname: "/api/img/**" },
       // Zdjęcia QC z magazynu Kakobuy (oryginały mają po 2–3 MB, więc je zmniejszamy)
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobuy.com", pathname: "/**" },
     ],
