@@ -158,71 +158,66 @@ function QcCompare({ item, intro }: { item: Find; intro: boolean }) {
   const transition = glide ? "1.1s cubic-bezier(0.65, 0, 0.35, 1)" : "0s";
 
   return (
-    <figure>
-      <div className="relative aspect-[5/4] select-none overflow-hidden rounded-[20px] bg-[#1c1c1f]">
-        <ProductImage src={item.image} sizes="(min-width: 1024px) 36rem, 92vw" preload />
-        <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${pos}%)`, transition: `clip-path ${transition}` }}>
-          {item.qcCover && <ProductImage src={item.qcCover} sizes="(min-width: 1024px) 36rem, 92vw" preload />}
-        </div>
-        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
-
-        {/* Podpisy połówek */}
-        <span aria-hidden="true" className="fancy pointer-events-none absolute left-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
-          {t("hero.store")}
-        </span>
-        <span aria-hidden="true" className="fancy pointer-events-none absolute right-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
-          {t("hero.warehouse")}
-        </span>
-
-        {/* Linia z uchwytem */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_12px_rgb(0_0_0/0.5)]"
-          style={{ left: `${pos}%`, transition: `left ${transition}` }}
-        >
-          <span className="absolute left-1/2 top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-black shadow-[0_6px_20px_rgb(0_0_0/0.45)]">
-            <ChevronsLeftRight size={18} strokeWidth={2.25} />
-          </span>
-          <span
-            className={`absolute left-1/2 top-[calc(50%+1.75rem)] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur transition-opacity duration-300 ${
-              touched ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {t("hero.drag")}
-          </span>
-        </span>
-
-        {/* Suwak na całym zdjęciu: obsługuje mysz, dotyk i klawiaturę */}
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={0.5}
-          value={pos}
-          onChange={(e) => {
-            setGlide(false);
-            setTouched(true);
-            setPos(Number(e.target.value));
-          }}
-          aria-label={t("hero.compare", { name: item.name })}
-          className="absolute inset-0 size-full cursor-ew-resize appearance-none bg-transparent opacity-0"
-        />
+    <figure className="relative aspect-[5/4] select-none overflow-hidden rounded-[20px] bg-[#1c1c1f]">
+      <ProductImage src={item.image} sizes="(min-width: 1024px) 36rem, 92vw" preload />
+      <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${pos}%)`, transition: `clip-path ${transition}` }}>
+        {item.qcCover && <ProductImage src={item.qcCover} sizes="(min-width: 1024px) 36rem, 92vw" preload />}
       </div>
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
 
-      <figcaption className="mt-3 flex items-center gap-3">
-        <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
-          <span className="truncate font-medium">{item.name}</span>
-          <span className="shrink-0 font-mono text-sm text-muted tabular">{f.money(item.pricePln)}</span>
+      {/* Podpisy połówek u góry; na dole lustrzanie: co to za find i gdzie są wszystkie zdjęcia QC */}
+      <span aria-hidden="true" className="fancy pointer-events-none absolute left-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
+        {t("hero.store")}
+      </span>
+      <span aria-hidden="true" className="fancy pointer-events-none absolute right-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
+        {t("hero.warehouse")}
+      </span>
+
+      {/* Linia z uchwytem */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_12px_rgb(0_0_0/0.5)]"
+        style={{ left: `${pos}%`, transition: `left ${transition}` }}
+      >
+        <span className="absolute left-1/2 top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-black shadow-[0_6px_20px_rgb(0_0_0/0.45)]">
+          <ChevronsLeftRight size={18} strokeWidth={2.25} />
         </span>
-        <Link
-          href={site.routes.product(item.id)}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-card px-3 text-[13px] font-medium transition-colors hover:border-line-strong"
+        <span
+          className={`absolute left-1/2 top-[calc(50%+1.75rem)] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur transition-opacity duration-300 ${
+            touched ? "opacity-0" : "opacity-100"
+          }`}
         >
-          {t("hero.seeQc", { n: item.qc ?? 0 })}
-          <ArrowUpRight aria-hidden size={14} />
-        </Link>
-      </figcaption>
+          {t("hero.drag")}
+        </span>
+      </span>
 
+      {/* Suwak na całym zdjęciu: obsługuje mysz, dotyk i klawiaturę */}
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={0.5}
+        value={pos}
+        onChange={(e) => {
+          setGlide(false);
+          setTouched(true);
+          setPos(Number(e.target.value));
+        }}
+        aria-label={t("hero.compare", { name: item.name })}
+        className="absolute inset-0 size-full cursor-ew-resize appearance-none bg-transparent opacity-0"
+      />
+
+      <figcaption className="pointer-events-none absolute bottom-3 left-3 z-[1] flex max-w-[calc(100%-11.5rem)] items-baseline gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[13px] text-white ring-1 ring-white/10 backdrop-blur-md">
+        <span className="truncate font-medium">{item.name}</span>
+        <span className="shrink-0 font-mono text-white/65 tabular">{f.money(item.pricePln)}</span>
+      </figcaption>
+      <Link
+        href={site.routes.product(item.id)}
+        className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[13px] font-medium text-black shadow-[0_6px_20px_rgb(0_0_0/0.35)] transition-colors hover:bg-[#ececee]"
+      >
+        {t("hero.seeQc", { n: item.qc ?? 0 })}
+        <ArrowUpRight aria-hidden size={14} />
+      </Link>
     </figure>
   );
 }
