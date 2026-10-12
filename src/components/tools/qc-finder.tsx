@@ -8,7 +8,9 @@ import { parseSource, platformLabel, sourceUrl, type ProductSource } from "@/lib
 import { cnyToPln } from "@/lib/money";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
+import type { QcEntry } from "@/lib/qc-feed";
 import { PageHeader } from "../page";
+import { ProductImage } from "../product-image";
 import { QcGallery } from "../qc-gallery";
 import { LinkForm } from "./link-form";
 
@@ -23,7 +25,7 @@ type Item = {
 
 type State = { status: "idle" | "loading" | "missing" } | { status: "ready"; item: Item };
 
-export function QcFinder() {
+export function QcFinder({ examples = [] }: { examples?: QcEntry[] }) {
   const f = useFormat();
   const { t } = f;
   const router = useRouter();
@@ -50,7 +52,36 @@ export function QcFinder() {
       />
 
       {url && !source && <p className="mt-4 pl-4 text-sm text-amber-300">{t("conv.invalid")}</p>}
-      {!url && <p className="mt-8 max-w-[40rem] text-muted">{t("qcf.empty")}</p>}
+      {!url && examples.length === 0 && <p className="mt-8 max-w-[40rem] text-muted">{t("qcf.empty")}</p>}
+      {!url && examples.length > 0 && (
+        <section aria-labelledby="qcf-examples" className="mt-10">
+          <h2 id="qcf-examples" className="text-lg font-semibold">
+            {t("qcf.examples")}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{t("qcf.examplesText")}</p>
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {examples.map((e) => (
+              <li key={e.id}>
+                <button
+                  type="button"
+                  onClick={() => router.replace(`${pathname}?url=${encodeURIComponent(e.url)}`, { scroll: false })}
+                  className="group block w-full text-left"
+                >
+                  <span className="relative block aspect-[4/5] overflow-hidden rounded-[10px] border border-line bg-card transition-colors group-hover:border-fg/60">
+                    <ProductImage src={e.cover} sizes="(min-width: 640px) 16rem, 45vw" className="transition-transform duration-500 group-hover:scale-[1.04]" />
+                    <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-[#18181b]/85 px-1.5 py-1 text-[11px] font-medium backdrop-blur tabular">
+                      <Camera aria-hidden size={12} />
+                      {e.photos}
+                    </span>
+                  </span>
+                  <span className="mt-2 block truncate text-sm font-medium">{e.name}</span>
+                  <span className="block font-mono text-[13px] text-muted tabular">{f.money(e.pricePln)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {source && <QcResult key={key} source={source} f={f} />}
     </>

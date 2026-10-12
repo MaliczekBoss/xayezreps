@@ -34,7 +34,10 @@ async function prepare(file: Blob): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function PhotoSearch() {
+/** Zakres katalogu, w którym szuka AI: liczba findów i najliczniejsze kategorie */
+export type PhotoCatalog = { total: number; categories: [string, number][] };
+
+export function PhotoSearch({ catalog }: { catalog?: PhotoCatalog }) {
   const f = useFormat();
   const { t } = f;
   const [state, setState] = useState<State>({ status: "idle" });
@@ -126,7 +129,48 @@ export function PhotoSearch() {
           </button>
           <p className="mt-4 text-xs text-dim">{t("photo.formats")}</p>
         </div>
-      ) : (
+      ) : null}
+
+      {!preview && (
+        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_21rem]">
+          <section aria-labelledby="photo-tips">
+            <h2 id="photo-tips" className="text-lg font-semibold">
+              {t("photo.tipsTitle")}
+            </h2>
+            <dl className="mt-4 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+              {(["1", "2", "3"] as const).map((n) => (
+                <div key={n} className="bg-card p-4">
+                  <dt className="font-semibold">{t(`photo.tip${n}t` as DictKey)}</dt>
+                  <dd className="mt-1.5 text-sm leading-relaxed text-muted">{t(`photo.tip${n}` as DictKey)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          {catalog && catalog.total > 0 && (
+            <section aria-labelledby="photo-scope">
+              <h2 id="photo-scope" className="text-sm font-semibold">
+                {t("photo.scopeTitle")}
+              </h2>
+              <p className="mt-1 text-sm text-muted">{t("photo.scope", { n: catalog.total.toLocaleString(f.locale) })}</p>
+              <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
+                {catalog.categories.map(([category, count]) => (
+                  <li key={category}>
+                    <Link
+                      href={`${site.routes.finds}?category=${encodeURIComponent(category)}`}
+                      className="flex justify-between gap-4 py-2 transition-colors hover:text-fg"
+                    >
+                      <span>{f.category(category)}</span>
+                      <span className="text-muted tabular">{count}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      )}
+
+      {preview && (
         <div className="flex flex-col gap-5 rounded-xl border border-line bg-card p-4 sm:flex-row sm:items-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- podgląd zdjęcia z urządzenia */}
           <img src={preview} alt={t("photo.yourPhoto")} className="aspect-square w-32 rounded-lg bg-bg object-cover sm:w-40" />

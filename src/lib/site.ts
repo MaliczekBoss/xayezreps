@@ -46,7 +46,6 @@ export const site = {
   },
 } as const;
 
-// Kalkulator paczki – kwoty orientacyjne w złotówkach. Zaktualizuj, gdy agent zmieni cennik.
 /**
  * Oferty partnerów pokazywane co jakiś czas jako powiadomienie w dynamicznej wyspie.
  * url: link rejestracyjny z waszym kodem polecającym.
@@ -56,6 +55,7 @@ export const islandPromos = [
   { id: "usfans", name: "USFans", logo: "/agents/usfans.png", url: "https://www.usfans.com/register?ref=xayez" },
 ] as const;
 
+// Kalkulator paczki – kwoty orientacyjne w złotówkach. Zaktualizuj, gdy agent zmieni cennik.
 export const pricing = {
   // Dostawa od sprzedawcy do magazynu agenta, za każdy przedmiot
   domesticPlnPerItem: 7,

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Truck } from "lucide-react";
-import { site } from "@/lib/site";
+import { pricing, site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { PageHeader } from "../page";
 import { LinkForm } from "./link-form";
@@ -91,6 +91,7 @@ export function Tracker() {
 
       {number && !valid && <p className="mt-4 pl-4 text-sm text-amber-300">{t("trk.invalid")}</p>}
       {valid && <TrackResult key={number} number={number} />}
+      {!number && <TrackingGuide />}
     </>
   );
 }
@@ -179,6 +180,84 @@ function TrackResult({ number }: { number: string }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Przykładowe formaty numerów, które rozpoznajemy (do tabeli pod polem)
+const FORMATS: [string, string][] = [
+  ["China Post", "LP123456789CN"],
+  ["Poczta Polska", "RR123456789PL"],
+  ["InPost", "24 cyfry"],
+  ["DPD", "1234567890123U"],
+  ["DHL", "JJD… albo 10 cyfr"],
+  ["UPS", "1Z…"],
+  ["YunExpress", "YT1234567890123456"],
+];
+
+/** Pusty stan: jak wygląda droga paczki i jakie numery rozpoznajemy */
+function TrackingGuide() {
+  const f = useFormat();
+  const { t } = f;
+  const steps: [string, string][] = [
+    [t("trk.s1t"), t("trk.s1")],
+    [t("trk.s2t"), t("trk.s2")],
+    [t("trk.s3t"), t("trk.s3")],
+    [t("trk.s4t"), t("trk.s4")],
+  ];
+  return (
+    <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_21rem]">
+      <section aria-labelledby="trk-route">
+        <h2 id="trk-route" className="text-lg font-semibold">
+          {t("trk.routeTitle")}
+        </h2>
+        <ol className="mt-5">
+          {steps.map(([title, text], i) => (
+            <li key={title} className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-x-4 pb-7 last:pb-0">
+              {i < steps.length - 1 && <span aria-hidden="true" className="absolute left-4 top-8 h-[calc(100%-2rem)] w-px -translate-x-1/2 bg-line-strong" />}
+              <span className="relative grid size-8 place-items-center rounded-full border border-line-strong bg-card text-sm font-semibold tabular">{i + 1}</span>
+              <div className="pt-1">
+                <h3 className="font-semibold">{title}</h3>
+                <p className="mt-1 max-w-[36rem] text-sm leading-relaxed text-muted">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <h3 className="mt-8 text-sm font-semibold">{t("trk.linesTitle")}</h3>
+        <ul className="mt-3 max-w-md divide-y divide-line border-y border-line text-sm">
+          {pricing.lines.map((line) => (
+            <li key={line.id} className="flex justify-between gap-4 py-2.5">
+              <span>{line.name}</span>
+              <span className="text-muted tabular">{f.days(line.days)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section aria-labelledby="trk-formats">
+        <h2 id="trk-formats" className="text-sm font-semibold">
+          {t("trk.formatsTitle")}
+        </h2>
+        <table className="mt-3 w-full text-sm">
+          <thead>
+            <tr className="border-b border-line text-left text-xs text-muted">
+              <th scope="col" className="py-2 font-medium">
+                {t("trk.carrier")}
+              </th>
+              <th scope="col" className="py-2 font-medium">
+                {t("trk.formatCol")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {FORMATS.map(([carrier, format]) => (
+              <tr key={carrier} className="border-b border-line/70">
+                <td className="py-2 pr-3">{carrier}</td>
+                <td className="py-2 font-mono text-[12.5px] text-muted">{format}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </div>
   );
 }

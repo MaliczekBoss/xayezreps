@@ -1,10 +1,10 @@
 import { getSellers } from "@/lib/remote";
 
-const PAGE = 48;
+const PAGE = 60;
 
 const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 
-/** Produkty jednego sprzedawcy w porcjach, z wyszukiwaniem: /api/sellers/{slug}?q=…&offset=… */
+/** Produkty jednego sprzedawcy w porcjach, z wyszukiwaniem i sortowaniem: /api/sellers/{slug}?q=…&sort=price_asc|price_desc&offset=… */
 export async function GET(request: Request, ctx: RouteContext<"/api/sellers/[slug]">) {
   const { slug } = await ctx.params;
   const params = new URL(request.url).searchParams;
@@ -14,7 +14,9 @@ export async function GET(request: Request, ctx: RouteContext<"/api/sellers/[slu
   const seller = (await getSellers()).find((s) => s.slug === slug);
   if (!seller) return Response.json({ error: "not-found" }, { status: 404 });
 
-  const matching = q ? seller.items.filter((i) => normalize(i.title).includes(q)) : seller.items;
+  const sort = params.get("sort");
+  const filtered = q ? seller.items.filter((i) => normalize(i.title).includes(q)) : seller.items;
+  const matching = sort === "price_asc" ? [...filtered].sort((a, b) => a.price - b.price) : sort === "price_desc" ? [...filtered].sort((a, b) => b.price - a.price) : filtered;
   return Response.json(
     { total: matching.length, items: matching.slice(offset, offset + PAGE) },
     { headers: { "Cache-Control": "public, max-age=600" } },

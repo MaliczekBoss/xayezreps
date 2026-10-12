@@ -9,12 +9,17 @@ import { copyWithNotice } from "@/lib/clipboard";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { PageHeader } from "../page";
+import { ProductImage } from "../product-image";
 import { LinkForm } from "./link-form";
 
 const action =
   "inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-card px-3.5 text-[0.8125rem] font-medium text-fg transition-colors hover:border-line-strong";
 
-export function LinkConverter() {
+export type ConverterExample = { name: string; image: string; url: string };
+
+const SUPPORTED = ["Weidian", "Taobao", "Tmall", "1688", "USFans", "Kakobuy", "Litbuy", "Oopbuy", "ACbuy", "Mulebuy"];
+
+export function LinkConverter({ example }: { example?: ConverterExample }) {
   const { t, agent } = useFormat();
   const router = useRouter();
   const pathname = usePathname();
@@ -46,7 +51,48 @@ export function LinkConverter() {
       {url && !source && <p className="mt-4 pl-4 text-sm text-amber-300">{t("conv.invalid")}</p>}
 
       {!source ? (
-        !url && <p className="mt-8 text-muted">{t("conv.empty")}</p>
+        !url && (
+          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+            {example && (
+              <section aria-labelledby="conv-try">
+                <h2 id="conv-try" className="text-lg font-semibold">
+                  {t("conv.tryTitle")}
+                </h2>
+                <p className="mt-1 text-sm text-muted">{t("conv.tryText")}</p>
+                <div className="mt-4 flex flex-col gap-3 rounded-xl border border-line bg-card p-3 sm:flex-row sm:items-center">
+                  <span className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-[#1c1c1f]">
+                      <ProductImage src={example.image} sizes="3.5rem" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">{example.name}</span>
+                      <span className="block truncate font-mono text-xs text-dim">{example.url.replace(/^https:\/\//, "")}</span>
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => router.replace(`${pathname}?url=${encodeURIComponent(example.url)}`, { scroll: false })}
+                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-fg px-4 text-sm font-medium text-bg transition-colors hover:bg-white"
+                  >
+                    {t("conv.tryCta")}
+                  </button>
+                </div>
+              </section>
+            )}
+            <section aria-labelledby="conv-works">
+              <h2 id="conv-works" className="text-sm font-semibold">
+                {t("conv.works")}
+              </h2>
+              <ul className="mt-3 flex flex-wrap gap-1.5">
+                {SUPPORTED.map((name) => (
+                  <li key={name} className="rounded-lg border border-line bg-card px-2.5 py-1 text-[13px] text-muted">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        )
       ) : (
         <div className="mt-10">
           <p className="text-sm text-muted">{t("conv.detected", { platform: platformLabel[source.platform], id: source.id })}</p>

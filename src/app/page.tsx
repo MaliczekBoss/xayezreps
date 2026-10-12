@@ -10,6 +10,7 @@ import { Tools } from "@/components/tools";
 import { NEW_FOR_DAYS, sortNewest, sortPopular } from "@/lib/finds";
 import { getQcFeed, getQcIndex, withQc } from "@/lib/qc-feed";
 import { getSellers } from "@/lib/remote";
+import { sellerStats } from "@/lib/seller-stats";
 import { getToolPreviews } from "@/lib/tool-previews";
 import { site } from "@/lib/site";
 import { getFinds, getOutfits } from "@/lib/store";
@@ -31,7 +32,9 @@ export default async function Home() {
   const latest = newest[0] ? Date.parse(newest[0].createdAt) : 0;
   const newIds = newest.filter((f) => latest - Date.parse(f.createdAt) <= NEW_FOR_DAYS * DAY_MS).map((f) => f.id);
 
-  const sellerCards = sellers.slice(0, 8).map((s) => ({ slug: s.slug, name: s.name, itemCount: s.itemCount, image: s.items[0]?.image ?? "" }));
+  const sellerCards = sellers
+    .slice(0, 8)
+    .map(({ slug, name, description, items }) => ({ slug, name, description, ...sellerStats(items), thumbs: items.slice(0, 3).map((i) => i.image) }));
 
   return (
     <>

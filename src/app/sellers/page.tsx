@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/page-shell";
 import { SellersList } from "@/components/tools/sellers";
 import { getSellers } from "@/lib/remote";
+import { sellerStats } from "@/lib/seller-stats";
 
 export const metadata: Metadata = {
   title: "Sprzedawcy",
@@ -11,13 +12,12 @@ export const metadata: Metadata = {
 
 export default async function SellersPage() {
   // Do przeglądarki idą tylko podsumowania; pełne listy produktów są w /api/sellers/{slug}
-  const sellers = (await getSellers()).map(({ slug, name, description, tags, itemCount, items }) => ({
+  const sellers = (await getSellers()).map(({ slug, name, description, items }) => ({
     slug,
     name,
     description,
-    tags,
-    itemCount,
-    thumbs: items.slice(0, 4).map((i) => i.image),
+    ...sellerStats(items),
+    thumbs: items.slice(0, 3).map((i) => i.image),
   }));
   return (
     <PageShell>

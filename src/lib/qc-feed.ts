@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 import { agents, sourceUrl } from "./agents";
 import { readDoc } from "./docstore";
@@ -22,13 +24,25 @@ export type QcEntry = {
 type QcInfo = { count: number; cover: string | null };
 
 const FEED_SIZE = 16;
-const CONCURRENCY = 6;
+const CONCURRENCY = 4;
+// Ile aukcji spoza migawki sprawdzamy na żywo i jak długo – prerender nie może na to czekać w nieskończoność
+const LIVE_LIMIT = 32;
+const LIVE_BUDGET_MS = 20000;
 
 const sourceKey = (f: Pick<Find, "source">) => `${f.source.platform}:${f.source.id}`;
 
+/** Migawka z data/qc-index.json (npm run qc:snapshot) */
+async function readSnapshot(): Promise<Record<string, QcInfo>> {
+  try {
+    return JSON.parse(await readFile(path.join(process.cwd(), "data", "qc-index.json"), "utf-8")) as Record<string, QcInfo>;
+  } catch {
+    return {};
+  }
+}
+
 /**
- * Liczba zdjęć QC i okładka dla każdej aukcji z katalogu. Pobieranie ~200 aukcji trwa,
- * więc wynik trzymamy w cache przez dzień (i odświeżamy po zmianach w katalogu).
+ * Liczba zdjęć QC i okładka dla każdej aukcji z katalogu. Większość bierzemy z migawki w repozytorium,
+ * a na żywo sprawdzamy tylko aukcje dodane później w panelu. Wynik trzymamy w cache przez dzień.
  */
 export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   "use cache";
@@ -37,19 +51,20 @@ export async function getQcIndex(): Promise<Record<string, QcInfo>> {
 
   // Czytamy prosto z magazynu, a nie przez getFinds(): strony wołają getFinds() równolegle,
   // a funkcja z "use cache" nie może czekać na obietnicę utworzoną poza nią
-  const finds = await readDoc<Find>("finds");
-  const sources = [...new Map(finds.map((f) => [sourceKey(f), f])).values()];
-  const index: Record<string, QcInfo> = {};
+  const [finds, snapshot] = await Promise.all([readDoc<Find>("finds"), readSnapshot()]);
+  const index: Record<string, QcInfo> = { ...snapshot };
+  const missing = [...new Map(finds.filter((f) => !(sourceKey(f) in index)).map((f) => [sourceKey(f), f])).values()].slice(0, LIVE_LIMIT);
+  const deadline = Date.now() + LIVE_BUDGET_MS;
   let next = 0;
 
   const worker = async () => {
-    while (next < sources.length) {
-      const f = sources[next++];
+    while (next < missing.length && Date.now() < deadline) {
+      const f = missing[next++];
       try {
-        const photos = await fetchQcPhotos(agents[0].productUrl(f.source));
-        index[sourceKey(f)] = { count: photos?.length ?? 0, cover: photos?.[0] ?? null };
+        const photos = await fetchQcPhotos(agents[0].productUrl(f.source), 8000);
+        if (photos) index[sourceKey(f)] = { count: photos.length, cover: photos[0] ?? null };
       } catch {
-        index[sourceKey(f)] = { count: 0, cover: null };
+        // Bez odpowiedzi – spróbujemy przy następnym odświeżeniu cache
       }
     }
   };

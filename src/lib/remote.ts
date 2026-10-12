@@ -126,10 +126,10 @@ export async function fetchItemDetails(source: ProductSource): Promise<ItemDetai
 }
 
 /** Zdjęcia QC z magazynów agentów */
-export async function fetchQcPhotos(productUrl: string): Promise<string[] | null> {
+export async function fetchQcPhotos(productUrl: string, timeoutMs = 20000): Promise<string[] | null> {
   const res = await fetch(`${API}/qc?url=${encodeURIComponent(productUrl)}`, {
     headers: HEADERS,
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(timeoutMs),
     cache: "no-store",
   });
   // Dla produktów bez zdjęć API odpowiada 500 z pustą listą, więc patrzymy na treść, a nie na status

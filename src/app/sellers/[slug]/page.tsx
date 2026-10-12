@@ -5,8 +5,9 @@ import { PageShell } from "@/components/page-shell";
 import { SellerShop } from "@/components/tools/sellers";
 import { ToolSkeleton } from "@/components/tools/tool-skeleton";
 import { getSellers } from "@/lib/remote";
+import { sellerStats } from "@/lib/seller-stats";
 
-const FIRST_PAGE = 48;
+const FIRST_PAGE = 60;
 
 export async function generateStaticParams() {
   const sellers = await getSellers();
@@ -38,6 +39,6 @@ async function SellerContent({ params }: { params: PageProps<"/sellers/[slug]">[
   const { slug } = await params;
   const seller = (await getSellers()).find((s) => s.slug === slug);
   if (!seller) notFound();
-  const { items, ...info } = seller;
-  return <SellerShop seller={info} initial={items.slice(0, FIRST_PAGE)} />;
+  const { items, slug: s, name, description } = seller;
+  return <SellerShop seller={{ slug: s, name, description, ...sellerStats(items) }} initial={items.slice(0, FIRST_PAGE)} />;
 }
