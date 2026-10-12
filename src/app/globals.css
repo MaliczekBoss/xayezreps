@@ -125,6 +125,13 @@
     }
   }
 
+  .coupon-cut {
+    --cut-r: 0.45rem;
+    mask:
+      radial-gradient(circle at calc(100% - var(--stub)) 0, transparent var(--cut-r), #000 calc(var(--cut-r) + 0.5px)) top / 100% 51% no-repeat,
+      radial-gradient(circle at calc(100% - var(--stub)) 100%, transparent var(--cut-r), #000 calc(var(--cut-r) + 0.5px)) bottom / 100% 51% no-repeat;
+  }
+
   dialog.modal::backdrop {
     background: rgb(4 6 11 / 0.72);
     backdrop-filter: blur(6px);

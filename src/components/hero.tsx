@@ -74,7 +74,7 @@ export function Hero({ finds }: { finds: Find[] }) {
             {t("hero.title2")}
           </span>
         </h1>
-        <p className="intro-fade mt-5 max-w-[30rem] text-[1.0625rem] leading-relaxed text-muted" style={at(560)}>
+        <p className="intro-fade mt-5 max-w-[30rem] text-pretty text-[1.0625rem] leading-relaxed text-muted" style={at(560)}>
           {t("hero.lead")}
         </p>
 
@@ -127,16 +127,16 @@ function HeroCoupon() {
         copyWithNotice(code, { title: t("n.copiedCode", { code }), text: t("n.copiedCodeText", { agent: site.partner.name }) });
         setCopied(true);
       }}
-      className="group flex w-full max-w-[30rem] items-stretch rounded-2xl border border-line bg-card text-left transition-colors hover:border-line-strong"
+      className="coupon-cut group flex w-full max-w-[34rem] items-stretch rounded-2xl border border-line bg-card text-left transition-colors [--stub:7.5rem] hover:border-line-strong focus-visible:border-fg focus-visible:outline-none sm:[--stub:9rem]"
     >
-      <span className="flex min-w-0 flex-1 items-center gap-4 py-3.5 pl-5 pr-4">
-        <span className="fancy shrink-0 text-[2.75rem] leading-none tracking-[-0.02em] text-fg">{site.promo.coupon}</span>
+      <span className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5 pl-4 pr-3 sm:gap-4 sm:pl-5 sm:pr-4">
+        <span className="fancy shrink-0 text-[2.5rem] leading-none tracking-[-0.02em] text-fg sm:text-[3rem]">{site.promo.coupon}</span>
         <span className="min-w-0">
           <span className="block text-[0.9375rem] font-medium leading-snug text-fg">{t("hero.couponTitle")}</span>
           <span className="mt-0.5 block text-[13px] text-muted">{t("hero.couponText", { agent: site.partner.name })}</span>
         </span>
       </span>
-      <span className="flex shrink-0 flex-col items-center justify-center gap-1 border-l border-dashed border-line-strong px-5">
+      <span className="flex w-(--stub) shrink-0 flex-col items-center justify-center gap-1 rounded-r-2xl border-l border-dashed border-line-strong transition-colors group-hover:bg-card-hover">
         <span className="font-mono text-[0.9375rem] font-semibold tracking-[0.04em] text-fg">{code}</span>
         <span aria-live="polite" className={`inline-flex items-center gap-1 text-[12px] transition-colors ${copied ? "text-gl" : "text-muted group-hover:text-fg"}`}>
           {copied ? <Check aria-hidden size={12} strokeWidth={3} /> : <Copy aria-hidden size={12} />}
@@ -197,6 +197,30 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
           </span>
         </span>
 
+        {/* Wybór findu: miniatury na szkle w rogu zdjęcia, nad suwakiem */}
+        {items.length > 1 && (
+          <div role="group" aria-label={t("hero.pick")} className="absolute bottom-3 left-3 z-10 flex gap-1 rounded-xl bg-black/50 p-1 ring-1 ring-white/10 backdrop-blur-md">
+            {items.map((x, i) => (
+              <button
+                key={x.id}
+                type="button"
+                aria-pressed={i === index}
+                onClick={() => {
+                  setGlide(true);
+                  setIndex(i);
+                  setPos(50);
+                }}
+                className={`relative size-10 overflow-hidden rounded-lg bg-[#1c1c1f] transition-[opacity,box-shadow] ${
+                  i === index ? "shadow-[0_0_0_2px_#fff]" : "opacity-60 hover:opacity-100"
+                }`}
+              >
+                <ProductImage src={x.image} sizes="2.5rem" />
+                <span className="sr-only">{x.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Suwak na całym zdjęciu: obsługuje mysz, dotyk i klawiaturę */}
         <input
           type="range"
@@ -214,9 +238,9 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
       </div>
 
       <figcaption className="mt-3 flex items-center gap-3">
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{item.name}</span>
-          <span className="block font-mono text-sm text-muted tabular">{f.money(item.pricePln)}</span>
+        <span className="flex min-w-0 flex-1 items-baseline gap-2.5">
+          <span className="truncate font-medium">{item.name}</span>
+          <span className="shrink-0 font-mono text-sm text-muted tabular">{f.money(item.pricePln)}</span>
         </span>
         <Link
           href={site.routes.product(item.id)}
@@ -227,28 +251,6 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
         </Link>
       </figcaption>
 
-      {items.length > 1 && (
-        <div role="group" aria-label={t("hero.pick")} className="mt-3 flex gap-2">
-          {items.map((x, i) => (
-            <button
-              key={x.id}
-              type="button"
-              aria-pressed={i === index}
-              onClick={() => {
-                setGlide(true);
-                setIndex(i);
-                setPos(50);
-              }}
-              className={`relative size-12 overflow-hidden rounded-lg bg-[#1c1c1f] transition-[opacity,box-shadow] ${
-                i === index ? "shadow-[0_0_0_2px_var(--color-fg)]" : "opacity-55 hover:opacity-100"
-              }`}
-            >
-              <ProductImage src={x.image} sizes="3rem" />
-              <span className="sr-only">{x.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </figure>
   );
 }
