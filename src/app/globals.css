@@ -125,13 +125,6 @@
     }
   }
 
-  .coupon-cut {
-    --cut-r: 0.45rem;
-    mask:
-      radial-gradient(circle at calc(100% - var(--stub)) 0, transparent var(--cut-r), #000 calc(var(--cut-r) + 0.5px)) top / 100% 51% no-repeat,
-      radial-gradient(circle at calc(100% - var(--stub)) 100%, transparent var(--cut-r), #000 calc(var(--cut-r) + 0.5px)) bottom / 100% 51% no-repeat;
-  }
-
   dialog.modal::backdrop {
     background: rgb(4 6 11 / 0.72);
     backdrop-filter: blur(6px);
@@ -191,6 +184,28 @@
   from {
     opacity: 0;
     transform: translateY(12px);
+  }
+}
+
+/* Strzałka w przycisku wyszukiwarki: wylatuje w prawo i wraca z lewej */
+@media (prefers-reduced-motion: no-preference) {
+  .arrow-zip {
+    animation: arrow-zip 0.5s cubic-bezier(0.5, 0, 0.2, 1);
+  }
+}
+
+@keyframes arrow-zip {
+  45% {
+    transform: translateX(170%);
+    opacity: 0;
+  }
+  46% {
+    transform: translateX(-170%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
   }
 }
 

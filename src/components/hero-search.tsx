@@ -41,44 +41,57 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const source = parseSource(value);
   const converted = source ? f.buyUrl(source) : null;
 
+  // Po kliknięciu strzałka wystrzeliwuje w prawo; strona zmienia się, gdy już wylatuje
+  const [zip, setZip] = useState(0);
+
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const q = value.trim();
+    setZip((n) => n + 1);
     if (converted) {
       window.open(converted, "_blank", "noopener");
       notify({ tone: "brand", image: f.agent.logo, title: t("n.converted", { agent: f.agent.name }), text: t("n.convertedText") });
-    } else if (/^https?:\/\//i.test(q)) {
-      router.push(`${site.routes.qcFinder}?url=${encodeURIComponent(q)}`);
-    } else {
-      router.push(q ? `${site.routes.finds}?q=${encodeURIComponent(q)}` : site.routes.finds);
+      return;
     }
+    const href = /^https?:\/\//i.test(q) ? `${site.routes.qcFinder}?url=${encodeURIComponent(q)}` : q ? `${site.routes.finds}?q=${encodeURIComponent(q)}` : site.routes.finds;
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 180;
+    window.setTimeout(() => router.push(href), delay);
   };
 
   return (
     <div className="mt-8 max-w-[34rem]">
-      <form role="search" onSubmit={onSubmit} className="flex flex-col gap-2 sm:flex-row">
+      {/* Jeden pasek: pole, aparat i przycisk w środku (na telefonie sama strzałka) */}
+      <form
+        role="search"
+        onSubmit={onSubmit}
+        className="flex h-14 items-center gap-2.5 rounded-2xl border border-line-strong bg-card pl-4 pr-1.5 transition-colors focus-within:border-fg/50"
+      >
         <label htmlFor="szukaj" className="sr-only">
           {t("search.label")}
         </label>
-        <div className="flex h-11 items-center gap-2.5 rounded-xl border border-line bg-card px-3.5 focus-within:border-line-strong sm:flex-1">
-          <Search aria-hidden size={16} className="shrink-0 text-dim" />
-          <input
-            id="szukaj"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={typed === null ? placeholder : placeholder.slice(0, typed)}
-            autoComplete="off"
-            spellCheck={false}
-            className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] text-fg placeholder:text-dim focus:outline-none"
-          />
-          <a href={site.routes.photoSearch} className="text-dim transition-colors hover:text-fg" title={t("header.photoSearch")}>
-            <Camera aria-hidden size={16} />
-            <span className="sr-only">{t("header.photoSearch")}</span>
-          </a>
-        </div>
-        <button type="submit" className={`${btnPrimary} h-11 px-4 text-sm`}>
-          {converted ? t("search.open") : t("search.browse")}
-          <ArrowRight aria-hidden size={15} />
+        <Search aria-hidden size={18} className="shrink-0 text-dim" />
+        <input
+          id="szukaj"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={typed === null ? placeholder : placeholder.slice(0, typed)}
+          autoComplete="off"
+          spellCheck={false}
+          className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] text-fg placeholder:text-dim focus:outline-none"
+        />
+        <a href={site.routes.photoSearch} className="shrink-0 text-dim transition-colors hover:text-fg" title={t("header.photoSearch")}>
+          <Camera aria-hidden size={17} />
+          <span className="sr-only">{t("header.photoSearch")}</span>
+        </a>
+        <button type="submit" className={`${btnPrimary} group/go h-11 shrink-0 px-3.5 text-sm transition-transform duration-150 active:scale-[0.96] sm:px-4`}>
+          <span className="sr-only sm:not-sr-only">{converted ? t("search.open") : t("search.browse")}</span>
+          {/* Po najechaniu strzałka przejeżdża na wylot, po kliknięciu wystrzeliwuje (klucz zip restartuje animację) */}
+          <span aria-hidden="true" className="relative block size-4 overflow-hidden">
+            <span key={zip} className={`absolute inset-0 ${zip ? "arrow-zip" : ""}`}>
+              <ArrowRight size={16} className="absolute inset-0 transition-transform duration-300 ease-out group-hover/go:translate-x-[140%]" />
+              <ArrowRight size={16} className="absolute inset-0 -translate-x-[140%] transition-transform duration-300 ease-out group-hover/go:translate-x-0" />
+            </span>
+          </span>
         </button>
       </form>
 

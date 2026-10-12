@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
-import { ArrowUpRight, Check, ChevronsLeftRight, Copy } from "lucide-react";
-import { copyWithNotice } from "@/lib/clipboard";
-import { sortPopular, type Find } from "@/lib/finds";
+import { categories, sortPopular, type Find } from "@/lib/finds";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
+import { HeroBanners } from "./hero-banners";
 import { HeroSearch } from "./hero-search";
 import { ProductImage } from "./product-image";
+import type { ToolPreviews } from "./tools";
 
 // Sekwencja wejścia gra tylko przy otwarciu strony, a nie po każdym powrocie na stronę główną
 let introPlayed = false;
@@ -16,8 +16,52 @@ let introPlayed = false;
 /** Opóźnienie kroku sekwencji wejścia (zmienna --d w globals.css) */
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
-// Najczęściej wpisywane frazy – prowadzą prosto do wyników wyszukiwarki
-const POPULAR_SEARCHES = ["Jordan 4", "Chrome Hearts", "Corteiz", "Moncler", "Nike Tech", "Balenciaga"];
+const chips = categories.filter((c) => ["Bluzy", "Spodnie", "Spodenki", "Buty", "Torby", "Paski", "Zegarki"].includes(c));
+
+// Miejsce na liczbę w tłumaczeniu „Zaufało nam {n} kupujących”
+const NUMBER_SLOT = "\u0000";
+
+/**
+ * Liczba jak licznik w samochodzie: każda cyfra robi pełny obrót i staje na swojej wartości, kolejne z małym
+ * opóźnieniem (zera też się kręcą). Spacje i „+” stoją w miejscu. Bez sekwencji wejścia liczba stoi od razu.
+ */
+function RollingNumber({ value, roll, start }: { value: string; roll: boolean; start: number }) {
+  const [go, setGo] = useState(!roll);
+  useEffect(() => {
+    if (!roll) return;
+    const timer = window.setTimeout(() => setGo(true), start);
+    return () => window.clearTimeout(timer);
+  }, [roll, start]);
+
+  return (
+    <span className="inline-flex align-bottom font-semibold text-fg tabular">
+      <span className="sr-only">{value}</span>
+      {[...value].map((ch, i) =>
+        /\d/.test(ch) ? (
+          <span key={i} aria-hidden="true" className="inline-block h-[1.25em] overflow-hidden">
+            <span
+              className="flex flex-col transition-transform duration-[1400ms] ease-[cubic-bezier(0.2,0.9,0.25,1)] motion-reduce:transition-none"
+              style={{ transform: `translateY(-${go ? (Number(ch) + 10) * 5 : 0}%)`, transitionDelay: `${i * 90}ms` }}
+            >
+              {DIGITS.map((d, k) => (
+                <span key={k} className="h-[1.25em] leading-[1.25em]">
+                  {d}
+                </span>
+              ))}
+            </span>
+          </span>
+        ) : (
+          <span key={i} aria-hidden="true" className="whitespace-pre leading-[1.25em]">
+            {ch}
+          </span>
+        ),
+      )}
+    </span>
+  );
+}
+
+// Dwa razy 0–9: cyfra przewija się przez pełne koło i staje w drugiej dziesiątce
+const DIGITS = Array.from({ length: 20 }, (_, i) => String(i % 10));
 
 /** Słowa nagłówka wjeżdżające po kolei spod krawędzi */
 function RisingWords({ text, start }: { text: string; start: number }) {
@@ -25,7 +69,7 @@ function RisingWords({ text, start }: { text: string; start: number }) {
     <span key={i}>
       {i > 0 && " "}
       <span className="-mb-[0.12em] inline-block overflow-hidden pb-[0.12em] align-top">
-        <span className="intro-rise inline-block" style={at(start + i * 80)}>
+        <span className="intro-rise inline-block" style={at(start + i * 90)}>
           {word}
         </span>
       </span>
@@ -33,10 +77,7 @@ function RisingWords({ text, start }: { text: string; start: number }) {
   ));
 }
 
-/** Find do porównania: wybrany w site.ts, a gdy nie ma zdjęcia QC – najpopularniejszy, który je ma */
-const pickShowcase = (finds: Find[]) => finds.find((f) => f.id === site.heroFindId && f.qcCover) ?? sortPopular(finds).find((f) => f.qcCover);
-
-export function Hero({ finds }: { finds: Find[] }) {
+export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreviews }) {
   const f = useFormat();
   const { t } = f;
   const [intro] = useState(() => !introPlayed);
@@ -44,180 +85,81 @@ export function Hero({ finds }: { finds: Find[] }) {
     introPlayed = true;
   }, []);
 
-  const showcase = pickShowcase(finds);
+  const popular = sortPopular(finds);
+  // Zdjęcie kategorii: najpopularniejszy find z niej; „+ Więcej” dostaje kolaż czterech najpopularniejszych
+  const cover = (c: string) => popular.find((p) => p.category === c && p.image)?.image ?? "";
+  const collage = popular.slice(0, 4).map((p) => p.image);
 
   return (
-    <section
-      id="top"
-      aria-labelledby="hero-title"
-      className={`${intro ? "intro" : ""} mx-auto grid max-w-7xl items-center gap-x-14 gap-y-10 px-4 pb-14 pt-32 sm:px-6 sm:pb-16 sm:pt-40 lg:grid-cols-2 lg:px-8`}
-    >
-      <div className="min-w-0 max-w-[36rem]">
-        <h1 id="hero-title" className="text-[clamp(2.75rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
-          <span className="block">
-            <RisingWords text={t("hero.title1")} start={60} />
-          </span>
-          {/* Kursywa pojawia się od lewej, jakby ktoś ją dopisywał */}
-          <span className="fancy intro-write block text-[1.1em] leading-[1] text-muted" style={at(300)}>
-            {t("hero.title2")}
-          </span>
-        </h1>
-        <p className="intro-fade mt-5 max-w-[30rem] text-pretty text-[1.0625rem] leading-relaxed text-muted" style={at(560)}>
-          {t("hero.lead")}
-        </p>
-
-        <div className="intro-fade" style={at(660)}>
-          <HeroSearch typeIn={intro} />
-        </div>
-
-        <p className="intro-fade mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1.5 text-sm" style={at(760)}>
-          <span className="text-dim">{t("hero.popular")}</span>
-          {POPULAR_SEARCHES.map((q) => (
-            <Link key={q} href={`${site.routes.finds}?q=${encodeURIComponent(q)}`} className="text-muted underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg hover:decoration-fg">
-              {q}
-            </Link>
-          ))}
-        </p>
-
-        <div className="intro-fade mt-8" style={at(860)}>
-          <HeroCoupon />
-        </div>
-      </div>
-
-      {showcase && (
-        <div className="intro-fade min-w-0" style={at(160)}>
-          <QcCompare item={showcase} intro={intro} />
-        </div>
-      )}
-    </section>
-  );
-}
-
-/**
- * Kupon USFans w materiale strony: rabat dużą kursywą jak druga linia nagłówka, warunki obok,
- * a za linią „do oderwania” kod, który kopiuje się po kliknięciu w dowolne miejsce kuponu.
- */
-function HeroCoupon() {
-  const { t } = useFormat();
-  const [copied, setCopied] = useState(false);
-  const code = site.promo.code;
-
-  useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), 2200);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        copyWithNotice(code, { title: t("n.copiedCode", { code }), text: t("n.copiedCodeText", { agent: site.partner.name }) });
-        setCopied(true);
-      }}
-      className="coupon-cut group flex w-full max-w-[34rem] items-stretch rounded-2xl border border-line bg-card text-left transition-colors [--stub:7.5rem] hover:border-line-strong focus-visible:border-fg focus-visible:outline-none sm:[--stub:9rem]"
-    >
-      <span className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5 pl-4 pr-3 sm:gap-4 sm:pl-5 sm:pr-4">
-        <span className="fancy shrink-0 text-[2.5rem] leading-none tracking-[-0.02em] text-fg sm:text-[3rem]">{site.promo.coupon}</span>
-        <span className="min-w-0">
-          <span className="block text-[0.9375rem] font-medium leading-snug text-fg">{t("hero.couponTitle")}</span>
-          <span className="mt-0.5 block text-[13px] text-muted">{t("hero.couponText", { agent: site.partner.name })}</span>
-        </span>
-      </span>
-      <span className="flex w-(--stub) shrink-0 flex-col items-center justify-center gap-1 rounded-r-2xl border-l border-dashed border-line-strong transition-colors group-hover:bg-card-hover">
-        <span className="font-mono text-[0.9375rem] font-semibold tracking-[0.04em] text-fg">{code}</span>
-        <span aria-live="polite" className={`inline-flex items-center gap-1 text-[12px] transition-colors ${copied ? "text-gl" : "text-muted group-hover:text-fg"}`}>
-          {copied ? <Check aria-hidden size={12} strokeWidth={3} /> : <Copy aria-hidden size={12} />}
-          {copied ? t("hero.couponCopied") : t("hero.couponCopy")}
-        </span>
-      </span>
-    </button>
-  );
-}
-
-/**
- * Ten sam find przecięty pionową linią: z lewej zdjęcie ze sklepu, z prawej prawdziwe zdjęcie QC
- * z magazynu. Linię przesuwa się palcem, myszką albo strzałkami; przy wejściu na stronę sama odsłania QC.
- */
-function QcCompare({ item, intro }: { item: Find; intro: boolean }) {
-  const f = useFormat();
-  const { t } = f;
-  const [pos, setPos] = useState(intro ? 100 : 50);
-  // Płynne przejście linii tylko przy pokazie na start, nie przy przeciąganiu
-  const [glide, setGlide] = useState(intro);
-  // Podpowiedź „przesuń” pod uchwytem znika po pierwszym przesunięciu
-  const [touched, setTouched] = useState(false);
-
-  useEffect(() => {
-    if (!intro) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setPos(50), reduce ? 0 : 1100);
-    return () => window.clearTimeout(timer);
-  }, [intro]);
-
-  const transition = glide ? "1.1s cubic-bezier(0.65, 0, 0.35, 1)" : "0s";
-
-  return (
-    <figure className="relative aspect-[5/4] select-none overflow-hidden rounded-[20px] bg-[#1c1c1f]">
-      <ProductImage src={item.image} sizes="(min-width: 1024px) 36rem, 92vw" preload />
-      <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${pos}%)`, transition: `clip-path ${transition}` }}>
-        {item.qcCover && <ProductImage src={item.qcCover} sizes="(min-width: 1024px) 36rem, 92vw" preload />}
-      </div>
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
-
-      {/* Podpisy połówek u góry; na dole lustrzanie: co to za find i gdzie są wszystkie zdjęcia QC */}
-      <span aria-hidden="true" className="fancy pointer-events-none absolute left-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
-        {t("hero.store")}
-      </span>
-      <span aria-hidden="true" className="fancy pointer-events-none absolute right-4 top-3 text-[1.75rem] leading-none text-white [text-shadow:0_2px_12px_rgb(0_0_0/0.6)]">
-        {t("hero.warehouse")}
-      </span>
-
-      {/* Linia z uchwytem */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_12px_rgb(0_0_0/0.5)]"
-        style={{ left: `${pos}%`, transition: `left ${transition}` }}
+    // Wylatująca karta wachlarza nie może przesuwać strony w bok
+    <div className="overflow-x-clip">
+      <section
+        id="top"
+        aria-labelledby="hero-title"
+        className={`${intro ? "intro" : ""} mx-auto grid max-w-7xl items-center gap-x-12 gap-y-14 px-4 pb-14 pt-32 sm:px-6 sm:pb-16 sm:pt-40 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-8`}
       >
-        <span className="absolute left-1/2 top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-black shadow-[0_6px_20px_rgb(0_0_0/0.45)]">
-          <ChevronsLeftRight size={18} strokeWidth={2.25} />
-        </span>
-        <span
-          className={`absolute left-1/2 top-[calc(50%+1.75rem)] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur transition-opacity duration-300 ${
-            touched ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          {t("hero.drag")}
-        </span>
-      </span>
+        <div className="min-w-0 max-w-[40rem]">
+          <h1 id="hero-title" className="text-[clamp(2.75rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
+            <span className="block">
+              <RisingWords text={t("hero.title1")} start={60} />
+            </span>
+            {/* Kursywa pojawia się od lewej, jakby ktoś ją dopisywał */}
+            <span className="fancy intro-write block text-[1.1em] leading-[1] text-muted" style={at(300)}>
+              {t("hero.title2")}
+            </span>
+          </h1>
+          <p className="intro-fade mt-5 max-w-[30rem] text-pretty text-[1.0625rem] leading-relaxed text-muted" style={at(560)}>
+            {t("hero.lead")}
+          </p>
 
-      {/* Suwak na całym zdjęciu: obsługuje mysz, dotyk i klawiaturę */}
-      <input
-        type="range"
-        min={0}
-        max={100}
-        step={0.5}
-        value={pos}
-        onChange={(e) => {
-          setGlide(false);
-          setTouched(true);
-          setPos(Number(e.target.value));
-        }}
-        aria-label={t("hero.compare", { name: item.name })}
-        className="absolute inset-0 size-full cursor-ew-resize appearance-none bg-transparent opacity-0"
-      />
+          <div className="intro-fade" style={at(660)}>
+            <HeroSearch typeIn={intro} />
+          </div>
 
-      <figcaption className="pointer-events-none absolute bottom-3 left-3 z-[1] flex max-w-[calc(100%-11.5rem)] items-baseline gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[13px] text-white ring-1 ring-white/10 backdrop-blur-md">
-        <span className="truncate font-medium">{item.name}</span>
-        <span className="shrink-0 font-mono text-white/65 tabular">{f.money(item.pricePln)}</span>
-      </figcaption>
-      <Link
-        href={site.routes.product(item.id)}
-        className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[13px] font-medium text-black shadow-[0_6px_20px_rgb(0_0_0/0.35)] transition-colors hover:bg-[#ececee]"
-      >
-        {t("hero.seeQc", { n: item.qc ?? 0 })}
-        <ArrowUpRight aria-hidden size={14} />
-      </Link>
-    </figure>
+          {/* Kategorie jako okrągłe zdjęcia z podpisem; na telefonie przewijane w bok */}
+          <ul aria-label={t("hero.all")} className="-mx-4 mt-6 flex gap-3.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+            {chips.map((c, i) => (
+              <li key={c} className="intro-fade shrink-0" style={at(760 + i * 35)}>
+                <Link href={`${site.routes.finds}?category=${encodeURIComponent(c)}`} className="group flex w-14 flex-col items-center gap-1.5">
+                  <span className="relative size-14 overflow-hidden rounded-full bg-[#1c1c1f] ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
+                    {cover(c) && <ProductImage src={cover(c)} sizes="3.5rem" />}
+                  </span>
+                  <span className="text-[12px] text-muted transition-colors group-hover:text-fg">{f.category(c)}</span>
+                </Link>
+              </li>
+            ))}
+            <li className="intro-fade shrink-0" style={at(760 + chips.length * 35)}>
+              <Link href={site.routes.finds} className="group flex w-14 flex-col items-center gap-1.5">
+                <span className="grid size-14 grid-cols-2 gap-px overflow-hidden rounded-full bg-line ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
+                  {collage.map((src, i) => (
+                    <span key={i} className="relative bg-[#1c1c1f]">
+                      {src && <ProductImage src={src} sizes="1.75rem" />}
+                    </span>
+                  ))}
+                </span>
+                <span className="whitespace-nowrap text-[12px] text-muted transition-colors group-hover:text-fg">{t("hero.more")}</span>
+              </Link>
+            </li>
+          </ul>
+
+          {/* Zielona kropka „na żywo” i liczba kupujących przewijana jak licznik */}
+          <p className="intro-fade mt-7 flex items-center gap-2.5 text-sm text-muted" style={at(1000)}>
+            <span aria-hidden="true" className="relative grid size-2 place-items-center">
+              <span className="absolute size-2 rounded-full bg-gl/60 [animation-duration:2.2s] motion-safe:animate-ping" />
+              <span className="relative size-2 rounded-full bg-gl" />
+            </span>
+            <span>
+              {t("footer.trust", { n: NUMBER_SLOT })
+                .split(NUMBER_SLOT)
+                .map((part, i) => (i === 0 ? part : [<RollingNumber key="n" value={site.buyers} roll={intro} start={1150} />, part]))}
+            </span>
+          </p>
+        </div>
+
+        <div className="intro-fade min-w-0" style={at(240)}>
+          <HeroBanners data={previews} />
+        </div>
+      </section>
+    </div>
   );
 }

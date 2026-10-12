@@ -41,7 +41,7 @@ export default async function Home() {
       <SiteHeader />
       <PromoPopup />
       <main>
-        <Hero finds={finds} />
+        <Hero finds={finds} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newest.slice(0, ROW)} newIds={newIds} />
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popular.slice(0, ROW)} newIds={newIds} />
         <QcFeed entries={qcFeed} />

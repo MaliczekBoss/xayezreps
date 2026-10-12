@@ -27,8 +27,6 @@ export const site = {
     coupon: "−40%",
   },
 
-  // Find w porównaniu „sklep | magazyn” w hero (id z panelu); bez zdjęcia QC bierzemy najpopularniejszy z QC
-  heroFindId: "105",
   // Podstrony serwisu
   routes: {
     finds: "/finds",
