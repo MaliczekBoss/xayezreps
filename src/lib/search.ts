@@ -28,7 +28,7 @@ const GROUPS: Group[] = [
   g(["koszulka", "koszulki", "koszulk*", "tshirt*", "tee", "tees", "teeshirt*", "tiszert*"], ["tee", "tees", "tshirt*", "teeshirt*", "koszulk*", "longsleeve*", "jersey*", "polo", "polos"], "Koszulki"),
   g(["koszula", "koszule", "koszuli", "shirt", "shirts"], ["shirt", "shirts", "koszula", "koszule", "flannel*", "overshirt*"]),
   g(["bluza", "bluzy", "bluz*", "hoodie*", "hoody", "sweatshirt*"], ["hoodie*", "hoody", "sweatshirt*", "crewneck*", "zipup", "bluz*"], "Bluzy"),
-  g(["sweter", "swetr*", "sweater*"], ["sweater*", "knit*", "cardigan*", "sweter", "swetr*"]),
+  g(["sweter", "swetry", "swetr*", "sweater*"], ["sweater*", "knit*", "cardigan*", "sweter", "swetr*"], "Swetry"),
   g(["kurtka", "kurtki", "kurtk*", "jacket*"], ["jacket*", "puffer*", "windbreaker*", "coat*", "parka*", "bomber*", "anorak*", "kurtk*"], "Kurtki"),
   g(["plaszcz", "plaszcz*", "coat", "coats"], ["coat*", "trench*", "plaszcz*"]),
   g(["kamizelka", "kamizel*", "vest*", "gilet*"], ["vest*", "gilet*", "kamizel*"]),

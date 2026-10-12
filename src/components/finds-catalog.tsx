@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Camera, LayoutGrid, Search, Table2, X } from "lucide-react";
+import type { CatalogFacets, CatalogPage } from "@/lib/catalog";
 import type { DictKey } from "@/lib/dict";
-import { batches, categories, sortNewest, sortPopular, type Find } from "@/lib/finds";
-import { buildSearchIndex, searchFinds } from "@/lib/search";
+import { batches, type Find } from "@/lib/finds";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { FavoriteButton } from "./favorite-button";
@@ -18,75 +18,108 @@ import { btnPrimary } from "./ui";
 
 type Sort = "popular" | "newest" | "priceAsc" | "priceDesc" | "qc";
 const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc", "qc"];
-const PAGE = 30;
 
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
-export function FindsCatalog({ finds }: { finds: Find[] }) {
+/** Klucz zestawu filtrów: te same filtry = ta sama porcja katalogu */
+const keyOf = (q: string, category: string, batch: string, sort: string, qcOnly: boolean) => JSON.stringify([q, category, batch, sort, qcOnly]);
+
+/**
+ * Katalog: pierwszą porcję renderuje serwer dla filtrów z adresu, a każdą zmianę (wpisywanie, kategoria,
+ * batch, sortowanie, „Pokaż więcej”) dociąga z /api/finds. Filtry zmieniają adres bez przeładowania strony.
+ */
+export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initial: CatalogPage }) {
   const f = useFormat();
   const { t } = f;
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
 
   const [query, setQuery] = useState(params.get("q") ?? "");
-  const deferredQuery = useDeferredValue(query);
+  const deferredQuery = useDeferredValue(query.trim());
   const category = params.get("category") ?? "";
   const batch = params.get("batch") ?? "";
   const sortParam = params.get("sort") as Sort | null;
-  const sort: Sort = sortParam && SORTS.includes(sortParam) ? sortParam : "popular";
+  const validSort = sortParam && SORTS.includes(sortParam) ? sortParam : null;
+  const sort: Sort = validSort ?? "popular";
   const qcOnly = params.get("qc") === "1";
   const sheet = params.get("view") === "sheet";
-  const hasQc = finds.some((item) => item.qc);
-  const [limit, setLimit] = useState(PAGE);
 
+  const filterKey = keyOf(deferredQuery, category, batch, validSort ?? "", qcOnly);
+  const [data, setData] = useState(() => ({ key: filterKey, page: initial }));
+  const [loading, setLoading] = useState(false);
+  const loadedKey = useRef(data.key);
+
+  const apiUrl = (offset: number) => {
+    const next = new URLSearchParams();
+    if (deferredQuery) next.set("q", deferredQuery);
+    if (category) next.set("category", category);
+    if (batch) next.set("batch", batch);
+    if (validSort) next.set("sort", validSort);
+    if (qcOnly) next.set("qc", "1");
+    if (offset) next.set("offset", String(offset));
+    return `/api/finds?${next}`;
+  };
+
+  // Nowe filtry: dociągamy pierwszą porcję (przy wpisywaniu z małym opóźnieniem)
+  useEffect(() => {
+    if (loadedKey.current === filterKey) return;
+    const ctrl = new AbortController();
+    const url = apiUrl(0);
+    const timer = window.setTimeout(
+      () => {
+        setLoading(true);
+        fetch(url, { signal: ctrl.signal })
+          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+          .then((page: CatalogPage) => {
+            loadedKey.current = filterKey;
+            setData({ key: filterKey, page });
+          })
+          .catch(() => {})
+          .finally(() => setLoading(false));
+      },
+      deferredQuery ? 180 : 0,
+    );
+    return () => {
+      window.clearTimeout(timer);
+      ctrl.abort();
+    };
+    // apiUrl składa adres z tych samych wartości, z których powstaje filterKey
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]);
+
+  const loadMore = () => {
+    setLoading(true);
+    const key = data.key;
+    fetch(apiUrl(data.page.items.length))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((page: CatalogPage) => setData((d) => (d.key === key ? { key, page: { ...page, items: [...d.page.items, ...page.items] } } : d)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  // Filtry trafiają do adresu bez przeładowania (strona nie renderuje się od nowa na serwerze)
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
     else next.delete(key);
-    setLimit(PAGE);
-    router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+    window.history.replaceState(null, "", `${pathname}${next.size ? `?${next}` : ""}`);
   };
 
-  const counts = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of finds) map.set(item.category, (map.get(item.category) ?? 0) + 1);
-    return map;
-  }, [finds]);
-
-  const index = useMemo(() => buildSearchIndex(finds), [finds]);
-
-  // Wyszukiwarka rozumie polskie i angielskie nazwy („koszulka” = „tee”) i poprawia literówki
-  const search = useMemo(() => {
-    const base = sortPopular(finds.filter((item) => (!category || item.category === category) && (!batch || item.batch === batch) && (!qcOnly || Boolean(item.qc))));
-    return searchFinds(index, base, deferredQuery);
-  }, [finds, index, deferredQuery, category, batch, qcOnly]);
-
-  const results = useMemo(() => {
-    let list = search.items;
-    // Przy wpisanym zapytaniu domyślnie liczy się trafność, chyba że ktoś sam wybrał sortowanie
-    if (deferredQuery.trim() && !sortParam) return list;
-    if (sort === "popular") list = sortPopular(list);
-    if (sort === "newest") list = sortNewest(list);
-    if (sort === "priceAsc") list = [...list].sort((a, b) => a.pricePln - b.pricePln);
-    if (sort === "priceDesc") list = [...list].sort((a, b) => b.pricePln - a.pricePln);
-    if (sort === "qc") list = [...list].sort((a, b) => (b.qc ?? 0) - (a.qc ?? 0));
-    return list;
-  }, [search, deferredQuery, sortParam, sort]);
-
-  const visible = results.slice(0, limit);
+  const page = data.page;
+  const items = page.items;
+  const stale = data.key !== filterKey;
+  const countOf = new Map(facets.counts);
   const filtered = Boolean(category || batch || qcOnly || query.trim());
 
   const reset = () => {
     setQuery("");
-    setLimit(PAGE);
-    router.replace(pathname, { scroll: false });
+    window.history.replaceState(null, "", pathname);
   };
 
   return (
     <>
-      <PageHeader crumbs={[{ label: t("footer.finds") }]} title={[t("finds.title1"), t("finds.title2")]} lead={t("finds.lead", { n: finds.length })} />
+      <PageHeader crumbs={[{ label: t("footer.finds") }]} title={[t("finds.title1"), t("finds.title2")]} lead={t("finds.lead", { n: facets.all })} />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
@@ -98,10 +131,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
             id="finds-search"
             type="search"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setLimit(PAGE);
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             onBlur={() => setParam("q", query.trim())}
             placeholder={t("finds.search")}
             autoComplete="off"
@@ -150,7 +180,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
       </div>
 
       <div role="group" aria-label={t("product.category")} className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
-        {["", ...categories.filter((c) => counts.has(c))].map((c) => {
+        {["", ...facets.counts.map(([c]) => c)].map((c) => {
           const active = category === c;
           return (
             <button
@@ -163,7 +193,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
               }`}
             >
               {c ? f.category(c) : t("finds.all")}
-              <span className="font-mono text-[0.6875rem] text-dim tabular">{c ? counts.get(c) : finds.length}</span>
+              <span className="font-mono text-[0.6875rem] text-dim tabular">{c ? countOf.get(c) : facets.all}</span>
             </button>
           );
         })}
@@ -171,7 +201,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {hasQc && (
+          {facets.hasQc && (
             <button
               type="button"
               aria-pressed={qcOnly}
@@ -185,7 +215,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
             </button>
           )}
           <p className="text-sm text-muted" aria-live="polite">
-            {t("finds.count", { shown: Math.min(limit, results.length), total: results.length })}
+            {t("finds.count", { shown: items.length, total: page.total })}
           </p>
         </div>
         <div role="group" aria-label={t("finds.viewGrid")} className="flex rounded-xl border border-line bg-card p-1">
@@ -210,15 +240,15 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
         </div>
       </div>
 
-      {(search.corrected || search.relaxed) && results.length > 0 && (
+      {(page.corrected || page.relaxed) && page.total > 0 && (
         <p className="mt-4 text-sm text-muted">
-          {search.corrected && t("finds.corrected", { q: search.corrected })}
-          {search.corrected && search.relaxed && " "}
-          {search.relaxed && t("finds.relaxed")}
+          {page.corrected && t("finds.corrected", { q: page.corrected })}
+          {page.corrected && page.relaxed && " "}
+          {page.relaxed && t("finds.relaxed")}
         </p>
       )}
 
-      {results.length === 0 ? (
+      {page.total === 0 && !stale ? (
         <div className="mt-4 rounded-2xl border border-dashed border-line px-6 py-16 text-center">
           <p className="font-semibold">{t("finds.empty")}</p>
           <p className="mt-1.5 text-sm text-muted">{t("finds.emptyText")}</p>
@@ -229,30 +259,31 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
           )}
         </div>
       ) : (
-        <>
+        <div className={`transition-opacity duration-200 ${stale || loading ? "opacity-60" : ""}`} aria-busy={stale || loading}>
           {sheet ? (
-            <FindsSheet items={visible} />
+            <FindsSheet items={items} />
           ) : (
             <ul className="mt-4 grid grid-cols-2 gap-x-2.5 gap-y-6 sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5">
-              {visible.map((item) => (
+              {items.map((item) => (
                 <li key={item.id}>
                   <ProductCard find={item} />
                 </li>
               ))}
             </ul>
           )}
-          {limit < results.length && (
+          {items.length < page.total && !stale && (
             <div className="mt-10 flex justify-center">
               <button
                 type="button"
-                onClick={() => setLimit((l) => l + PAGE)}
-                className="inline-flex h-11 items-center rounded-xl border border-line bg-card px-6 text-sm font-semibold hover:border-line-strong"
+                disabled={loading}
+                onClick={loadMore}
+                className="inline-flex h-11 items-center rounded-xl border border-line bg-card px-6 text-sm font-semibold hover:border-line-strong disabled:opacity-60"
               >
                 {t("finds.more")}
               </button>
             </div>
           )}
-        </>
+        </div>
       )}
     </>
   );
@@ -289,7 +320,7 @@ function FindsSheet({ items }: { items: Find[] }) {
             <tr key={item.id} className="border-b border-line/70 transition-colors last:border-0 hover:bg-white/[0.03]">
               <td className="px-3 py-2 sm:px-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="relative size-11 shrink-0 overflow-hidden rounded-md bg-[#1c1c1f]">
+                  <span className="relative size-11 shrink-0">
                     <ProductImage src={item.image} sizes="2.75rem" />
                   </span>
                   <span className="min-w-0">

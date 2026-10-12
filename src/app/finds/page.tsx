@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { FindsCatalog } from "@/components/finds-catalog";
 import { PageShell } from "@/components/page-shell";
-import { getQcIndex, withQc } from "@/lib/qc-feed";
-import { getFinds } from "@/lib/store";
+import { getCatalogFacets, parseCatalogQuery, queryCatalog } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Findy",
@@ -11,16 +10,23 @@ export const metadata: Metadata = {
   alternates: { canonical: "/finds" },
 };
 
-export default async function FindsPage() {
-  const [raw, qcIndex] = await Promise.all([getFinds(), getQcIndex()]);
-  const finds = withQc(raw, qcIndex);
+export default function FindsPage({ searchParams }: PageProps<"/finds">) {
   return (
     <PageShell>
       <Suspense fallback={<CatalogSkeleton />}>
-        <FindsCatalog finds={finds} />
+        <Catalog searchParams={searchParams} />
       </Suspense>
     </PageShell>
   );
+}
+
+async function Catalog({ searchParams }: { searchParams: PageProps<"/finds">["searchParams"] }) {
+  const raw = await searchParams;
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(raw)) if (typeof value === "string") params.set(key, value);
+  const [facets, initial] = await Promise.all([getCatalogFacets(), queryCatalog({ ...parseCatalogQuery(params), offset: 0 })]);
+  // Nowy adres z zewnątrz (np. wyszukiwarka w nagłówku) to nowy katalog z własnym stanem
+  return <FindsCatalog key={params.toString()} facets={facets} initial={initial} />;
 }
 
 function CatalogSkeleton() {

@@ -27,6 +27,15 @@ const nextConfig: NextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
+  // Zdjęcia produktów bez tła (public/i) zmieniają się rzadko: przeglądarka trzyma je tydzień, CDN rok
+  async headers() {
+    return [
+      {
+        source: "/i/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, s-maxage=31536000, stale-while-revalidate=86400" }],
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {

@@ -235,7 +235,7 @@ function OutfitForm({ editing, byId, finds, action, pending }: FormProps) {
               <li key={i} className="rounded-xl border border-line bg-bg p-2.5">
                 <div className="flex items-center gap-2.5">
                   <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white/10 text-[11px] font-bold">{i + 1}</span>
-                  <span className="relative size-10 shrink-0 overflow-hidden rounded-md bg-card">{find && <ProductImage src={find.image} sizes="2.5rem" />}</span>
+                  <span className="relative size-10 shrink-0">{find && <ProductImage src={find.image} sizes="2.5rem" />}</span>
                   <input
                     list="outfit-finds"
                     defaultValue={find ? optionLabel(find) : ""}

@@ -4,6 +4,7 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
+  "product.variants": "Inne warianty z tej aukcji",
   "hb.couponsChip": "Dla nowych kont {agent}",
   "hb.couponsTitle": "−40% na wysyłkę i 10 kg za 350 zł",
   "hb.couponsCta": "Odbierz kupony",
@@ -486,6 +487,7 @@ const pl = {
   "nav.sellers": "Sprzedawcy",
   "nav.guide": "Poradnik",
   "cat.Bluzy": "Bluzy",
+  "cat.Swetry": "Swetry",
   "cat.Koszulki": "Koszulki",
   "cat.Kurtki": "Kurtki",
   "cat.Spodnie": "Spodnie",
@@ -520,6 +522,7 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
+  "product.variants": "Other variants from this listing",
   "hb.couponsChip": "For new {agent} accounts",
   "hb.couponsTitle": "−40% shipping and 10 kg for 350 zł",
   "hb.couponsCta": "Claim coupons",
@@ -991,6 +994,7 @@ const en: Dict = {
   "nav.sellers": "Sellers",
   "nav.guide": "Guide",
   "cat.Bluzy": "Hoodies",
+  "cat.Swetry": "Sweaters",
   "cat.Koszulki": "T-shirts",
   "cat.Kurtki": "Jackets",
   "cat.Spodnie": "Pants",
@@ -1021,6 +1025,7 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
+  "product.variants": "Weitere Varianten dieses Angebots",
   "hero.title1": "Geprüfte Finds.",
   "hero.title2": "Kein Raten.",
   "hero.lead": "Links mit QC, Preise in deiner Währung und ein Paketrechner. Vom Find bis zum Paket vor deiner Tür, alles an einem Ort.",
@@ -1190,6 +1195,7 @@ const de: PartialDict = {
   "cat.Elektronika": "Elektronik",
   "cat.Klocki": "Bausteine",
   "cat.Bluzy": "Hoodies",
+  "cat.Swetry": "Pullover",
   "cat.Koszulki": "T-Shirts",
   "cat.Kurtki": "Jacken",
   "cat.Spodnie": "Hosen",
@@ -1220,6 +1226,7 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
+  "product.variants": "Autres variantes de cette annonce",
   "hero.title1": "Des finds vérifiés.",
   "hero.title2": "Zéro devinette.",
   "hero.lead": "Des liens avec QC, les prix dans ta devise et un calculateur de colis. Du find au colis devant ta porte, au même endroit.",
@@ -1389,6 +1396,7 @@ const fr: PartialDict = {
   "cat.Elektronika": "Électronique",
   "cat.Klocki": "Briques",
   "cat.Bluzy": "Sweats",
+  "cat.Swetry": "Pulls",
   "cat.Koszulki": "T-shirts",
   "cat.Kurtki": "Vestes",
   "cat.Spodnie": "Pantalons",
@@ -1419,6 +1427,7 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
+  "product.variants": "Otras variantes de este anuncio",
   "hero.title1": "Finds verificados.",
   "hero.title2": "Cero adivinanzas.",
   "hero.lead": "Enlaces con QC, precios en tu moneda y calculadora de paquetes. Del find al paquete en tu puerta, todo en un sitio.",
@@ -1588,6 +1597,7 @@ const es: PartialDict = {
   "cat.Elektronika": "Electrónica",
   "cat.Klocki": "Bloques",
   "cat.Bluzy": "Sudaderas",
+  "cat.Swetry": "Jerséis",
   "cat.Koszulki": "Camisetas",
   "cat.Kurtki": "Chaquetas",
   "cat.Spodnie": "Pantalones",
@@ -1618,6 +1628,7 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
+  "product.variants": "Altre varianti di questo annuncio",
   "hero.title1": "Find verificati.",
   "hero.title2": "Zero tentativi.",
   "hero.lead": "Link con QC, prezzi nella tua valuta e calcolatore del pacco. Dal find al pacco alla tua porta, tutto in un posto.",
@@ -1787,6 +1798,7 @@ const it: PartialDict = {
   "cat.Elektronika": "Elettronica",
   "cat.Klocki": "Mattoncini",
   "cat.Bluzy": "Felpe",
+  "cat.Swetry": "Maglioni",
   "cat.Koszulki": "Magliette",
   "cat.Kurtki": "Giacche",
   "cat.Spodnie": "Pantaloni",
@@ -1817,6 +1829,7 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
+  "product.variants": "同一商品的其他款式",
   "hero.title1": "精选好物。",
   "hero.title2": "不再瞎猜。",
   "hero.lead": "带 QC 的链接、按你的货币显示价格，还有包裹计算器。从发现好物到包裹送到门口，一站搞定。",
@@ -1985,6 +1998,7 @@ const zh: PartialDict = {
   "cat.Elektronika": "电子产品",
   "cat.Klocki": "积木",
   "cat.Bluzy": "卫衣",
+  "cat.Swetry": "毛衣",
   "cat.Koszulki": "T恤",
   "cat.Kurtki": "外套",
   "cat.Spodnie": "裤子",

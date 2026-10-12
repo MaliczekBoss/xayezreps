@@ -1,6 +1,6 @@
 # xayezreps.pl
 
-Strona główna xayezreps.pl w Next.js 16 (App Router, React 19, Tailwind 4, Motion).
+Strona xayezreps.pl w Next.js 16 (App Router, React 19, Tailwind 4, Motion).
 
 ## Start
 
@@ -20,21 +20,40 @@ npm run build && npm start
 | Plik | Co zawiera |
 | --- | --- |
 | `src/lib/site.ts` | linki (Discord, USFans z kodem polecającym), kod promocyjny, liczba kupujących, ścieżki podstron, cennik kalkulatora paczki |
-| `src/lib/finds.ts` | „Najnowsze findy”: nazwa, kategoria, batch, cena, szacowana waga, zdjęcie, link do USFans |
-| `src/lib/qc-feed.ts` | przykładowe wpisy w „Ostatnio wyszukiwane QC” (docelowo dane z QC Findera) |
+| `data/finds.json` | katalog produktów (na Vercelu lista żyje w Upstash Redis, plik to źródło nowych pozycji) |
+| `data/outfits.json` | outfity |
+| `data/qc-index.json` | liczba zdjęć QC i okładka dla każdej aukcji (`npm run qc:snapshot`) |
+| `public/i/` | zdjęcia produktów bez tła, `<id>.webp` |
 | `src/app/globals.css` | kolory, czcionki, animacje |
 
-## Sekcje strony głównej
+## Katalog i zdjęcia bez tła
 
-Prosty, płaski styl wzorowany na cadenreps.pl. Wybrane napisy (logo, druga linia hero, nagłówki sekcji) są szeryfową kursywą Instrument Serif.
+Każde zdjęcie produktu na stronie jest bez tła: produkt leży prosto na grafitowej stronie.
+Zdjęcia wycina model BiRefNet na karcie graficznej (NVIDIA), skryptem `scripts/cutout.py`.
 
-1. Nagłówek z wyszukiwarką i paskiem oferty USFans (kod xayez67, pasek można zamknąć)
-2. Hero „Lepsze findy. Niższe ceny.” z wyszukiwarką: wklejony link z Weidiana od razu zamienia się na link USFans z kodem
-3. Najnowsze findy i najczęściej oglądane (rzędy kart, plus dodaje do paczki)
-4. Ostatnie zdjęcia QC
-5. Kalkulator paczki z wagą i wyświetlaczem LCD
-6. Narzędzia, blok Discorda i stopka
+Import całego katalogu z eksportu `catalogue.csv`:
 
-Paczka zapisuje się w `localStorage` przeglądarki.
+```bash
+node scripts/fetch-images.mjs lista.json ../.import/orig
+python scripts/cutout.py ../.import/orig public/i
+node scripts/import-catalogue.mjs catalogue.csv
+npm run qc:snapshot
+```
 
-Linki w menu i stopce prowadzą do podstron obecnego serwisu (`/finds`, `/outfits`, `/tools/...`, `/product/[id]`, `/contact`). W tym projekcie jest na razie tylko strona główna.
+- `fetch-images.mjs` pobiera oryginalne zdjęcia z listy `[{ "id", "url" }]`.
+- `cutout.py` wycina tło, przycina produkt i ustawia go na środku kwadratu 640 px (pomija pliki, które już są).
+  Potrzebuje Pythona z `onnxruntime-gpu[cuda,cudnn]`, `onnx`, `onnxconverter-common`, `opencv-python-headless` i `pillow`.
+- `import-catalogue.mjs` zamienia katalog: nadaje nasze kategorie, przelicza ceny z juanów na złotówki,
+  a produkty z outfitów zostawia ukryte (widać je tylko w outfitach).
+
+Przy wymianie całego katalogu zmień znacznik `RESET.finds` w `src/lib/docstore.ts`: przy pierwszym wejściu
+po wdrożeniu lista w Redis zostanie zastąpiona plikiem, a stara trafi do kopii `xd:finds:backup:<znacznik>`.
+
+Produkty dodane w panelu admina mają zdjęcie takie, jakie się wgra. Żeby było bez tła, przepuść je
+przez `scripts/cutout.py` i wgraj gotowy plik WEBP.
+
+## Wyszukiwarka
+
+Katalog jest za duży, żeby wysyłać go do przeglądarki, więc wyszukiwanie, filtry i sortowanie liczy serwer
+(`src/lib/catalog.ts`, `/api/finds`). Wyszukiwarka rozumie polskie i angielskie nazwy („koszulka” znajdzie „tee”),
+kolory i literówki (`src/lib/search.ts`).

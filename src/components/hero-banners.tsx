@@ -43,7 +43,7 @@ const FLY_OUT: TargetAndTransition = { x: "75%", y: "-4%", rotate: 9, scale: 1, 
 const FLY_BACK: TargetAndTransition = { x: "-75%", y: "-4%", rotate: -9, scale: 1, opacity: 1 };
 
 const Thumb = ({ src, className = "" }: { src?: string; className?: string }) => (
-  <span className={`relative block overflow-hidden bg-[#1c1c1f] ${className}`}>{src && <ProductImage src={src} sizes="10rem" />}</span>
+  <span className={`relative block overflow-hidden ${className}`}>{src && <ProductImage src={src} sizes="10rem" />}</span>
 );
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { favoriteActions, useFavorites } from "@/lib/favorites";
 import type { Find } from "@/lib/finds";
@@ -11,17 +11,40 @@ import { useFormat } from "@/lib/use-format";
 import { PageHeader } from "./page";
 import { ProductCard } from "./product-card";
 
-/** Lista ulubionych z tej przeglądarki; dane produktów bierzemy z katalogu */
-export function FavoritesList({ finds }: { finds: Find[] }) {
+/** Lista ulubionych z tej przeglądarki; dane tylko tych produktów dociągamy z /api/finds */
+export function FavoritesList() {
   const { t } = useFormat();
   const favorites = useFavorites();
+  const ids = useMemo(
+    () =>
+      Object.entries(favorites)
+        .sort((a, b) => b[1] - a[1])
+        .map(([id]) => id),
+    [favorites],
+  );
+  // null = produktu nie ma już w katalogu
+  const [known, setKnown] = useState<Record<string, Find | null>>({});
+  const missing = ids.filter((id) => !(id in known)).join(",");
 
-  const items = useMemo(() => {
-    const byId = new Map(finds.map((f) => [f.id, f]));
-    return Object.entries(favorites)
-      .sort((a, b) => b[1] - a[1])
-      .flatMap(([id]) => (byId.has(id) ? [byId.get(id)!] : []));
-  }, [finds, favorites]);
+  useEffect(() => {
+    if (!missing) return;
+    const ctrl = new AbortController();
+    fetch(`/api/finds?ids=${encodeURIComponent(missing)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { items: Find[] }) =>
+        setKnown((k) => {
+          const next = { ...k };
+          for (const id of missing.split(",")) next[id] = null;
+          for (const f of d.items) next[f.id] = f;
+          return next;
+        }),
+      )
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [missing]);
+
+  const loading = Boolean(missing);
+  const items = ids.flatMap((id) => (known[id] ? [known[id]!] : []));
 
   return (
     <>
@@ -47,7 +70,13 @@ export function FavoritesList({ finds }: { finds: Find[] }) {
         )}
       </PageHeader>
 
-      {items.length === 0 ? (
+      {loading && items.length === 0 ? (
+        <div aria-hidden="true" className="grid animate-pulse grid-cols-2 gap-x-2.5 gap-y-6 sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5">
+          {ids.slice(0, 10).map((id) => (
+            <div key={id} className="aspect-square rounded-[14px] bg-card" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-line-strong px-6 py-16 text-center">
           <span className="mx-auto grid size-12 place-items-center rounded-xl border border-line bg-card">
             <Heart aria-hidden size={20} />

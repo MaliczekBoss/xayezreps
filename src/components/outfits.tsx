@@ -64,7 +64,7 @@ function layout(categories: string[]): Place[] {
 function FlatLay({ items, numbered = false, active = null, onActive }: { items: { image: string; category: string }[]; numbered?: boolean; active?: number | null; onActive?: (i: number | null) => void }) {
   const places = layout(items.map((i) => i.category));
   return (
-    <div className="absolute inset-0 bg-black">
+    <div className="absolute inset-0">
       {items.map((item, i) => (
         <span
           key={i}
@@ -115,7 +115,7 @@ function OutfitCard({ outfit, index = 0 }: { outfit: OutfitSummary; index?: numb
           {/* Po najechaniu od dołu wysuwają się miniatury części */}
           <span className="absolute inset-x-0 bottom-0 flex translate-y-full gap-1.5 bg-gradient-to-t from-black/90 to-black/0 p-2.5 pt-8 transition-transform duration-300 group-hover:translate-y-0">
             {outfit.items.slice(0, 5).map((item, i) => (
-              <span key={i} className="relative size-11 shrink-0 overflow-hidden rounded-md border border-white/15 bg-[#1c1c1f]">
+              <span key={i} className="relative size-11 shrink-0">
                 <ProductImage src={item.image} sizes="2.75rem" />
               </span>
             ))}
@@ -312,7 +312,7 @@ export function OutfitDetail({ outfit, more }: { outfit: ResolvedOutfit; more: O
                   <span aria-hidden="true" className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold transition-colors ${active === i ? "bg-fg text-bg" : "bg-white/10"}`}>
                     {i + 1}
                   </span>
-                  <Link href={site.routes.product(p.find.id)} className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[#1c1c1f]">
+                  <Link href={site.routes.product(p.find.id)} className="relative size-16 shrink-0">
                     <ProductImage src={p.find.image} sizes="4rem" className="transition-transform duration-300 hover:scale-105" />
                   </Link>
                   <span className="min-w-0 flex-1">

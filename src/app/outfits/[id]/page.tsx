@@ -6,10 +6,13 @@ import { PageShell } from "@/components/page-shell";
 import { ToolSkeleton } from "@/components/tools/tool-skeleton";
 import { resolveOutfits, summarizeOutfits } from "@/lib/outfits";
 import { getQcIndex, withQc } from "@/lib/qc-feed";
-import { getFinds, getOutfits } from "@/lib/store";
+import { getAllFinds, getOutfits } from "@/lib/store";
+
+// Przy buildzie tylko najnowsze outfity; reszta renderuje się przy pierwszym wejściu i trafia do cache
+const PRERENDER = 48;
 
 export async function generateStaticParams() {
-  const outfits = await getOutfits();
+  const outfits = (await getOutfits()).slice(0, PRERENDER);
   return outfits.length ? outfits.map((o) => ({ id: o.id })) : [{ id: "0" }];
 }
 
@@ -37,7 +40,7 @@ export default function OutfitPage({ params }: PageProps<"/outfits/[id]">) {
 
 async function OutfitContent({ params }: { params: PageProps<"/outfits/[id]">["params"] }) {
   const { id } = await params;
-  const [outfits, raw, qcIndex] = await Promise.all([getOutfits(), getFinds(), getQcIndex()]);
+  const [outfits, raw, qcIndex] = await Promise.all([getOutfits(), getAllFinds(), getQcIndex()]);
   const finds = withQc(raw, qcIndex);
   const own = outfits.find((o) => o.id === id);
   const [outfit] = own ? resolveOutfits([own], finds) : [];

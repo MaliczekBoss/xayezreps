@@ -10,12 +10,20 @@ import type { Outfit } from "./outfits";
 export const FINDS_TAG = "finds";
 export const OUTFITS_TAG = "outfits";
 
-/** Lista produktów dla stron sklepu – z cache, odświeżana po zmianach w adminie */
-export async function getFinds(): Promise<Find[]> {
+/** Wszystkie produkty, także ukryte (używane tylko w outfitach) – z cache, odświeżane po zmianach w adminie */
+export async function getAllFinds(): Promise<Find[]> {
   "use cache";
   cacheTag(FINDS_TAG);
   cacheLife("max");
   return readDoc<Find>("finds");
+}
+
+/** Katalog sklepu: produkty widoczne w wyszukiwarce, rzędach i kategoriach */
+export async function getFinds(): Promise<Find[]> {
+  "use cache";
+  cacheTag(FINDS_TAG);
+  cacheLife("max");
+  return (await readDoc<Find>("finds")).filter((f) => !f.hidden);
 }
 
 /** Aktualna lista prosto z magazynu, dla panelu admina */

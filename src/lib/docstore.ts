@@ -15,6 +15,13 @@ export type DocName = "finds" | "outfits";
 
 type WithId = { id: string };
 
+// Wymiana całej listy: gdy znacznik się zmieni, lista w bazie jest zastępowana plikiem z repozytorium
+// (stara trafia do kopii xd:{nazwa}:backup:{znacznik}). Zmień znacznik tylko przy imporcie całego katalogu.
+const RESET: Record<DocName, string> = {
+  finds: "2026-10-12-catalogue-import",
+  outfits: "",
+};
+
 // Przykładowe outfity z pierwszej wersji strony – zastąpione outfitami z xayezreps.com
 const RETIRED: Record<DocName, string[]> = {
   finds: [],
@@ -39,7 +46,18 @@ export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
   if (storageKind() !== "redis") return JSON.parse(fileRaw) as T[];
 
   const version = createHash("sha1").update(fileRaw).digest("hex").slice(0, 16);
-  const [raw, seeded] = await Promise.all([redisCall(["GET", `xd:${name}`]), redisCall(["GET", `xd:${name}:seed`])]);
+  const [raw, seeded, reset] = await Promise.all([redisCall(["GET", `xd:${name}`]), redisCall(["GET", `xd:${name}:seed`]), redisCall(["GET", `xd:${name}:reset`])]);
+
+  if (RESET[name] && reset !== RESET[name]) {
+    // Nowy katalog z importu: stara lista do kopii, plik z repozytorium staje się listą w bazie
+    // NX: przy kilku jednoczesnych wejściach kopia zostaje z pierwszego, czyli ze starej listy
+    if (typeof raw === "string") await redisCall(["SET", `xd:${name}:backup:${RESET[name]}`, raw, "NX"]);
+    await redisCall(["DEL", `xd:${name}:deleted`]);
+    await redisCall(["SET", `xd:${name}`, fileRaw]);
+    await redisCall(["SET", `xd:${name}:seed`, version]);
+    await redisCall(["SET", `xd:${name}:reset`, RESET[name]]);
+    return JSON.parse(fileRaw) as T[];
+  }
   if (typeof raw === "string" && seeded === version) return JSON.parse(raw) as T[];
 
   // Pierwsze uruchomienie albo nowa wersja pliku: dokładamy nowe pozycje z repozytorium

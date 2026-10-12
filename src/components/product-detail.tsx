@@ -39,7 +39,7 @@ const chip = (active: boolean) =>
     active ? "border-fg bg-fg text-bg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"
   }`;
 
-export function ProductDetail({ find, related }: { find: Find; related: Find[] }) {
+export function ProductDetail({ find, related, variants = [] }: { find: Find; related: Find[]; variants?: Find[] }) {
   const f = useFormat();
   const { t } = f;
   const haul = useHaul();
@@ -88,12 +88,12 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
     { icon: <Scale aria-hidden size={14} />, label: t("product.weight"), value: `≈ ${f.weight(find.weightGrams, "g")}` },
     { icon: <Truck aria-hidden size={14} />, label: t("product.delivery"), value: `≈ ${f.money(shippingCost(withPackaging(find.weightGrams), "standard"))}` },
     { icon: <Package aria-hidden size={14} />, label: t("qcf.domestic"), value: details ? (details.domesticShipCny ? `¥${details.domesticShipCny}` : "–") : "…" },
-    { icon: <Eye aria-hidden size={14} />, label: t("product.views"), value: String(find.views) },
+    ...(find.views > 0 ? [{ icon: <Eye aria-hidden size={14} />, label: t("product.views"), value: String(find.views) }] : []),
   ];
 
   const description: [string, ReactNode][] = [
     [t("product.category"), f.category(find.category)],
-    [t("product.batch"), find.batch],
+    ...(find.batch === "Random batch" ? [] : [[t("product.batch"), find.batch] as [string, string]]),
     ...(details?.seller ? [[t("product.seller"), details.seller] as [string, string]] : []),
     ...(range ? [[t("product.sourcePrice"), range[0] === range[1] ? `¥${range[0]}` : `¥${range[0]}–${range[1]}`] as [string, string]] : []),
     [
@@ -118,7 +118,7 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
           <button
             type="button"
             onClick={() => setZoom(Math.max(0, gallery.indexOf(active)))}
-            className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-xl border border-line bg-[#1c1c1f]"
+            className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-xl"
           >
             <ProductImage src={active} alt={find.name} sizes="(min-width: 768px) 30rem, 100vw" preload onError={() => markFailed(active)} />
             <span className="sr-only">{t("product.zoom")}</span>
@@ -131,7 +131,7 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
                     type="button"
                     onClick={() => setActive(src)}
                     aria-pressed={active === src}
-                    className={`relative block size-14 overflow-hidden rounded-lg border bg-[#1c1c1f] transition-colors ${
+                    className={`relative block size-14 overflow-hidden rounded-lg border transition-colors ${
                       active === src ? "border-fg" : "border-line opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -209,7 +209,7 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
           )}
 
           <p className="mt-5 flex flex-wrap items-baseline gap-x-3">
-            <span className="font-mono text-[1.625rem] font-medium tabular">{f.money(find.pricePln)}</span>
+            <span className="font-mono text-[1.625rem] font-medium tabular">{find.pricePln > 0 ? f.money(find.pricePln) : "–"}</span>
             <span className="text-sm text-muted tabular">≈ {secondary}</span>
           </p>
           {details && !details.available && <p className="mt-1 text-sm font-medium text-amber-300">{t("product.unavailable")}</p>}
@@ -271,6 +271,19 @@ export function ProductDetail({ find, related }: { find: Find; related: Find[] }
       <section aria-labelledby="qc-photos" className="mt-10">
         <QcGallery productUrl={link} titleId="qc-photos" />
       </section>
+
+      {variants.length > 0 && (
+        <section aria-labelledby="variants-title" className="mt-14">
+          <SectionTitle id="variants-title" title={[t("product.variants"), ""]} count={variants.length} />
+          <Carousel label={t("product.variants")}>
+            {variants.map((item) => (
+              <li key={item.id} className={cardSlot}>
+                <ProductCard find={item} />
+              </li>
+            ))}
+          </Carousel>
+        </section>
+      )}
 
       {related.length > 0 && (
         <section aria-labelledby="related-title" className="mt-14">

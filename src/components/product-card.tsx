@@ -11,11 +11,11 @@ import { ProductImage } from "./product-image";
 
 const SIZES = "(min-width: 768px) 14rem, (min-width: 640px) 12.5rem, 11rem";
 
-// Kolor kropki przy batchu: od razu widać, czy to najlepsza wersja, czy budżetowa
+// Kolor kropki przy batchu: od razu widać, czy to najlepsza wersja, czy budżetowa.
+// Zwykły batch („Random”) nic nie mówi, więc zamiast niego karta pokazuje kategorię.
 const BATCH_DOT: Record<string, string> = {
   "Best batch": "bg-gl",
   "Budget batch": "bg-amber-400",
-  "Random batch": "bg-dim",
 };
 
 // Szkło na zdjęciu: liczba QC, kapsuła z serduszkiem i paczką
@@ -33,15 +33,13 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
 
   return (
     <article className="group relative flex h-full flex-col">
-      <div className="relative aspect-square overflow-hidden rounded-[14px] bg-[#1c1c1f]">
+      <div className="relative aspect-square rounded-[14px]">
         <ProductImage src={find.image} sizes={SIZES} />
         {find.qcCover && (
-          <span aria-hidden="true" className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none">
+          <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[inherit] opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none">
             <ProductImage src={find.qcCover} sizes={SIZES} />
           </span>
         )}
-        {/* Cienka krawędź, żeby zdjęcia na białym i czarnym tle kończyły się tak samo */}
-        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
 
         {isNew && <span className="absolute left-2 top-2 rounded-full bg-gl px-2 py-1 text-[10.5px] font-semibold leading-none text-white">{t("card.new")}</span>}
 
@@ -74,10 +72,16 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
           </Link>
         </h3>
         <div className="mt-auto flex items-baseline justify-between gap-2 pt-1.5">
-          <span className="font-mono text-[15px] font-semibold tabular">{f.money(find.pricePln)}</span>
+          <span className="font-mono text-[15px] font-semibold tabular">{find.pricePln > 0 ? f.money(find.pricePln) : "–"}</span>
           <span className="inline-flex min-w-0 items-center gap-1.5 text-[12px] text-muted">
-            <span aria-hidden="true" className={`size-1.5 shrink-0 self-center rounded-full ${BATCH_DOT[find.batch] ?? "bg-dim"}`} />
-            <span className="truncate">{find.batch.replace(/ batch$/i, "")}</span>
+            {BATCH_DOT[find.batch] ? (
+              <>
+                <span aria-hidden="true" className={`size-1.5 shrink-0 self-center rounded-full ${BATCH_DOT[find.batch]}`} />
+                <span className="truncate">{find.batch.replace(/ batch$/i, "")}</span>
+              </>
+            ) : (
+              <span className="truncate">{f.category(find.category)}</span>
+            )}
           </span>
         </div>
       </div>

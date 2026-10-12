@@ -119,7 +119,7 @@ function useProgress(playing: boolean, duration: number) {
 const easeOut = (p: number) => 1 - (1 - p) ** 3;
 
 const Thumb = ({ src, className = "" }: { src?: string; className?: string }) => (
-  <span className={`relative block overflow-hidden rounded-md bg-[#1c1c1f] ${className}`}>{src && <ProductImage src={src} sizes="6rem" />}</span>
+  <span className={`relative block overflow-hidden rounded-md ${className}`}>{src && <ProductImage src={src} sizes="6rem" />}</span>
 );
 
 function Preview({ id, previews, playing }: { id: ToolId; previews: ToolPreviews; playing: boolean }) {

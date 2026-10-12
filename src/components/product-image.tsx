@@ -34,9 +34,13 @@ type ProductImageProps = {
   onError?: () => void;
 };
 
+/** Zdjęcia produktów bez tła z public/i – już zmniejszone, więc idą prosto z CDN, bez przeliczania */
+export const isCutout = (src: string) => src.startsWith("/i/");
+
 /** Zdjęcie produktu wypełniające rodzica. Działa też z linkami spoza listy hostów. */
 export function ProductImage({ src, alt = "", sizes, preload, className = "", onError }: ProductImageProps) {
   if (!src) return null;
+  const cutout = isCutout(src);
   return (
     <Image
       src={src}
@@ -44,8 +48,8 @@ export function ProductImage({ src, alt = "", sizes, preload, className = "", on
       fill
       sizes={sizes}
       preload={preload}
-      unoptimized={!canOptimize(src)}
-      className={`object-cover ${className}`}
+      unoptimized={cutout || !canOptimize(src)}
+      className={`${cutout ? "cutout object-contain" : "object-cover"} ${className}`}
       onError={onError}
     />
   );

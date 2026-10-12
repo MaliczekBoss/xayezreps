@@ -31,10 +31,13 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
     return result;
   }, {});
 
-  const visible = useMemo(() => {
+  // Przy kilku tysiącach produktów lista pokazuje porcjami po 100
+  const [limit, setLimit] = useState(100);
+  const matching = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q ? finds.filter((f) => `${f.name} ${f.category} ${f.batch}`.toLowerCase().includes(q)) : finds;
+    return q ? finds.filter((f) => `${f.name} ${f.category} ${f.batch} ${f.id}`.toLowerCase().includes(q)) : finds;
   }, [finds, query]);
+  const visible = matching.slice(0, limit);
 
   const startEdit = (find: Find) => {
     setEditing(find);
@@ -108,7 +111,10 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
               <input
                 id="admin-search"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setLimit(100);
+                }}
                 placeholder="Szukaj po nazwie lub kategorii"
                 className="h-full w-full bg-transparent text-sm focus:outline-none"
               />
@@ -126,13 +132,14 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
             <ul className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
               {visible.map((f) => (
                 <li key={f.id} className={`flex items-center gap-3.5 px-3.5 py-3 sm:px-4 ${editing?.id === f.id ? "bg-white/[0.04]" : ""}`}>
-                  <span className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-line bg-bg">
+                  <span className="relative size-14 shrink-0">
                     <ProductImage src={f.image} sizes="3.5rem" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{f.name}</p>
                     <p className="mt-0.5 truncate text-xs text-muted">
                       {f.category}, {f.batch}, {platformLabel[f.source.platform]}
+                      {f.hidden && ", tylko w outfitach"}
                     </p>
                     <p className="mt-0.5 font-mono text-xs text-dim tabular">
                       {formatMoney(f.pricePln, "PLN", "pl-PL")} · {f.weightGrams} g · {f.views} wyśw. · {dateFmt.format(new Date(f.createdAt))}
@@ -153,6 +160,15 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
                 </li>
               ))}
             </ul>
+          )}
+          {matching.length > visible.length && (
+            <button
+              type="button"
+              onClick={() => setLimit((n) => n + 100)}
+              className="mt-3 flex h-11 w-full items-center justify-center rounded-xl border border-line bg-card text-sm font-medium text-muted hover:border-line-strong hover:text-fg"
+            >
+              Pokaż kolejne ({visible.length} z {matching.length})
+            </button>
           )}
         </section>
       </div>

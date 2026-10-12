@@ -61,7 +61,7 @@ export function LinkConverter({ example }: { example?: ConverterExample }) {
                 <p className="mt-1 text-sm text-muted">{t("conv.tryText")}</p>
                 <div className="mt-4 flex flex-col gap-3 rounded-xl border border-line bg-card p-3 sm:flex-row sm:items-center">
                   <span className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-[#1c1c1f]">
+                    <span className="relative size-14 shrink-0">
                       <ProductImage src={example.image} sizes="3.5rem" />
                     </span>
                     <span className="min-w-0">

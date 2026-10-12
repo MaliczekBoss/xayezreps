@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OutfitsIndex } from "@/components/outfits";
 import { PageShell } from "@/components/page-shell";
 import { summarizeOutfits } from "@/lib/outfits";
-import { getFinds, getOutfits } from "@/lib/store";
+import { getAllFinds, getOutfits } from "@/lib/store";
 
 export const metadata: Metadata = {
   title: "Outfity",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OutfitsPage() {
-  const [outfits, finds] = await Promise.all([getOutfits(), getFinds()]);
+  const [outfits, finds] = await Promise.all([getOutfits(), getAllFinds()]);
   return (
     <PageShell>
       <OutfitsIndex outfits={summarizeOutfits(outfits, finds)} />

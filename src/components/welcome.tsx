@@ -241,7 +241,7 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
 
           {sample && (
             <div className="flex gap-3 md:flex-col">
-              <span className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl border border-line bg-[#1c1c1f] md:w-full">
+              <span className="relative aspect-square w-20 shrink-0 md:w-full">
                 <ProductImage src={sample.image} sizes="(min-width: 768px) 16rem, 5rem" />
               </span>
               <div className="min-w-0 flex-1">

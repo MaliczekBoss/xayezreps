@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
-import { categories, sortPopular, type Find } from "@/lib/finds";
+import { categories } from "@/lib/finds";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { HeroBanners } from "./hero-banners";
@@ -77,7 +77,7 @@ function RisingWords({ text, start }: { text: string; start: number }) {
   ));
 }
 
-export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreviews }) {
+export function Hero({ covers, collage, previews }: { covers: Record<string, string>; collage: string[]; previews: ToolPreviews }) {
   const f = useFormat();
   const { t } = f;
   const [intro] = useState(() => !introPlayed);
@@ -85,10 +85,8 @@ export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreview
     introPlayed = true;
   }, []);
 
-  const popular = sortPopular(finds);
-  // Zdjęcie kategorii: najpopularniejszy find z niej; „+ Więcej” dostaje kolaż czterech najpopularniejszych
-  const cover = (c: string) => popular.find((p) => p.category === c && p.image)?.image ?? "";
-  const collage = popular.slice(0, 4).map((p) => p.image);
+  // Zdjęcie kategorii: najpopularniejszy find z niej (liczone na serwerze)
+  const cover = (c: string) => covers[c] ?? "";
 
   return (
     // Wylatująca karta wachlarza nie może przesuwać strony w bok
@@ -121,7 +119,7 @@ export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreview
             {chips.map((c, i) => (
               <li key={c} className="intro-fade shrink-0" style={at(760 + i * 35)}>
                 <Link href={`${site.routes.finds}?category=${encodeURIComponent(c)}`} className="group flex w-14 flex-col items-center gap-1.5">
-                  <span className="relative size-14 overflow-hidden rounded-full bg-[#1c1c1f] ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
+                  <span className="relative size-14 rounded-full ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
                     {cover(c) && <ProductImage src={cover(c)} sizes="3.5rem" />}
                   </span>
                   <span className="text-[12px] text-muted transition-colors group-hover:text-fg">{f.category(c)}</span>
@@ -130,9 +128,9 @@ export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreview
             ))}
             <li className="intro-fade shrink-0" style={at(760 + chips.length * 35)}>
               <Link href={site.routes.finds} className="group flex w-14 flex-col items-center gap-1.5">
-                <span className="grid size-14 grid-cols-2 gap-px overflow-hidden rounded-full bg-line ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
+                <span className="grid size-14 grid-cols-2 place-items-center rounded-full p-1.5 ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
                   {collage.map((src, i) => (
-                    <span key={i} className="relative bg-[#1c1c1f]">
+                    <span key={i} className="relative size-full">
                       {src && <ProductImage src={src} sizes="1.75rem" />}
                     </span>
                   ))}

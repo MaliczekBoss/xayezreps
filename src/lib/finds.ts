@@ -17,10 +17,15 @@ export type Find = {
   qc?: number;
   /** Pierwsze zdjęcie QC – miniatura w rogu karty */
   qcCover?: string;
+  /** Produkt tylko do outfitów: nie pokazuje się w katalogu, wyszukiwarce ani rzędach */
+  hidden?: boolean;
+  /** Polecany: przy tej samej liczbie wyświetleń idzie wyżej w „Najpopularniejszych” */
+  featured?: boolean;
 };
 
 export const categories = [
   "Bluzy",
+  "Swetry",
   "Koszulki",
   "Kurtki",
   "Spodnie",
@@ -49,6 +54,7 @@ export type Batch = (typeof batches)[number];
 /** Domyślna waga dla kategorii, podpowiadana w panelu admina */
 export const defaultWeight: Record<Category, number> = {
   Bluzy: 750,
+  Swetry: 600,
   Koszulki: 250,
   Kurtki: 1200,
   Spodnie: 700,
@@ -69,8 +75,8 @@ export const defaultWeight: Record<Category, number> = {
 };
 
 /** Plakietka „Nowy” dla rzeczy dodanych w ostatnich dniach */
-export const NEW_FOR_DAYS = 14;
+export const NEW_FOR_DAYS = 3;
 
 export const sortNewest = (list: Find[]) => [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-export const sortPopular = (list: Find[]) => [...list].sort((a, b) => b.views - a.views);
+export const sortPopular = (list: Find[]) => [...list].sort((a, b) => b.views - a.views || Number(Boolean(b.featured)) - Number(Boolean(a.featured)));

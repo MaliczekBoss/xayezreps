@@ -90,7 +90,7 @@ function Scale({ lines, grams, f }: { lines: HaulLine[]; grams: number; f: Forma
                 animate={{ y: 0, opacity: 1, rotate: spot.r }}
                 exit={reduce ? { opacity: 0 } : { y: -90, opacity: 0, transition: { duration: 0.2 } }}
                 transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                className="absolute aspect-square w-[29%] overflow-hidden rounded-lg border border-line-strong bg-bg shadow-[0_14px_24px_-12px_rgb(0_0_0/0.9)]"
+                className="absolute aspect-square w-[29%]"
                 style={{ left: `${spot.x}%`, bottom: `${spot.y}%`, zIndex: i }}
               >
                 <ProductImage src={line.find.image} sizes="9rem" />
@@ -292,7 +292,7 @@ function ReceiptLine({ line, f }: { line: HaulLine; f: Format }) {
   const { find, qty } = line;
   return (
     <li className="flex items-center gap-3 py-3">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border border-line bg-bg">
+      <div className="relative size-11 shrink-0">
         <ProductImage src={find.image} sizes="2.75rem" />
       </div>
       <div className="min-w-0 flex-1">
