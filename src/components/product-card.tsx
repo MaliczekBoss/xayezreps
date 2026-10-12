@@ -9,46 +9,75 @@ import { FavoriteButton } from "./favorite-button";
 import { HaulToggle } from "./haul-toggle";
 import { ProductImage } from "./product-image";
 
-/** Karta produktu jak na cadenreps: zdjęcie z kategorią, nazwa, batch, cena i „Zobacz →” */
+const SIZES = "(min-width: 768px) 14rem, (min-width: 640px) 12.5rem, 11rem";
+
+// Kolor kropki przy batchu: od razu widać, czy to najlepsza wersja, czy budżetowa
+const BATCH_DOT: Record<string, string> = {
+  "Best batch": "bg-gl",
+  "Budget batch": "bg-amber-400",
+  "Random batch": "bg-dim",
+};
+
+// Szkło na zdjęciu: liczba QC, kapsuła z serduszkiem i paczką
+const glass = "bg-black/50 ring-1 ring-white/10 backdrop-blur-md";
+
+/**
+ * Karta findu bez ramki: zdjęcie na kafelku, pod nim nazwa, cena i batch. Po najechaniu zdjęcie
+ * ze sklepu przechodzi w prawdziwe zdjęcie QC z magazynu, jeśli je mamy.
+ */
 export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boolean }) {
   const f = useFormat();
   const { t } = f;
+  const qc = find.qc ?? 0;
+  const peek = Boolean(find.qcCover);
+
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[10px] border border-line bg-card transition-colors duration-150 hover:border-line-strong">
-      <div className="relative aspect-square overflow-hidden bg-[#1c1c1f]">
-        <ProductImage
-          src={find.image}
-          sizes="(min-width: 768px) 14rem, (min-width: 640px) 12.5rem, 11rem"
-          className="transition-transform duration-300 group-hover:scale-[1.03]"
-        />
-        {isNew && <span className="absolute left-2.5 top-2.5 rounded-[5px] bg-gl px-[7px] py-[3px] text-[10px] font-bold leading-none text-white">{t("card.new")}</span>}
-        <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">
-          <FavoriteButton find={find} />
-          <HaulToggle find={find} />
+    <article className="group relative flex h-full flex-col">
+      <div className="relative aspect-square overflow-hidden rounded-[14px] bg-[#1c1c1f]">
+        <ProductImage src={find.image} sizes={SIZES} />
+        {find.qcCover && (
+          <span aria-hidden="true" className="absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none">
+            <ProductImage src={find.qcCover} sizes={SIZES} />
+          </span>
+        )}
+        {/* Cienka krawędź, żeby zdjęcia na białym i czarnym tle kończyły się tak samo */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
+
+        {isNew && <span className="absolute left-2 top-2 rounded-full bg-gl px-2 py-1 text-[10.5px] font-semibold leading-none text-white">{t("card.new")}</span>}
+
+        <div className={`absolute right-2 top-2 z-10 flex flex-col items-center overflow-hidden rounded-full ${glass}`}>
+          <FavoriteButton find={find} bare />
+          <span aria-hidden="true" className="h-px w-3.5 bg-white/15" />
+          <HaulToggle find={find} bare />
         </div>
-        <span className="absolute bottom-2.5 left-2.5 rounded-[5px] bg-[#18181b]/80 px-[7px] py-[3px] text-[10px] uppercase leading-[15px] tracking-[1px] text-muted backdrop-blur">
-          {f.category(find.category)}
-        </span>
-        {Boolean(find.qc) && (
-          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-[5px] bg-[#18181b]/80 px-[7px] py-[3px] text-[10px] font-semibold leading-[15px] text-fg backdrop-blur tabular">
+
+        {qc > 0 && (
+          <span className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium leading-none text-white tabular ${glass}`}>
             <Camera aria-hidden size={11} />
-            <span aria-hidden="true">{t("card.qc", { n: find.qc ?? 0 })}</span>
-            <span className="sr-only">{t("card.qcSr", { n: find.qc ?? 0 })}</span>
+            <span aria-hidden="true" className={peek ? "group-hover:hidden" : ""}>
+              {qc}
+            </span>
+            {peek && (
+              <span aria-hidden="true" className="hidden group-hover:inline">
+                {t("card.qcPeek", { n: qc })}
+              </span>
+            )}
+            <span className="sr-only">{t("card.qcSr", { n: qc })}</span>
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-[15px] pb-3 pt-[13px]">
-        <h3 className="line-clamp-2 min-h-[2.6em] text-[14.5px] font-medium leading-[1.3] tracking-[-0.01em]">
-          <Link href={site.routes.product(find.id)} className="after:absolute after:inset-0">
+      <div className="flex flex-1 flex-col px-0.5 pt-2.5">
+        <h3 className="line-clamp-2 text-[14px] font-medium leading-[1.3] tracking-[-0.01em]">
+          <Link href={site.routes.product(find.id)} className="after:absolute after:inset-0 after:rounded-[14px]">
             {find.name}
           </Link>
         </h3>
-        <p className="text-[12.5px] text-muted">{find.batch}</p>
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-2.5">
-          <span className="font-mono text-sm tabular">{f.money(find.pricePln)}</span>
-          <span aria-hidden="true" className="text-[12.5px] font-medium text-muted/80 transition-colors group-hover:text-fg">
-            {t("card.view")} →
+        <div className="mt-auto flex items-baseline justify-between gap-2 pt-1.5">
+          <span className="font-mono text-[15px] font-semibold tabular">{f.money(find.pricePln)}</span>
+          <span className="inline-flex min-w-0 items-center gap-1.5 text-[12px] text-muted">
+            <span aria-hidden="true" className={`size-1.5 shrink-0 self-center rounded-full ${BATCH_DOT[find.batch] ?? "bg-dim"}`} />
+            <span className="truncate">{find.batch.replace(/ batch$/i, "")}</span>
           </span>
         </div>
       </div>

@@ -72,9 +72,12 @@ export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   return index;
 }
 
-/** Dokleja do findów liczbę zdjęć QC (pole qc) */
+/** Dokleja do findów liczbę zdjęć QC (qc) i pierwsze z nich (qcCover) */
 export function withQc(finds: Find[], index: Record<string, QcInfo>): Find[] {
-  return finds.map((f) => ({ ...f, qc: index[sourceKey(f)]?.count ?? 0 }));
+  return finds.map((f) => {
+    const info = index[sourceKey(f)];
+    return info?.cover ? { ...f, qc: info.count, qcCover: info.cover } : { ...f, qc: info?.count ?? 0 };
+  });
 }
 
 /** Najnowsze findy, które mają prawdziwe zdjęcia QC – do rzędu na stronie głównej */

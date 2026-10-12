@@ -233,7 +233,7 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
           {sheet ? (
             <FindsSheet items={visible} />
           ) : (
-            <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
+            <ul className="mt-4 grid grid-cols-2 gap-x-2.5 gap-y-6 sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5">
               {visible.map((item) => (
                 <li key={item.id}>
                   <ProductCard find={item} />

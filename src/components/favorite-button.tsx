@@ -5,8 +5,16 @@ import type { Find } from "@/lib/finds";
 import { favoriteActions, useFavorites } from "@/lib/favorites";
 import { useFormat } from "@/lib/use-format";
 
+type FavoriteButtonProps = {
+  find: Pick<Find, "id" | "name" | "image">;
+  className?: string;
+  withLabel?: boolean;
+  /** Bez własnej ramki i tła, do kapsuły na zdjęciu karty findu */
+  bare?: boolean;
+};
+
 /** Serduszko: dodaje find do ulubionych albo go z nich usuwa */
-export function FavoriteButton({ find, className = "", withLabel = false }: { find: Pick<Find, "id" | "name" | "image">; className?: string; withLabel?: boolean }) {
+export function FavoriteButton({ find, className = "", withLabel = false, bare = false }: FavoriteButtonProps) {
   const { t } = useFormat();
   const favorites = useFavorites();
   const saved = Boolean(favorites[find.id]);
@@ -22,7 +30,9 @@ export function FavoriteButton({ find, className = "", withLabel = false }: { fi
           ? `inline-flex h-10 items-center gap-2 rounded-lg border px-3.5 text-sm font-medium transition-colors ${
               saved ? "border-fg text-fg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"
             } ${className}`
-          : `grid size-8 place-items-center rounded-lg border backdrop-blur transition-colors ${
+          : bare
+            ? `grid size-8 place-items-center transition-colors hover:bg-white/15 ${saved ? "text-red-400" : "text-white"} ${className}`
+            : `grid size-8 place-items-center rounded-lg border backdrop-blur transition-colors ${
               saved ? "border-white/10 bg-[#18181b]/80 text-red-400" : "border-white/10 bg-[#18181b]/80 text-fg hover:border-white/30"
             } ${className}`
       }

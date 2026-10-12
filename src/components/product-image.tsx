@@ -1,7 +1,20 @@
 import Image from "next/image";
 
 // Hosty skonfigurowane w next.config.ts – inne zdjęcia pokazujemy bez optymalizacji
-const OPTIMIZED_HOSTS = ["cdn.xayezreps.com", "xayezreps.pl", "si.geilicdn.com", "img.alicdn.com", "kk-oss-wh-hk.kakobuy.com", "xayezreps.com"];
+const OPTIMIZED_HOSTS = [
+  "cdn.xayezreps.com",
+  "xayezreps.pl",
+  "si.geilicdn.com",
+  "img.alicdn.com",
+  "xayezreps.com",
+  // Magazyny agentów (zdjęcia QC)
+  "kk-oss-wh-hk.kakobuy.com",
+  "kk-oss-wh-hk.kakobyy.com",
+  "kako-alosshk-pic.kakobuy.com",
+  "media.usfans.com",
+  "a-wh.loongbuy.com",
+  "img.customizeify.com",
+];
 
 function canOptimize(src: string) {
   if (src.startsWith("/")) return true;

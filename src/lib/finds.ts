@@ -15,6 +15,8 @@ export type Find = {
   createdAt: string;
   /** Liczba zdjęć QC w magazynie – doklejana na stronach, nie zapisywana w katalogu */
   qc?: number;
+  /** Pierwsze zdjęcie QC – miniatura w rogu karty */
+  qcCover?: string;
 };
 
 export const categories = [

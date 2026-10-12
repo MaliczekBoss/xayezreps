@@ -226,19 +226,20 @@ export function SellerShop({ seller, initial }: SellerShopProps) {
       {items.length === 0 && !loading ? (
         <p className="mt-6 border-y border-line py-8 text-muted">{t("finds.empty")}</p>
       ) : (
-        <ul className={`mt-5 grid grid-cols-2 gap-2.5 transition-opacity sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5 ${loading && items.length ? "opacity-60" : ""}`}>
+        <ul className={`mt-5 grid grid-cols-2 gap-x-2.5 gap-y-6 transition-opacity sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5 ${loading && items.length ? "opacity-60" : ""}`}>
           {items.map((item) => (
             <li key={item.id}>
-              <article className="flex h-full flex-col overflow-hidden rounded-[10px] border border-line bg-card transition-colors hover:border-line-strong">
-                <a href={buyLink(item)} target="_blank" rel="noopener noreferrer sponsored" className="group relative block aspect-square bg-[#1c1c1f]">
-                  <ProductImage src={item.image} sizes="(min-width: 1024px) 14rem, 45vw" className="transition-transform duration-300 group-hover:scale-[1.03]" />
+              <article className="flex h-full flex-col">
+                <a href={buyLink(item)} target="_blank" rel="noopener noreferrer sponsored" className="relative block aspect-square overflow-hidden rounded-[14px] bg-[#1c1c1f]">
+                  <ProductImage src={item.image} sizes="(min-width: 1024px) 14rem, 45vw" />
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/[0.07]" />
                   <span className="sr-only">
                     {item.title}, {t("newTab")}
                   </span>
                 </a>
-                <div className="flex flex-1 flex-col px-3 pb-3 pt-2.5">
-                  <p className="line-clamp-2 min-h-[2.6em] text-[13.5px] font-medium leading-[1.3]">{item.title}</p>
-                  <p className="mt-1 font-mono text-sm tabular">{f.money(item.price)}</p>
+                <div className="flex flex-1 flex-col px-0.5 pt-2.5">
+                  <p className="line-clamp-2 min-h-[2.6em] text-[14px] font-medium leading-[1.3] tracking-[-0.01em]">{item.title}</p>
+                  <p className="mt-1 font-mono text-[15px] font-semibold tabular">{f.money(item.price)}</p>
                   <div className="mt-auto flex gap-1.5 pt-2.5">
                     <Link
                       href={`${site.routes.qcFinder}?url=${encodeURIComponent(item.link)}`}

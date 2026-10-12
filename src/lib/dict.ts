@@ -4,6 +4,7 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
+  "card.qcPeek": "Z magazynu, {n} QC",
   "nav.browse": "Przeglądaj",
   "nav.qc": "Zdjęcia QC",
   "nav.tools": "Narzędzia",
@@ -523,6 +524,7 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
+  "card.qcPeek": "Warehouse, {n} QC",
   "nav.browse": "Browse",
   "nav.qc": "QC photos",
   "nav.tools": "Tools",
@@ -1027,6 +1029,7 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
+  "card.qcPeek": "Aus dem Lager, {n} QC",
   "nav.browse": "Entdecken",
   "nav.qc": "QC-Fotos",
   "nav.tools": "Tools",
@@ -1229,6 +1232,7 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
+  "card.qcPeek": "Entrepôt, {n} QC",
   "nav.browse": "Explorer",
   "nav.qc": "Photos QC",
   "nav.tools": "Outils",
@@ -1431,6 +1435,7 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
+  "card.qcPeek": "Del almacén, {n} QC",
   "nav.browse": "Explorar",
   "nav.qc": "Fotos QC",
   "nav.tools": "Herramientas",
@@ -1633,6 +1638,7 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
+  "card.qcPeek": "Dal magazzino, {n} QC",
   "nav.browse": "Esplora",
   "nav.qc": "Foto QC",
   "nav.tools": "Strumenti",
@@ -1835,6 +1841,7 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
+  "card.qcPeek": "仓库实拍 {n} 张",
   "nav.browse": "浏览",
   "nav.qc": "QC 照片",
   "nav.tools": "工具",

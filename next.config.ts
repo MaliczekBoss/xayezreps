@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "xayezreps.com", pathname: "/api/img/**" },
       // Zdjęcia QC z magazynu Kakobuy (oryginały mają po 2–3 MB, więc je zmniejszamy)
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobuy.com", pathname: "/**" },
+      { protocol: "https", hostname: "kk-oss-wh-hk.kakobyy.com", pathname: "/**" },
+      { protocol: "https", hostname: "kako-alosshk-pic.kakobuy.com", pathname: "/**" },
+      { protocol: "https", hostname: "media.usfans.com", pathname: "/**" },
+      { protocol: "https", hostname: "a-wh.loongbuy.com", pathname: "/**" },
+      { protocol: "https", hostname: "img.customizeify.com", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
   },

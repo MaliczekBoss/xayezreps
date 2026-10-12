@@ -221,9 +221,9 @@ export function PhotoSearch({ catalog }: { catalog?: PhotoCatalog }) {
       )}
 
       {state.status === "loading" && (
-        <div aria-hidden="true" className="mt-8 grid animate-pulse grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
+        <div aria-hidden="true" className="mt-8 grid animate-pulse grid-cols-2 gap-x-2.5 gap-y-6 sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="aspect-[3/4] rounded-[10px] bg-card" />
+            <div key={i} className="aspect-square rounded-[14px] bg-card" />
           ))}
         </div>
       )}
@@ -271,7 +271,7 @@ function Grid({ id, title, items }: { id: string; title: string; items: Find[] }
   return (
     <section aria-labelledby={id} className="mt-10">
       <SectionTitle id={id} title={[title, ""]} count={items.length} />
-      <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
+      <ul className="mt-5 grid grid-cols-2 gap-x-2.5 gap-y-6 sm:grid-cols-3 sm:gap-x-3 md:grid-cols-4 lg:grid-cols-5">
         {items.map((item) => (
           <li key={item.id}>
             <ProductCard find={item} />
