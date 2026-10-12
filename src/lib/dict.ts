@@ -4,6 +4,7 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
+  "hero.drag": "przesuń",
   "hero.couponCopy": "Kopiuj kod",
   "hero.couponCopied": "Skopiowano",
   "hero.title1": "Zobacz QC.",
@@ -16,7 +17,6 @@ const pl = {
   "hero.warehouse": "magazyn",
   "hero.compare": "Porównaj zdjęcie ze sklepu ze zdjęciem z magazynu: {name}",
   "hero.seeQc": "Zdjęcia QC: {n}",
-  "hero.pick": "Wybierz find do porównania",
   "card.qcPeek": "Z magazynu, {n} QC",
   "nav.browse": "Przeglądaj",
   "nav.qc": "Zdjęcia QC",
@@ -515,6 +515,7 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
+  "hero.drag": "drag",
   "hero.couponCopy": "Copy code",
   "hero.couponCopied": "Copied",
   "hero.title1": "See the QC.",
@@ -527,7 +528,6 @@ const en: Dict = {
   "hero.warehouse": "warehouse",
   "hero.compare": "Compare the store photo with the warehouse photo: {name}",
   "hero.seeQc": "QC photos: {n}",
-  "hero.pick": "Pick a find to compare",
   "card.qcPeek": "Warehouse, {n} QC",
   "nav.browse": "Browse",
   "nav.qc": "QC photos",
@@ -1011,6 +1011,7 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
+  "hero.drag": "ziehen",
   "hero.couponCopy": "Code kopieren",
   "hero.couponCopied": "Kopiert",
   "hero.title1": "Sieh das QC.",
@@ -1217,6 +1218,7 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
+  "hero.drag": "glisser",
   "hero.couponCopy": "Copier le code",
   "hero.couponCopied": "Copié",
   "hero.title1": "Vois le QC.",
@@ -1423,6 +1425,7 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
+  "hero.drag": "desliza",
   "hero.couponCopy": "Copiar código",
   "hero.couponCopied": "Copiado",
   "hero.title1": "Mira el QC.",
@@ -1629,6 +1632,7 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
+  "hero.drag": "trascina",
   "hero.couponCopy": "Copia codice",
   "hero.couponCopied": "Copiato",
   "hero.title1": "Guarda il QC.",
@@ -1835,6 +1839,7 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
+  "hero.drag": "拖动",
   "hero.couponCopy": "复制代码",
   "hero.couponCopied": "已复制",
   "hero.title1": "先看 QC。",

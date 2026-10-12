@@ -19,8 +19,6 @@ const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 // Najczęściej wpisywane frazy – prowadzą prosto do wyników wyszukiwarki
 const POPULAR_SEARCHES = ["Jordan 4", "Chrome Hearts", "Corteiz", "Moncler", "Nike Tech", "Balenciaga"];
 
-const COMPARE_COUNT = 5;
-
 /** Słowa nagłówka wjeżdżające po kolei spod krawędzi */
 function RisingWords({ text, start }: { text: string; start: number }) {
   return text.split(" ").map((word, i) => (
@@ -35,18 +33,8 @@ function RisingWords({ text, start }: { text: string; start: number }) {
   ));
 }
 
-/** Findy do porównania: popularne, ze zdjęciem QC, każdy z innej kategorii */
-function pickCompare(finds: Find[]) {
-  const seen = new Set<string>();
-  const picked: Find[] = [];
-  for (const f of sortPopular(finds)) {
-    if (!f.qcCover || seen.has(f.category)) continue;
-    seen.add(f.category);
-    picked.push(f);
-    if (picked.length === COMPARE_COUNT) break;
-  }
-  return picked;
-}
+/** Find do porównania: wybrany w site.ts, a gdy nie ma zdjęcia QC – najpopularniejszy, który je ma */
+const pickShowcase = (finds: Find[]) => finds.find((f) => f.id === site.heroFindId && f.qcCover) ?? sortPopular(finds).find((f) => f.qcCover);
 
 export function Hero({ finds }: { finds: Find[] }) {
   const f = useFormat();
@@ -56,7 +44,7 @@ export function Hero({ finds }: { finds: Find[] }) {
     introPlayed = true;
   }, []);
 
-  const compare = pickCompare(finds);
+  const showcase = pickShowcase(finds);
 
   return (
     <section
@@ -96,9 +84,9 @@ export function Hero({ finds }: { finds: Find[] }) {
         </div>
       </div>
 
-      {compare.length > 0 && (
+      {showcase && (
         <div className="intro-fade min-w-0" style={at(160)}>
-          <QcCompare items={compare} intro={intro} />
+          <QcCompare item={showcase} intro={intro} />
         </div>
       )}
     </section>
@@ -151,13 +139,14 @@ function HeroCoupon() {
  * Ten sam find przecięty pionową linią: z lewej zdjęcie ze sklepu, z prawej prawdziwe zdjęcie QC
  * z magazynu. Linię przesuwa się palcem, myszką albo strzałkami; przy wejściu na stronę sama odsłania QC.
  */
-function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
+function QcCompare({ item, intro }: { item: Find; intro: boolean }) {
   const f = useFormat();
   const { t } = f;
-  const [index, setIndex] = useState(0);
   const [pos, setPos] = useState(intro ? 100 : 50);
-  // Płynne przejście linii tylko przy pokazie na start i zmianie findu, nie przy przeciąganiu
+  // Płynne przejście linii tylko przy pokazie na start, nie przy przeciąganiu
   const [glide, setGlide] = useState(intro);
+  // Podpowiedź „przesuń” pod uchwytem znika po pierwszym przesunięciu
+  const [touched, setTouched] = useState(false);
 
   useEffect(() => {
     if (!intro) return;
@@ -166,7 +155,6 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
     return () => window.clearTimeout(timer);
   }, [intro]);
 
-  const item = items[index];
   const transition = glide ? "1.1s cubic-bezier(0.65, 0, 0.35, 1)" : "0s";
 
   return (
@@ -195,31 +183,14 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
           <span className="absolute left-1/2 top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-black shadow-[0_6px_20px_rgb(0_0_0/0.45)]">
             <ChevronsLeftRight size={18} strokeWidth={2.25} />
           </span>
+          <span
+            className={`absolute left-1/2 top-[calc(50%+1.75rem)] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur transition-opacity duration-300 ${
+              touched ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            {t("hero.drag")}
+          </span>
         </span>
-
-        {/* Wybór findu: miniatury na szkle w rogu zdjęcia, nad suwakiem */}
-        {items.length > 1 && (
-          <div role="group" aria-label={t("hero.pick")} className="absolute bottom-3 left-3 z-10 flex gap-1 rounded-xl bg-black/50 p-1 ring-1 ring-white/10 backdrop-blur-md">
-            {items.map((x, i) => (
-              <button
-                key={x.id}
-                type="button"
-                aria-pressed={i === index}
-                onClick={() => {
-                  setGlide(true);
-                  setIndex(i);
-                  setPos(50);
-                }}
-                className={`relative size-10 overflow-hidden rounded-lg bg-[#1c1c1f] transition-[opacity,box-shadow] ${
-                  i === index ? "shadow-[0_0_0_2px_#fff]" : "opacity-60 hover:opacity-100"
-                }`}
-              >
-                <ProductImage src={x.image} sizes="2.5rem" />
-                <span className="sr-only">{x.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Suwak na całym zdjęciu: obsługuje mysz, dotyk i klawiaturę */}
         <input
@@ -230,6 +201,7 @@ function QcCompare({ items, intro }: { items: Find[]; intro: boolean }) {
           value={pos}
           onChange={(e) => {
             setGlide(false);
+            setTouched(true);
             setPos(Number(e.target.value));
           }}
           aria-label={t("hero.compare", { name: item.name })}
