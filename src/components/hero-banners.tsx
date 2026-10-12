@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotion } from "motion/react";
 import { ArrowUpRight, Check, ChevronLeft, ChevronRight, Sparkles, Store } from "lucide-react";
 import { site } from "@/lib/site";
@@ -12,6 +12,8 @@ import { ProductImage } from "./product-image";
 import type { ToolPreviews } from "./tools";
 
 const ROTATE_MS = 6500;
+// Ile pikseli trzeba przesunąć palcem, żeby zmienić baner
+const SWIPE_PX = 40;
 
 type Slide = {
   id: string;
@@ -38,6 +40,10 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [drag, setDrag] = useState(0);
+  const touch = useRef<{ x: number; y: number; dx: number; horizontal: boolean | null } | null>(null);
+  // Po przesunięciu palcem nie otwieramy linku, który leży pod nim
+  const swiped = useRef(false);
   const [first, second, third] = data.products;
 
   const slides: Slide[] = [
@@ -104,13 +110,25 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
     },
   ];
 
+  // Odliczanie startuje od nowa po każdej zmianie banera, także ręcznej
   useEffect(() => {
     if (reduce || paused) return;
-    const timer = window.setInterval(() => setIndex((i) => (i + 1) % slides.length), ROTATE_MS);
-    return () => window.clearInterval(timer);
-  }, [reduce, paused, slides.length]);
+    const timer = window.setTimeout(() => setIndex((i) => (i + 1) % slides.length), ROTATE_MS);
+    return () => window.clearTimeout(timer);
+  }, [reduce, paused, index, slides.length]);
 
   const go = (dir: 1 | -1) => setIndex((i) => (i + dir + slides.length) % slides.length);
+
+  const endTouch = (commit: boolean) => {
+    const t0 = touch.current;
+    touch.current = null;
+    setDrag(0);
+    setPaused(false);
+    if (commit && t0?.horizontal && Math.abs(t0.dx) > SWIPE_PX) {
+      swiped.current = true;
+      go(t0.dx < 0 ? 1 : -1);
+    }
+  };
 
   return (
     <div
@@ -120,7 +138,38 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div aria-roledescription="carousel" aria-label={t("banner.label")} className="relative h-[17rem] overflow-hidden rounded-2xl border border-white/10 sm:h-auto sm:aspect-[2.1/1]">
+      <div
+        aria-roledescription="carousel"
+        aria-label={t("banner.label")}
+        className="relative h-[17rem] touch-pan-y overflow-hidden rounded-2xl border border-white/10 sm:h-auto sm:aspect-[2.1/1]"
+        onTouchStart={(e) => {
+          const p = e.touches[0];
+          touch.current = { x: p.clientX, y: p.clientY, dx: 0, horizontal: null };
+          swiped.current = false;
+          setPaused(true);
+        }}
+        onTouchMove={(e) => {
+          const t0 = touch.current;
+          if (!t0) return;
+          const p = e.touches[0];
+          const dx = p.clientX - t0.x;
+          const dy = p.clientY - t0.y;
+          // Kierunek ustalamy raz: poziomy ruch przesuwa baner, pionowy przewija stronę
+          if (t0.horizontal === null && Math.hypot(dx, dy) > 8) t0.horizontal = Math.abs(dx) > Math.abs(dy);
+          if (t0.horizontal) {
+            t0.dx = dx;
+            setDrag(dx);
+          }
+        }}
+        onTouchEnd={() => endTouch(true)}
+        onTouchCancel={() => endTouch(false)}
+        onClickCapture={(e) => {
+          if (!swiped.current) return;
+          swiped.current = false;
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
         {slides.map((s, i) => {
           const active = i === index;
           return (
@@ -132,26 +181,31 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
               aria-hidden={!active}
               className={`absolute inset-0 ${s.theme} transition-opacity duration-700 ${active ? "opacity-100" : "pointer-events-none opacity-0"}`}
             >
-              <div aria-hidden="true" className="absolute inset-y-0 right-0 w-[52%] origin-right scale-[0.8] sm:w-[52%] sm:scale-100">
-                {s.art}
-              </div>
-              <div className="relative z-10 flex h-full w-[64%] flex-col justify-center p-5 sm:w-[54%] sm:p-7">
-                <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${s.darkCta ? "bg-black/[0.07]" : "bg-white/15"}`}>
-                  {s.chip}
-                </span>
-                <p className="mt-3 text-[clamp(1.25rem,2.3vw,1.875rem)] font-semibold leading-[1.1] tracking-[-0.02em]">{s.title}</p>
-                <Link
-                  href={s.href}
-                  tabIndex={active ? undefined : -1}
-                  {...(s.external ? { target: "_blank", rel: "noopener noreferrer sponsored" } : {})}
-                  className={`mt-4 inline-flex h-10 w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-transform after:absolute after:inset-0 after:content-[''] hover:-translate-y-px sm:h-11 sm:px-5 ${
-                    s.darkCta ? "bg-[#1c1917] text-white" : "bg-white text-[#111112]"
-                  }`}
-                >
-                  {s.cta}
-                  <ArrowUpRight aria-hidden size={15} />
-                  {s.external && <span className="sr-only">, {t("newTab")}</span>}
-                </Link>
+              <div
+                className={`absolute inset-0 ${drag ? "" : "transition-transform duration-500"}`}
+                style={active && drag ? { transform: `translateX(${drag * 0.4}px)` } : undefined}
+              >
+                <div aria-hidden="true" className="absolute inset-y-0 right-0 w-[52%] origin-right scale-[0.8] sm:w-[52%] sm:scale-100">
+                  {s.art}
+                </div>
+                <div className="relative z-10 flex h-full w-[64%] flex-col justify-center p-5 sm:w-[54%] sm:p-7">
+                  <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${s.darkCta ? "bg-black/[0.07]" : "bg-white/15"}`}>
+                    {s.chip}
+                  </span>
+                  <p className="mt-3 text-[clamp(1.25rem,2.3vw,1.875rem)] font-semibold leading-[1.1] tracking-[-0.02em]">{s.title}</p>
+                  <Link
+                    href={s.href}
+                    tabIndex={active ? undefined : -1}
+                    {...(s.external ? { target: "_blank", rel: "noopener noreferrer sponsored" } : {})}
+                    className={`mt-4 inline-flex h-10 w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-transform after:absolute after:inset-0 after:content-[''] hover:-translate-y-px sm:h-11 sm:px-5 ${
+                      s.darkCta ? "bg-[#1c1917] text-white" : "bg-white text-[#111112]"
+                    }`}
+                  >
+                    {s.cta}
+                    <ArrowUpRight aria-hidden size={15} />
+                    {s.external && <span className="sr-only">, {t("newTab")}</span>}
+                  </Link>
+                </div>
               </div>
             </div>
           );
