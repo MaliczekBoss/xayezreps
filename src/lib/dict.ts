@@ -4,10 +4,14 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
-  "hero.title": "Zobacz, co naprawdę przyjdzie.",
-  "hero.leadStats": {"one": "{n} find z Weidiana i Taobao, przy {qc} z nich prawdziwe zdjęcia QC z magazynu. Sprawdzasz, zanim zapłacisz.", "few": "{n} findy z Weidiana i Taobao, przy {qc} z nich prawdziwe zdjęcia QC z magazynu. Sprawdzasz, zanim zapłacisz.", "many": "{n} findów z Weidiana i Taobao, przy {qc} z nich prawdziwe zdjęcia QC z magazynu. Sprawdzasz, zanim zapłacisz.", "other": "{n} findu z Weidiana i Taobao, przy {qc} z nich prawdziwe zdjęcia QC z magazynu. Sprawdzasz, zanim zapłacisz."},
+  "hero.couponCopy": "Kopiuj kod",
+  "hero.couponCopied": "Skopiowano",
+  "hero.title1": "Zobacz QC.",
+  "hero.title2": "Zanim kupisz.",
+  "hero.lead": "Prawdziwe zdjęcia z magazynu, ceny w twojej walucie i kalkulator paczki. Od findu do paczki pod drzwiami w jednym miejscu.",
+  "hero.couponTitle": "na wysyłkę i 10 kg za 350 zł",
+  "hero.couponText": "Dla nowych kont {agent}",
   "hero.popular": "Często szukane:",
-  "hero.coupon": "Nowe konto {agent}: {coupon} na wysyłkę z kodem",
   "hero.store": "sklep",
   "hero.warehouse": "magazyn",
   "hero.compare": "Porównaj zdjęcie ze sklepu ze zdjęciem z magazynu: {name}",
@@ -511,10 +515,14 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
-  "hero.title": "See what will actually arrive.",
-  "hero.leadStats": "{n} finds from Weidian and Taobao, {qc} of them with real warehouse QC photos. Check before you pay.",
+  "hero.couponCopy": "Copy code",
+  "hero.couponCopied": "Copied",
+  "hero.title1": "See the QC.",
+  "hero.title2": "Before you buy.",
+  "hero.lead": "Real warehouse photos, prices in your currency and a haul calculator. From find to parcel at your door, all in one place.",
+  "hero.couponTitle": "off shipping, plus 10 kg for 350 zł",
+  "hero.couponText": "For new {agent} accounts",
   "hero.popular": "Popular searches:",
-  "hero.coupon": "New {agent} account: {coupon} off shipping with code",
   "hero.store": "store",
   "hero.warehouse": "warehouse",
   "hero.compare": "Compare the store photo with the warehouse photo: {name}",
@@ -1003,10 +1011,14 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
-  "hero.title": "Sieh, was wirklich ankommt.",
-  "hero.leadStats": "{n} Finds von Weidian und Taobao, bei {qc} davon echte QC-Fotos aus dem Lager. Du prüfst, bevor du zahlst.",
+  "hero.couponCopy": "Code kopieren",
+  "hero.couponCopied": "Kopiert",
+  "hero.title1": "Sieh das QC.",
+  "hero.title2": "Bevor du kaufst.",
+  "hero.lead": "Echte Lagerfotos, Preise in deiner Währung und ein Paketrechner. Vom Find bis zum Paket vor deiner Tür, alles an einem Ort.",
+  "hero.couponTitle": "auf den Versand und 10 kg für 350 zł",
+  "hero.couponText": "Für neue {agent}-Konten",
   "hero.popular": "Oft gesucht:",
-  "hero.coupon": "Neues {agent}-Konto: {coupon} auf den Versand mit Code",
   "hero.store": "Shop",
   "hero.warehouse": "Lager",
   "hero.seeQc": "QC-Fotos: {n}",
@@ -1205,10 +1217,14 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
-  "hero.title": "Vois ce qui arrivera vraiment.",
-  "hero.leadStats": "{n} finds de Weidian et Taobao, dont {qc} avec de vraies photos QC de l'entrepôt. Tu vérifies avant de payer.",
+  "hero.couponCopy": "Copier le code",
+  "hero.couponCopied": "Copié",
+  "hero.title1": "Vois le QC.",
+  "hero.title2": "Avant d'acheter.",
+  "hero.lead": "De vraies photos d'entrepôt, les prix dans ta devise et un calculateur de colis. Du find au colis devant ta porte, au même endroit.",
+  "hero.couponTitle": "sur la livraison et 10 kg pour 350 zł",
+  "hero.couponText": "Pour les nouveaux comptes {agent}",
   "hero.popular": "Recherches fréquentes :",
-  "hero.coupon": "Nouveau compte {agent} : {coupon} sur la livraison avec le code",
   "hero.store": "boutique",
   "hero.warehouse": "entrepôt",
   "hero.seeQc": "Photos QC : {n}",
@@ -1407,10 +1423,14 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
-  "hero.title": "Mira lo que de verdad te llegará.",
-  "hero.leadStats": "{n} finds de Weidian y Taobao, {qc} con fotos QC reales del almacén. Lo compruebas antes de pagar.",
+  "hero.couponCopy": "Copiar código",
+  "hero.couponCopied": "Copiado",
+  "hero.title1": "Mira el QC.",
+  "hero.title2": "Antes de comprar.",
+  "hero.lead": "Fotos reales del almacén, precios en tu moneda y calculadora de paquetes. Del find al paquete en tu puerta, todo en un sitio.",
+  "hero.couponTitle": "en el envío y 10 kg por 350 zł",
+  "hero.couponText": "Para cuentas nuevas de {agent}",
   "hero.popular": "Búsquedas frecuentes:",
-  "hero.coupon": "Cuenta nueva en {agent}: {coupon} en el envío con el código",
   "hero.store": "tienda",
   "hero.warehouse": "almacén",
   "hero.seeQc": "Fotos QC: {n}",
@@ -1609,10 +1629,14 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
-  "hero.title": "Guarda cosa arriverà davvero.",
-  "hero.leadStats": "{n} find da Weidian e Taobao, {qc} con vere foto QC dal magazzino. Controlli prima di pagare.",
+  "hero.couponCopy": "Copia codice",
+  "hero.couponCopied": "Copiato",
+  "hero.title1": "Guarda il QC.",
+  "hero.title2": "Prima di comprare.",
+  "hero.lead": "Foto reali dal magazzino, prezzi nella tua valuta e calcolatore del pacco. Dal find al pacco alla tua porta, tutto in un posto.",
+  "hero.couponTitle": "sulla spedizione e 10 kg a 350 zł",
+  "hero.couponText": "Per i nuovi account {agent}",
   "hero.popular": "Ricerche frequenti:",
-  "hero.coupon": "Nuovo account {agent}: {coupon} sulla spedizione con il codice",
   "hero.store": "negozio",
   "hero.warehouse": "magazzino",
   "hero.seeQc": "Foto QC: {n}",
@@ -1811,10 +1835,14 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
-  "hero.title": "看看真正到手的是什么。",
-  "hero.leadStats": "来自微店和淘宝的 {n} 件好物，其中 {qc} 件有仓库实拍 QC。付款前先看清楚。",
+  "hero.couponCopy": "复制代码",
+  "hero.couponCopied": "已复制",
+  "hero.title1": "先看 QC。",
+  "hero.title2": "再下单。",
+  "hero.lead": "仓库实拍照片、按你的货币显示价格，还有包裹计算器。从发现好物到包裹送到门口，一站搞定。",
+  "hero.couponTitle": "运费优惠，10 公斤只需 350 zł",
+  "hero.couponText": "{agent} 新账户专享",
   "hero.popular": "热门搜索：",
-  "hero.coupon": "{agent} 新账户：使用代码运费 {coupon}",
   "hero.store": "店铺",
   "hero.warehouse": "仓库",
   "hero.seeQc": "QC 照片：{n}",

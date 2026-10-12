@@ -156,6 +156,9 @@
   .intro .intro-rise {
     animation: intro-rise 0.75s var(--ease-out-soft) var(--d, 0ms) both;
   }
+  .intro .intro-write {
+    animation: intro-write 0.95s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0ms) both;
+  }
   .intro .intro-fade {
     animation: intro-fade 0.6s var(--ease-out-soft) var(--d, 0ms) both;
   }
@@ -164,6 +167,16 @@
 @keyframes intro-rise {
   from {
     transform: translateY(110%);
+  }
+}
+
+/* Kursywa ma wystające ogonki, więc maska jest szersza od tekstu */
+@keyframes intro-write {
+  from {
+    clip-path: inset(-20% 100% -30% -10%);
+  }
+  to {
+    clip-path: inset(-20% -10% -30% -10%);
   }
 }
 
