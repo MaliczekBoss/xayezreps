@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Analytics } from "@/components/analytics";
 import { IslandPromos } from "@/components/island-promos";
+import { Welcome } from "@/components/welcome";
+import { sortPopular } from "@/lib/finds";
 import { RatesProvider } from "@/lib/rates";
 import { getRates } from "@/lib/remote";
 import { site } from "@/lib/site";
+import { getFinds } from "@/lib/store";
 import "./globals.css";
 
 const geist = Geist({
@@ -57,7 +60,10 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const rates = await getRates();
+  const [rates, finds] = await Promise.all([getRates(), getFinds()]);
+  // Podgląd w oknie powitalnym: najpopularniejszy find ze zdjęciem
+  const top = sortPopular(finds).find((f) => f.image);
+  const sample = top ? { name: top.name, image: top.image, pricePln: top.pricePln, source: top.source } : null;
   return (
     <html lang="pl" className={`${geist.variable} ${instrument.variable} ${geistMono.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-dvh">
@@ -67,7 +73,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Przejdź do findów
         </a>
-        <RatesProvider rates={rates}>{children}</RatesProvider>
+        <RatesProvider rates={rates}>
+          {children}
+          <Welcome sample={sample} />
+        </RatesProvider>
         <Analytics />
         <IslandPromos />
       </body>

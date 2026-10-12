@@ -8,6 +8,7 @@ import { copyWithNotice } from "@/lib/clipboard";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { Modal } from "./modal";
+import { WELCOME_KEY } from "./welcome";
 
 const SEEN_KEY = "xayez-promo-seen";
 // Po zamknięciu oferta wraca po 3 dniach
@@ -22,6 +23,8 @@ export function PromoPopup() {
   useEffect(() => {
     let seen = 0;
     try {
+      // Przy pierwszym wejściu pokazujemy powitanie, a nie ofertę – dwa okna naraz to za dużo
+      if (!window.localStorage.getItem(WELCOME_KEY)) return;
       seen = Number(window.localStorage.getItem(SEEN_KEY) ?? 0);
     } catch {}
     if (Date.now() - seen < HIDE_FOR_MS) return;
