@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Camera, LayoutGrid, Search, Table2, X } from "lucide-react";
 import type { DictKey } from "@/lib/dict";
 import { batches, categories, sortNewest, sortPopular, type Find } from "@/lib/finds";
+import { buildSearchIndex, searchFinds } from "@/lib/search";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { FavoriteButton } from "./favorite-button";
@@ -18,9 +19,6 @@ import { btnPrimary } from "./ui";
 type Sort = "popular" | "newest" | "priceAsc" | "priceDesc" | "qc";
 const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc", "qc"];
 const PAGE = 30;
-
-const normalize = (s: string) =>
-  s.toLocaleLowerCase("pl").normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/ł/g, "l");
 
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
@@ -57,22 +55,25 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
     return map;
   }, [finds]);
 
+  const index = useMemo(() => buildSearchIndex(finds), [finds]);
+
+  // Wyszukiwarka rozumie polskie i angielskie nazwy („koszulka” = „tee”) i poprawia literówki
+  const search = useMemo(() => {
+    const base = sortPopular(finds.filter((item) => (!category || item.category === category) && (!batch || item.batch === batch) && (!qcOnly || Boolean(item.qc))));
+    return searchFinds(index, base, deferredQuery);
+  }, [finds, index, deferredQuery, category, batch, qcOnly]);
+
   const results = useMemo(() => {
-    const q = normalize(deferredQuery.trim());
-    let list = finds.filter(
-      (item) =>
-        (!category || item.category === category) &&
-        (!batch || item.batch === batch) &&
-        (!qcOnly || Boolean(item.qc)) &&
-        (!q || normalize(`${item.name} ${item.category}`).includes(q)),
-    );
+    let list = search.items;
+    // Przy wpisanym zapytaniu domyślnie liczy się trafność, chyba że ktoś sam wybrał sortowanie
+    if (deferredQuery.trim() && !sortParam) return list;
     if (sort === "popular") list = sortPopular(list);
     if (sort === "newest") list = sortNewest(list);
     if (sort === "priceAsc") list = [...list].sort((a, b) => a.pricePln - b.pricePln);
     if (sort === "priceDesc") list = [...list].sort((a, b) => b.pricePln - a.pricePln);
     if (sort === "qc") list = [...list].sort((a, b) => (b.qc ?? 0) - (a.qc ?? 0));
     return list;
-  }, [finds, deferredQuery, category, batch, sort, qcOnly]);
+  }, [search, deferredQuery, sortParam, sort]);
 
   const visible = results.slice(0, limit);
   const filtered = Boolean(category || batch || qcOnly || query.trim());
@@ -208,6 +209,14 @@ export function FindsCatalog({ finds }: { finds: Find[] }) {
           })}
         </div>
       </div>
+
+      {(search.corrected || search.relaxed) && results.length > 0 && (
+        <p className="mt-4 text-sm text-muted">
+          {search.corrected && t("finds.corrected", { q: search.corrected })}
+          {search.corrected && search.relaxed && " "}
+          {search.relaxed && t("finds.relaxed")}
+        </p>
+      )}
 
       {results.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-line px-6 py-16 text-center">
