@@ -34,13 +34,13 @@ type Slide = {
 // Ułożenie kart w wachlarzu: 0 – na wierzchu, dalej coraz głębiej; ostatnia schowana pod spodem
 const POSES: TargetAndTransition[] = [
   { x: "0%", y: "0%", rotate: 0, scale: 1, opacity: 1 },
-  { x: "-6%", y: "4%", rotate: -7, scale: 0.94, opacity: 1 },
-  { x: "6%", y: "8%", rotate: 6, scale: 0.89, opacity: 1 },
-  { x: "0%", y: "11%", rotate: 0, scale: 0.84, opacity: 0 },
+  { x: "-1.5%", y: "7%", rotate: -3, scale: 0.95, opacity: 1 },
+  { x: "1.5%", y: "13%", rotate: 2.5, scale: 0.9, opacity: 1 },
+  { x: "0%", y: "16%", rotate: 0, scale: 0.86, opacity: 0 },
 ];
 // Karta przekładana jak zdjęcie: odlatuje w bok (dalej – w prawo, wstecz – wychodzi spod spodu w lewo)
-const FLY_OUT: TargetAndTransition = { x: "68%", y: "-5%", rotate: 13, scale: 1, opacity: 1 };
-const FLY_BACK: TargetAndTransition = { x: "-68%", y: "-5%", rotate: -13, scale: 1, opacity: 1 };
+const FLY_OUT: TargetAndTransition = { x: "75%", y: "-4%", rotate: 9, scale: 1, opacity: 1 };
+const FLY_BACK: TargetAndTransition = { x: "-75%", y: "-4%", rotate: -9, scale: 1, opacity: 1 };
 
 const Thumb = ({ src, className = "" }: { src?: string; className?: string }) => (
   <span className={`relative block overflow-hidden bg-[#1c1c1f] ${className}`}>{src && <ProductImage src={src} sizes="10rem" />}</span>
@@ -163,7 +163,7 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div aria-roledescription="carousel" aria-label={t("banner.label")} className="relative mx-auto aspect-[1.3/1] w-[90%] sm:aspect-[1.6/1]">
+      <div aria-roledescription="carousel" aria-label={t("banner.label")} className="relative aspect-[1.35/1] w-full sm:aspect-[2/1]">
         {slides.map((s, i) => {
           const depth = (i - front + n) % n;
           const isFlying = flying?.i === i;
@@ -241,7 +241,7 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
         })}
       </div>
 
-      <div className="mt-10 flex items-center justify-center gap-3 sm:mt-12">
+      <div className="mt-12 flex items-center justify-center gap-3 sm:mt-14">
         <button
           type="button"
           onClick={() => go(-1)}

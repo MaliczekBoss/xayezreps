@@ -99,7 +99,7 @@ export function Hero({ finds, previews }: { finds: Find[]; previews: ToolPreview
         className={`${intro ? "intro" : ""} mx-auto grid max-w-7xl items-center gap-x-12 gap-y-14 px-4 pb-14 pt-32 sm:px-6 sm:pb-16 sm:pt-40 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-8`}
       >
         <div className="min-w-0 max-w-[40rem]">
-          <h1 id="hero-title" className="text-[clamp(2.75rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
+          <h1 id="hero-title" className="text-[clamp(2.75rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.035em] lg:text-[clamp(2.75rem,4.9vw,4.25rem)]">
             <span className="block">
               <RisingWords text={t("hero.title1")} start={60} />
             </span>
