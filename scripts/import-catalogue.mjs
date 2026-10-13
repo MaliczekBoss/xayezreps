@@ -135,10 +135,14 @@ const cleanName = (s) =>
 const imageOf = (id) => (existsSync(path.join(root, "public", "i", `${id}.webp`)) ? `/i/${id}.webp` : "");
 
 // Produkty bez zdjęcia (np. puste zdjęcie w eksporcie) pomijamy – na stronie wyglądałyby jak błąd
+// Kategorie poprawione po zdjęciach (scripts/classify-images.py) mają pierwszeństwo przed regułami z nazw
+const overridesFile = path.join(root, "data", "category-overrides.json");
+const overrides = existsSync(overridesFile) ? JSON.parse(readFileSync(overridesFile, "utf8")) : {};
+
 const allRows = readCsv(readFileSync(csvFile, "utf8"));
 const rows = allRows.filter((r) => imageOf(r.id.trim()));
 const imported = rows.map((r) => {
-  const category = categoryOf(r);
+  const category = overrides[r.id.trim()] ?? categoryOf(r);
   const cny = Number(r.price_cny);
   return {
     id: r.id.trim(),
