@@ -230,7 +230,7 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
             <FavoriteButton find={find} withLabel />
             <button
               type="button"
-              onClick={() => copyWithNotice(`${site.url}${site.routes.product(find.id)}`, { title: t("product.linkCopied"), text: find.name, image: find.image })}
+              onClick={() => copyWithNotice(`${window.location.origin}${site.routes.product(find.id)}`, { title: t("product.linkCopied"), text: find.name, image: find.image })}
               title={t("product.copyLink")}
               className="grid size-10 place-items-center rounded-lg border border-line bg-card text-muted transition-colors hover:border-line-strong hover:text-fg"
             >

@@ -7,6 +7,7 @@ import { sortPopular } from "@/lib/finds";
 import { RatesProvider } from "@/lib/rates";
 import { getRates } from "@/lib/remote";
 import { site } from "@/lib/site";
+import { siteUrl } from "@/lib/site-url";
 import { getFinds } from "@/lib/store";
 import "./globals.css";
 
@@ -31,7 +32,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "xayezreps.pl – najlepsza strona do zamawiania z Chin",
     template: "%s – xayezreps.pl",

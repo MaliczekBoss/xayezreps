@@ -19,11 +19,16 @@ export async function generateMetadata({ params }: PageProps<"/product/[id]">): 
   const { id } = await params;
   const find = (await getAllFinds()).find((f) => f.id === id);
   if (!find) return { title: "Nie znaleziono" };
+  const price = find.pricePln > 0 ? ` za ${new Intl.NumberFormat("pl-PL").format(Math.round(find.pricePln))} zł` : "";
+  const description = `Kup ${find.name}${price}. Zdjęcia QC z magazynu, link do agenta i kalkulator paczki w jednym miejscu.`;
+  // Grafika z produktem bez tła, ceną i kodem (src/app/api/og/[id])
+  const image = { url: `/api/og/${encodeURIComponent(find.id)}`, width: 1200, height: 630, alt: find.name };
   return {
     title: find.name,
-    description: `${find.name} – ${find.category}, ${find.batch}. Cena ok. ${find.pricePln} zł. Link do agenta, zdjęcia QC i kalkulator wysyłki.`,
+    description,
     alternates: { canonical: `/product/${find.id}` },
-    openGraph: { title: find.name, images: find.image ? [{ url: find.image }] : undefined },
+    openGraph: { title: find.name, description, url: `/product/${find.id}`, siteName: "xayezreps", images: [image] },
+    twitter: { card: "summary_large_image", title: find.name, description, images: [image] },
     // Produkty tylko z outfitów nie powinny konkurować w wyszukiwarkach z katalogiem
     robots: find.hidden ? { index: false } : undefined,
   };
