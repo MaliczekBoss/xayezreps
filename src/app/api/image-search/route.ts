@@ -1,4 +1,5 @@
 import { ImageSearchError, searchByImage } from "@/lib/image-search";
+import { trustedOrigin } from "@/lib/site-url";
 
 // Odpowiedź modelu AI może potrwać kilkanaście sekund
 export const maxDuration = 60;
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
   const ip = (request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "").split(",")[0].trim();
   try {
-    return Response.json(await searchByImage(image, ip), { headers: { "Cache-Control": "no-store" } });
+    return Response.json(await searchByImage(image, ip, trustedOrigin(request)), { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     if (e instanceof ImageSearchError) return Response.json({ error: e.code }, { status: STATUS[e.code] });
     console.error("[image-search]", e);
