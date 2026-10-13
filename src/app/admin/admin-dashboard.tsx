@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState } from "react";
-import { Check, ImagePlus, Pencil, Plus, Search, Send, Trash, X } from "lucide-react";
+import { Check, ImagePlus, Pencil, Plus, Search, Trash, X } from "lucide-react";
 import { ProductImage } from "@/components/product-image";
 import { Select } from "@/components/select";
 import { agents, parseSource, platformLabel } from "@/lib/agents";
 import { batches, categories, defaultWeight, type Category, type Find } from "@/lib/finds";
 import { formatMoney } from "@/lib/money";
-import { deleteFind, saveFind, sendFindToDiscord, type FormState } from "./actions";
+import { deleteFind, saveFind, type FormState } from "./actions";
 import { AdminHeader } from "./admin-header";
 
 const field =
@@ -155,7 +155,6 @@ export function AdminDashboard({ finds }: { finds: Find[] }) {
                       <Pencil aria-hidden size={15} />
                       <span className="sr-only">Edytuj {f.name}</span>
                     </button>
-                    <DiscordButton find={f} />
                     <DeleteButton find={f} onDeleted={() => editing?.id === f.id && cancelEdit()} />
                   </div>
                 </li>
@@ -328,33 +327,6 @@ function FindForm({ editing, action, pending }: { editing: Find | null; action: 
         {editing ? <Check aria-hidden size={17} /> : <Plus aria-hidden size={17} />}
         {pending ? "Zapisywanie…" : editing ? "Zapisz zmiany" : "Dodaj item"}
       </button>
-    </form>
-  );
-}
-
-/** Wysyła produkt na Discorda; po wysłaniu na chwilę pokazuje ptaszek, a błąd w dymku */
-function DiscordButton({ find }: { find: Find }) {
-  const [state, action, pending] = useActionState(sendFindToDiscord, {});
-  const sent = Boolean(state.ok) && !pending;
-  return (
-    <form action={action} className="relative">
-      <input type="hidden" name="id" value={find.id} />
-      <button
-        type="submit"
-        disabled={pending}
-        title={state.error ?? (sent ? "Wysłano na Discorda" : "Wyślij na Discorda")}
-        className={`grid size-9 place-items-center rounded-full transition-colors disabled:opacity-60 ${
-          state.error ? "text-amber-300 hover:bg-amber-400/10" : sent ? "text-gl" : "text-muted hover:bg-bg hover:text-fg"
-        }`}
-      >
-        {sent ? <Check aria-hidden size={15} strokeWidth={3} /> : <Send aria-hidden size={15} />}
-        <span className="sr-only">Wyślij {find.name} na Discorda</span>
-      </button>
-      {state.error && (
-        <span role="alert" className="absolute right-0 top-10 z-10 w-72 rounded-xl border border-line-strong bg-card p-3 text-xs leading-relaxed text-amber-200 shadow-lg">
-          {state.error}
-        </span>
-      )}
     </form>
   );
 }

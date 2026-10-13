@@ -43,4 +43,3 @@ next-env.d.ts
 
 # python
 __pycache__/
-bot/node_modules/

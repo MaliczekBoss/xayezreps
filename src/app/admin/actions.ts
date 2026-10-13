@@ -8,9 +8,7 @@ import { parseSource } from "@/lib/agents";
 import { isAdmin } from "@/lib/auth";
 import { SESSION_COOKIE, SESSION_MAX_AGE_S, adminConfigured, checkPassword, createSessionToken } from "@/lib/auth-token";
 import { batches, categories, defaultWeight, type Batch, type Category, type Find } from "@/lib/finds";
-import { discordConfigured, postFindToDiscord } from "@/lib/discord";
 import { markDeleted, removeImage, storeImage } from "@/lib/docstore";
-import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { MAX_OUTFIT_PARTS, type Outfit, type OutfitPart } from "@/lib/outfits";
 import { FINDS_TAG, OUTFITS_TAG, getFindsFresh, getOutfitsFresh, saveFinds, saveOutfits } from "@/lib/store";
 
@@ -144,24 +142,6 @@ export async function deleteFind(_prev: FormState, formData: FormData): Promise<
   await removeImage(target.image);
   updateTag(FINDS_TAG);
   return { ok: `Usunięto: ${target.name}` };
-}
-
-/** Wysyła produkt na kanał Discorda (webhook z DISCORD_WEBHOOK_URL) */
-export async function sendFindToDiscord(_prev: FormState, formData: FormData): Promise<FormState> {
-  if (!(await isAdmin())) return { error: "Sesja wygasła. Zaloguj się ponownie." };
-  if (!discordConfigured()) {
-    return { error: "Brak webhooka. Na Discordzie: Ustawienia kanału → Integracje → Webhooki → Nowy webhook → Kopiuj URL. Na Vercelu dodaj go jako DISCORD_WEBHOOK_URL i zrób Redeploy." };
-  }
-  const id = String(formData.get("id") ?? "");
-  const [list, qcIndex] = await Promise.all([getFindsFresh(), getQcIndex()]);
-  const target = list.find((f) => f.id === id);
-  if (!target) return { error: "Tego itemu już nie ma." };
-  try {
-    await postFindToDiscord(withQc([target], qcIndex)[0]);
-  } catch (e) {
-    return { error: `Discord nie przyjął wiadomości (${(e as Error).message}). Sprawdź adres webhooka.` };
-  }
-  return { ok: `Wysłano na Discorda: ${target.name}` };
 }
 
 /* ---------- Outfity ---------- */
