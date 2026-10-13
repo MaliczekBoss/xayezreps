@@ -1,3 +1,4 @@
+import { liveSellerItems } from "@/lib/live";
 import { getSellers } from "@/lib/remote";
 import { buildSearchIndex, searchFinds } from "@/lib/search";
 
@@ -19,7 +20,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/sellers/[slu
   const filtered = q ? searchFinds(buildSearchIndex(items), items, q).items.map((s) => s.item) : seller.items;
   const matching = sort === "price_asc" ? [...filtered].sort((a, b) => a.price - b.price) : sort === "price_desc" ? [...filtered].sort((a, b) => b.price - a.price) : filtered;
   return Response.json(
-    { total: matching.length, items: matching.slice(offset, offset + PAGE) },
+    { total: matching.length, items: await liveSellerItems(matching.slice(offset, offset + PAGE)) },
     { headers: { "Cache-Control": "public, max-age=600" } },
   );
 }

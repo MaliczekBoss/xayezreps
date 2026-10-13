@@ -5,6 +5,8 @@ import { getQcIndex, withQc } from "./qc-feed";
 import { buildSearchIndex, searchFinds, type SearchIndex } from "./search";
 import { getFinds } from "./store";
 import { live } from "./live";
+import { getSellers } from "./remote";
+import { sellerFindId, toSellerFind } from "./seller-find";
 
 // Katalog jest za duży, żeby wysyłać go w całości do przeglądarki: wyszukiwanie, filtry i sortowanie
 // liczymy tutaj, a strona dostaje tylko jedną porcję produktów.
@@ -119,6 +121,18 @@ export async function popularIn(category: string, limit: number, skip: Set<strin
 export async function findsByIds(ids: string[]): Promise<Find[]> {
   const { finds } = await prepare();
   const byId = new Map(finds.map((f) => [f.id, f]));
+  // Oferty sprzedawców (s-<numer aukcji>) – nie ma ich w katalogu, ale też da się je dodać do ulubionych
+  if (ids.some((id) => id.startsWith("s-") && !byId.has(id))) {
+    const offers: Find[] = [];
+    for (const seller of await getSellers()) {
+      for (const item of seller.items) {
+        if (!ids.includes(sellerFindId(item.id))) continue;
+        const find = toSellerFind(seller.slug, item);
+        if (find) offers.push(find);
+      }
+    }
+    for (const f of await live(offers)) byId.set(f.id, f);
+  }
   return ids.map((id) => byId.get(id)).filter((f): f is Find => Boolean(f));
 }
 

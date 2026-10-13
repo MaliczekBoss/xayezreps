@@ -51,7 +51,6 @@ export const site = {
  * url: link rejestracyjny z waszym kodem polecającym.
  */
 export const islandPromos = [
-  { id: "cnfans", name: "CNFans", logo: "/agents/cnfans.png", url: "https://cnfans.com/register/" },
   { id: "usfans", name: "USFans", logo: "/agents/usfans.png", url: "https://www.usfans.com/register?ref=xayez" },
 ] as const;
 

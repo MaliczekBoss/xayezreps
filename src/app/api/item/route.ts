@@ -1,8 +1,8 @@
 import { revalidateTag } from "next/cache";
-import { parseSource } from "@/lib/agents";
+import { parseSource, type ProductSource } from "@/lib/agents";
 import { PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { isCatalogSource } from "@/lib/qc-feed";
-import { fetchAgentPriceCny, fetchItemDetails } from "@/lib/remote";
+import { fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
 
 /**
  * Szczegóły produktu ze sklepu dla linku: /api/item?url=…
@@ -22,10 +22,16 @@ export async function GET(request: Request) {
 
   if (agentPriceCny) {
     try {
-      if ((await isCatalogSource(source)) && (await saveAgentPrice(source, agentPriceCny))) revalidateTag(PRICES_TAG, "max");
+      if ((await isKnownSource(source)) && (await saveAgentPrice(source, agentPriceCny))) revalidateTag(PRICES_TAG, "max");
     } catch (e) {
       console.error("[item] zapis ceny:", (e as Error).message);
     }
   }
   return Response.json({ source, item, agentPriceCny }, { headers: { "Cache-Control": "public, max-age=3600" } });
+}
+
+/** Aukcja z katalogu albo od jednego z naszych sprzedawców – tylko takim zapisujemy ceny */
+async function isKnownSource(source: ProductSource) {
+  if (await isCatalogSource(source)) return true;
+  return (await getSellers()).some((s) => s.items.some((i) => i.link.includes(source.id) && parseSource(i.link)?.id === source.id));
 }

@@ -61,7 +61,7 @@ async function nbpRates(): Promise<Rates | null> {
   }
 }
 
-export type SellerItem = { id: string; title: string; price: number; image: string; link: string };
+export type SellerItem = { id: string; title: string; price: number; image: string; link: string; createdAt?: string };
 
 export type Seller = {
   slug: string;
@@ -79,7 +79,7 @@ type RawSeller = {
   description?: string;
   tags?: string[];
   profileImg?: string;
-  items?: { id: string; title: string; price: number; image: string; link: string }[];
+  items?: { id: string; title: string; price: number; image: string; link: string; createdAt?: string }[];
 };
 
 /** Sprzedawcy razem z produktami, odświeżani co godzinę */
@@ -101,7 +101,7 @@ export async function getSellers(): Promise<Seller[]> {
         itemCount: s.items?.length ?? 0,
         items: (s.items ?? [])
           .filter((i) => i.title && i.image && i.link)
-          .map((i) => ({ id: i.id, title: i.title, price: i.price, image: i.image, link: i.link })),
+          .map((i) => ({ id: String(i.id), title: i.title, price: i.price, image: i.image, link: i.link, createdAt: i.createdAt })),
       }))
       .sort((a, b) => b.itemCount - a.itemCount);
   } catch {

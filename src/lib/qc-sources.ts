@@ -8,8 +8,7 @@ import { fetchQcPhotos } from "./remote";
 // także wtedy, gdy źródło pokazuje tylko ostatnie zamówienie.
 // - stara strona (xayezreps.com/api/qc): pełna historia z magazynów Kakobuy i USFans
 // - USFans (api/goods/estimate-info): zdjęcia z ostatniego zamówienia w ich magazynie, bez logowania
-// - CNFans: strona agenta jest teraz wyłączona (przerwa techniczna), więc nie ma czego pytać;
-//   gdy wróci, wystarczy dopisać tu kolejne źródło
+// Kolejne źródło wystarczy dopisać do listy SOURCES
 
 type QcSource = { name: string; fetch: (source: ProductSource) => Promise<string[] | null> };
 

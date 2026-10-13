@@ -5,6 +5,7 @@ import { PageShell } from "@/components/page-shell";
 import { SellerShop } from "@/components/tools/sellers";
 import { ToolSkeleton } from "@/components/tools/tool-skeleton";
 import { getSellers } from "@/lib/remote";
+import { liveSellerItems } from "@/lib/live";
 import { sellerStats } from "@/lib/seller-stats";
 
 const FIRST_PAGE = 60;
@@ -40,5 +41,5 @@ async function SellerContent({ params }: { params: PageProps<"/sellers/[slug]">[
   const seller = (await getSellers()).find((s) => s.slug === slug);
   if (!seller) notFound();
   const { items, slug: s, name, description } = seller;
-  return <SellerShop seller={{ slug: s, name, description, ...sellerStats(items) }} initial={items.slice(0, FIRST_PAGE)} />;
+  return <SellerShop seller={{ slug: s, name, description, ...sellerStats(items) }} initial={await liveSellerItems(items.slice(0, FIRST_PAGE))} />;
 }

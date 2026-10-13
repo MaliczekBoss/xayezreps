@@ -3,7 +3,8 @@ import { revalidateTag } from "next/cache";
 import { stamp } from "@/lib/analytics/stats";
 import { run, storageKind } from "@/lib/analytics/store";
 import { getAgentPrices, PRICES_TAG, saveAgentPrice } from "@/lib/prices";
-import { fetchAgentPriceCny } from "@/lib/remote";
+import { fetchAgentPriceCny, getSellers } from "@/lib/remote";
+import { sellerFindId, toSellerFind } from "@/lib/seller-find";
 import { getAllFinds } from "@/lib/store";
 
 export const maxDuration = 20;
@@ -36,8 +37,16 @@ export async function POST(request: Request) {
   }
   if (!ids.length) return Response.json({ prices: {} });
 
-  const [all, stored] = await Promise.all([getAllFinds(), getAgentPrices()]);
+  const [all, stored, sellers] = await Promise.all([getAllFinds(), getAgentPrices(), ids.some((id) => id.startsWith("s-")) ? getSellers() : []]);
   const byId = new Map(all.map((f) => [f.id, f]));
+  // Oferty sprzedawców (s-<numer aukcji>) – nie ma ich w katalogu, ale ceny synchronizujemy tak samo
+  for (const seller of sellers) {
+    for (const item of seller.items) {
+      if (!ids.includes(sellerFindId(item.id))) continue;
+      const find = toSellerFind(seller.slug, item);
+      if (find) byId.set(find.id, find);
+    }
+  }
   const finds = ids.map((id) => byId.get(id)).filter((f) => f !== undefined);
   const keyOf = (f: (typeof finds)[number]) => `${f.source.platform}:${f.source.id}`;
   const fresh = new Map<string, number>();

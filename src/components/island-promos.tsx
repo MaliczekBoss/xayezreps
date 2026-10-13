@@ -39,7 +39,7 @@ function shownThisVisit() {
   }
 }
 
-/** Co jakiś czas rozwija wyspę z ofertą partnera (CNFans, USFans) – jak pasek reklamowy, ale w naszym stylu */
+/** Co jakiś czas rozwija wyspę z ofertą partnera (USFans) – jak pasek reklamowy, ale w naszym stylu */
 export function IslandPromos() {
   useEffect(() => {
     const show = () => {

@@ -40,7 +40,10 @@ const chip = (active: boolean) =>
     active ? "border-fg bg-fg text-bg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"
   }`;
 
-export function ProductDetail({ find, related, variants = [] }: { find: Find; related: Find[]; variants?: Find[] }) {
+type Back = { href: string; label: string };
+
+/** back – dokąd prowadzi link „wróć” (domyślnie do katalogu; dla ofert sprzedawcy – do jego sklepu) */
+export function ProductDetail({ find, related, variants = [], back }: { find: Find; related: Find[]; variants?: Find[]; back?: Back }) {
   const f = useFormat();
   const { t } = f;
   const haul = useHaul();
@@ -110,14 +113,14 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
         {platformLabel[find.source.platform]} #{find.source.id}
       </a>,
     ],
-    [t("product.added"), dateFmt.format(new Date(find.createdAt))],
+    ...(Number.isFinite(Date.parse(find.createdAt)) ? [[t("product.added"), dateFmt.format(new Date(find.createdAt))] as [string, string]] : []),
   ];
 
   return (
     <>
-      <Link href={site.routes.finds} className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg">
+      <Link href={back?.href ?? site.routes.finds} className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg">
         <ArrowLeft aria-hidden size={15} />
-        {t("product.back")}
+        {back?.label ?? t("product.back")}
       </Link>
 
       <div className="mt-5 grid items-start gap-8 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
@@ -238,7 +241,7 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
             <FavoriteButton find={find} withLabel />
             <button
               type="button"
-              onClick={() => copyWithNotice(`${window.location.origin}${site.routes.product(find.id)}`, { title: t("product.linkCopied"), text: find.name, image: find.image })}
+              onClick={() => copyWithNotice(`${window.location.origin}${find.href ?? site.routes.product(find.id)}`, { title: t("product.linkCopied"), text: find.name, image: find.image })}
               title={t("product.copyLink")}
               className="grid size-10 place-items-center rounded-lg border border-line bg-card text-muted transition-colors hover:border-line-strong hover:text-fg"
             >

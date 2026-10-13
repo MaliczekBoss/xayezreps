@@ -23,6 +23,8 @@ export type Find = {
   hidden?: boolean;
   /** Polecany: przy tej samej liczbie wyświetleń idzie wyżej w „Najpopularniejszych” */
   featured?: boolean;
+  /** Strona oferty, gdy to nie /product/<id> – np. produkt sprzedawcy (seller-find.ts) */
+  href?: string;
   /** Dla kogo (filtr „Dla niego” / „Dla niej”); bez pola – unisex: jest w „Dla niego”, a „Dla niej” to tylko rzeczy damskie */
   gender?: Gender;
 };

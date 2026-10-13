@@ -59,7 +59,7 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
 
       <div className="flex flex-1 flex-col px-0.5 pt-2.5">
         <h3 className="line-clamp-2 text-[14px] font-medium leading-[1.3] tracking-[-0.01em] transition-colors group-hover:text-white">
-          <Link href={site.routes.product(find.id)} className="after:absolute after:inset-0 after:rounded-[14px]">
+          <Link href={find.href ?? site.routes.product(find.id)} className="after:absolute after:inset-0 after:rounded-[14px]">
             {find.name}
           </Link>
         </h3>
