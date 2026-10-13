@@ -241,6 +241,19 @@
   }
 }
 
+/* Kursor w podpowiedzi szukajki na stronie głównej */
+@media (prefers-reduced-motion: no-preference) {
+  .caret {
+    animation: caret 1.05s steps(1) infinite;
+  }
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Strzałka w przycisku wyszukiwarki: wylatuje w prawo i wraca z lewej */
 @media (prefers-reduced-motion: no-preference) {
   .arrow-zip {

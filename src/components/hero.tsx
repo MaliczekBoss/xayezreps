@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
-import { categories } from "@/lib/finds";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { HeroBanners } from "./hero-banners";
@@ -15,8 +15,6 @@ let introPlayed = false;
 
 /** Opóźnienie kroku sekwencji wejścia (zmienna --d w globals.css) */
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
-
-const chips = categories.filter((c) => ["Bluzy", "Spodnie", "Spodenki", "Buty", "Torby", "Paski", "Zegarki"].includes(c));
 
 // Miejsce na liczbę w tłumaczeniu „Zaufało nam {n} kupujących”
 const NUMBER_SLOT = "\u0000";
@@ -77,16 +75,79 @@ function RisingWords({ text, start }: { text: string; start: number }) {
   ));
 }
 
-export function Hero({ covers, collage, previews }: { covers: Record<string, string>; collage: string[]; previews: ToolPreviews }) {
+export type HeroCategory = { category: string; image: string };
+
+/**
+ * Pasek kategorii pod wyszukiwarką: duże zdjęcia produktów bez tła z podpisem, przewijany w bok.
+ * Na komputerze strzałki po bokach przesuwają o prawie cały ekran, a brzegi paska gasną tam, gdzie coś jeszcze jest.
+ */
+function CategoryRail({ items, intro }: { items: HeroCategory[]; intro: boolean }) {
+  const f = useFormat();
+  const { t } = f;
+  const list = useRef<HTMLUListElement>(null);
+  const [edge, setEdge] = useState({ start: true, end: false });
+
+  const measure = useCallback(() => {
+    const el = list.current;
+    if (!el) return;
+    setEdge({ start: el.scrollLeft < 4, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 });
+  }, []);
+
+  useEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  const go = (dir: 1 | -1) => list.current?.scrollBy({ left: dir * list.current.clientWidth * 0.8, behavior: "smooth" });
+  const fade = `linear-gradient(to right, ${edge.start ? "#000" : "transparent"}, #000 3rem, #000 calc(100% - 3rem), ${edge.end ? "#000" : "transparent"})`;
+  const arrow =
+    "absolute top-[2.75rem] z-10 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-card/90 text-fg ring-1 ring-line-strong backdrop-blur transition-colors hover:bg-card-hover sm:grid";
+
+  return (
+    <nav aria-label={t("hero.all")} className="relative -mx-4 sm:mx-0">
+      <ul
+        ref={list}
+        onScroll={measure}
+        style={{ maskImage: fade, WebkitMaskImage: fade }}
+        className="flex snap-x gap-1 overflow-x-auto px-4 pb-2 pt-5 [scrollbar-width:none] sm:px-0 [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map(({ category, image }, i) => (
+          <li key={category} className="intro-fade shrink-0 snap-start" style={at(intro ? 760 + Math.min(i, 11) * 40 : 0)}>
+            <Link href={`${site.routes.finds}?category=${encodeURIComponent(category)}`} className="group flex w-[5.75rem] flex-col items-center gap-2 rounded-xl pb-1 sm:w-[6.75rem]">
+              <span className="lift relative size-[4.5rem] sm:size-[5.25rem]">
+                <ProductImage src={image} sizes="5.25rem" />
+              </span>
+              <span className="text-[13px] font-medium text-muted transition-colors group-hover:text-fg">{f.category(category)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {!edge.start && (
+        <button type="button" onClick={() => go(-1)} className={`${arrow} left-1`}>
+          <ChevronLeft aria-hidden size={18} />
+          <span className="sr-only">{t("carousel.prev")}</span>
+        </button>
+      )}
+      {!edge.end && (
+        <button type="button" onClick={() => go(1)} className={`${arrow} right-1`}>
+          <ChevronRight aria-hidden size={18} />
+          <span className="sr-only">{t("carousel.next")}</span>
+        </button>
+      )}
+    </nav>
+  );
+}
+
+export function Hero({ categories, previews }: { categories: HeroCategory[]; previews: ToolPreviews }) {
   const f = useFormat();
   const { t } = f;
   const [intro] = useState(() => !introPlayed);
   useEffect(() => {
     introPlayed = true;
   }, []);
-
-  // Zdjęcie kategorii: najpopularniejszy find z niej (liczone na serwerze)
-  const cover = (c: string) => covers[c] ?? "";
 
   return (
     // Wylatująca karta wachlarza nie może przesuwać strony w bok
@@ -114,32 +175,6 @@ export function Hero({ covers, collage, previews }: { covers: Record<string, str
             <HeroSearch typeIn={intro} />
           </div>
 
-          {/* Kategorie jako okrągłe zdjęcia z podpisem; na telefonie przewijane w bok */}
-          <ul aria-label={t("hero.all")} className="-mx-4 mt-6 flex gap-3.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
-            {chips.map((c, i) => (
-              <li key={c} className="intro-fade shrink-0" style={at(760 + i * 35)}>
-                <Link href={`${site.routes.finds}?category=${encodeURIComponent(c)}`} className="group flex w-14 flex-col items-center gap-1.5">
-                  <span className="relative size-14 rounded-full ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
-                    {cover(c) && <ProductImage src={cover(c)} sizes="3.5rem" />}
-                  </span>
-                  <span className="text-[12px] text-muted transition-colors group-hover:text-fg">{f.category(c)}</span>
-                </Link>
-              </li>
-            ))}
-            <li className="intro-fade shrink-0" style={at(760 + chips.length * 35)}>
-              <Link href={site.routes.finds} className="group flex w-14 flex-col items-center gap-1.5">
-                <span className="grid size-14 grid-cols-2 place-items-center rounded-full p-1.5 ring-1 ring-line transition-shadow group-hover:ring-2 group-hover:ring-fg/70">
-                  {collage.map((src, i) => (
-                    <span key={i} className="relative size-full">
-                      {src && <ProductImage src={src} sizes="1.75rem" />}
-                    </span>
-                  ))}
-                </span>
-                <span className="whitespace-nowrap text-[12px] text-muted transition-colors group-hover:text-fg">{t("hero.more")}</span>
-              </Link>
-            </li>
-          </ul>
-
           {/* Zielona kropka „na żywo” i liczba kupujących przewijana jak licznik */}
           <p className="intro-fade mt-7 flex items-center gap-2.5 text-sm text-muted" style={at(1000)}>
             <span aria-hidden="true" className="relative grid size-2 place-items-center">
@@ -154,8 +189,13 @@ export function Hero({ covers, collage, previews }: { covers: Record<string, str
           </p>
         </div>
 
-        <div className="intro-fade min-w-0" style={at(240)}>
+        {/* Na telefonie kategorie idą zaraz pod wyszukiwarką, a wachlarz banerów pod nimi */}
+        <div className="intro-fade order-3 min-w-0 lg:order-none" style={at(240)}>
           <HeroBanners data={previews} />
+        </div>
+
+        <div className="order-2 min-w-0 lg:order-none lg:col-span-2">
+          <CategoryRail items={categories} intro={intro} />
         </div>
       </section>
     </div>

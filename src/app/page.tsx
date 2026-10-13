@@ -21,8 +21,28 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const ROW = 16;
 // Kategorie z własnym rzędem na stronie głównej, jak na cadenreps
 const CATEGORY_ROWS = ["Buty", "Bluzy"] as const;
-// Kategorie w kółkach w hero
-const CHIP_CATEGORIES = ["Bluzy", "Spodnie", "Spodenki", "Buty", "Torby", "Paski", "Zegarki"];
+// Pasek kategorii pod wyszukiwarką: kolejność i zdjęcie do każdej – wybrany ręcznie pojedynczy produkt,
+// który dobrze wygląda w małym rozmiarze (gdy zniknie z katalogu, bierzemy najpopularniejszy z kategorii)
+const HERO_CATEGORIES: [category: string, coverId: string][] = [
+  ["Buty", "wzlwn7kxy7"],
+  ["Koszulki", "u0olbicwl6"],
+  ["Bluzy", "v05ue8wm6q"],
+  ["Swetry", "bx38ldiszp"],
+  ["Kurtki", "47jo4n2juf"],
+  ["Komplety", "ye7soqgcwj"],
+  ["Spodnie", "yoqexwhkhx"],
+  ["Spodenki", "2c2n9yqydo"],
+  ["Czapki", "y66a86mngh"],
+  ["Torby", "xx2t5seccz"],
+  ["Paski", "uxbwnvqdbk"],
+  ["Biżuteria", "sod9lne2kp"],
+  ["Zegarki", "7sr5s4elst"],
+  ["Akcesoria", "t8jtv7olyf"],
+  ["Elektronika", "2d9ofpjd51"],
+  ["Bielizna", "a36azxs3g9"],
+  ["Perfumy", "zonnmauv7z"],
+  ["Klocki", "s06w1bcycn"],
+];
 
 export default async function Home() {
   const [raw, all, qcIndex, qcFeed, sellers, outfits, toolPreviews] = await Promise.all([
@@ -44,9 +64,11 @@ export default async function Home() {
   // Do rzędów idą tylko id z danego rzędu, a nie wszystkie nowe produkty z katalogu
   const newIn = (items: typeof finds) => items.filter(isNew).map((f) => f.id);
 
-  // Kółka kategorii w hero: zdjęcie najpopularniejszego produktu z kategorii i kolaż czterech najpopularniejszych
-  const covers = Object.fromEntries(CHIP_CATEGORIES.map((c) => [c, popular.find((f) => f.category === c && f.image)?.image ?? ""]));
-  const collage = popular.slice(0, 4).map((f) => f.image);
+  const byId = new Map(finds.map((f) => [f.id, f]));
+  const heroCategories = HERO_CATEGORIES.map(([category, id]) => ({
+    category,
+    image: byId.get(id)?.image || popular.find((f) => f.category === category && f.image)?.image || "",
+  })).filter((c) => c.image);
   const newestRow = newest.slice(0, ROW);
   const popularRow = popular.slice(0, ROW);
 
@@ -59,7 +81,7 @@ export default async function Home() {
       <SiteHeader />
       <PromoPopup />
       <main>
-        <Hero covers={covers} collage={collage} previews={toolPreviews} />
+        <Hero categories={heroCategories} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newestRow} newIds={newIn(newestRow)} />
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popularRow} newIds={newIn(popularRow)} />
         <QcFeed entries={qcFeed} />

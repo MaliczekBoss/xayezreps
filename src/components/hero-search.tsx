@@ -3,41 +3,59 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useReducedMotion } from "motion/react";
 import { ArrowRight, ArrowUpRight, Camera, Copy, Search } from "lucide-react";
 import { parseSource, platformLabel } from "@/lib/agents";
 import { copyWithNotice } from "@/lib/clipboard";
 import { notify } from "@/lib/notify";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
-import { btnPrimary } from "./ui";
+
+// Przykłady, które podpowiedź wpisuje i kasuje po kolei, kursywą jak w nagłówku
+const EXAMPLES = ["Jordan 4", "Chrome Hearts", "Nike Tech Fleece", "Stone Island", "Moncler"];
+
+type Typing = { i: number; n: number; dir: 1 | -1 | 0 };
 
 /**
- * Szukajka z hero: tekst szuka findów, a link z Weidiana, Taobao, 1688
- * albo od innego agenta od razu zamienia na link do wybranego agenta.
+ * Szukajka z hero: tekst szuka findów, a link z Weidiana, Taobao, 1688 albo od innego agenta
+ * od razu zamienia na link do wybranego agenta. Zamiast skrzynki – duży tekst na linii, która
+ * po kliknięciu wypełnia się od lewej, a podpowiedź sama wpisuje kolejne przykłady.
  */
 export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const f = useFormat();
   const { t } = f;
   const router = useRouter();
   const [value, setValue] = useState("");
-  const placeholder = t("search.placeholder");
-  // Przy wejściu na stronę podpowiedź wpisuje się litera po literze (null = cała)
-  const [typed, setTyped] = useState<number | null>(null);
+  const [focused, setFocused] = useState(false);
+  const still = Boolean(useReducedMotion());
+  // Przy wejściu na stronę pierwszy przykład wpisuje się od zera, przy powrocie stoi gotowy
+  const [typing, setTyping] = useState<Typing>(() => (typeIn ? { i: 0, n: 0, dir: 1 } : { i: 0, n: EXAMPLES[0].length, dir: 0 }));
 
+  // Pisanie, chwila przerwy, kasowanie, następny przykład; stoi, gdy ktoś pisze albo ma kursor w polu
   useEffect(() => {
-    if (!typeIn || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let n = 0;
-    let timer = window.setTimeout(() => {
-      setTyped(0);
-      const tick = () => {
-        n += 1;
-        setTyped(n >= placeholder.length ? null : n);
-        if (n < placeholder.length) timer = window.setTimeout(tick, 26);
-      };
-      timer = window.setTimeout(tick, 900);
-    }, 0);
+    if (still || focused || value) return;
+    const word = EXAMPLES[typing.i];
+    let delay: number;
+    let next: Typing;
+    if (typing.dir === 1 && typing.n < word.length) {
+      delay = typing.n === 0 ? (typing.i === 0 && typeIn ? 900 : 260) : 55 + Math.random() * 45;
+      next = { ...typing, n: typing.n + 1 };
+    } else if (typing.dir === -1 && typing.n > 0) {
+      delay = 24;
+      next = { ...typing, n: typing.n - 1 };
+    } else if (typing.dir === -1) {
+      delay = 0;
+      next = { i: (typing.i + 1) % EXAMPLES.length, n: 0, dir: 1 };
+    } else {
+      delay = 2200;
+      next = { ...typing, dir: -1 };
+    }
+    const timer = window.setTimeout(() => setTyping(next), delay);
     return () => window.clearTimeout(timer);
-  }, [typeIn, placeholder]);
+  }, [typing, still, focused, value, typeIn]);
+
+  const example = EXAMPLES[typing.i];
+  const shown = still || focused ? example : example.slice(0, typing.n);
   const source = parseSource(value);
   const converted = source ? f.buyUrl(source) : null;
 
@@ -58,41 +76,72 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
     window.setTimeout(() => router.push(href), delay);
   };
 
+  const action = converted ? t("search.open") : t("search.browse");
+
   return (
-    <div className="mt-8 max-w-[34rem]">
-      {/* Jeden pasek: pole, aparat i przycisk w środku (na telefonie sama strzałka) */}
-      <form
-        role="search"
-        onSubmit={onSubmit}
-        className="flex h-14 items-center gap-2.5 rounded-2xl border border-line-strong bg-card pl-4 pr-1.5 transition-colors focus-within:border-fg/50"
-      >
+    <div className="mt-9 max-w-[34rem]">
+      <form role="search" onSubmit={onSubmit} className="group/s relative flex items-center gap-2 pb-2.5 sm:gap-2.5">
         <label htmlFor="szukaj" className="sr-only">
           {t("search.label")}
         </label>
-        <Search aria-hidden size={18} className="shrink-0 text-dim" />
-        <input
-          id="szukaj"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={typed === null ? placeholder : placeholder.slice(0, typed)}
-          autoComplete="off"
-          spellCheck={false}
-          className="h-full w-full min-w-0 bg-transparent text-[0.9375rem] text-fg placeholder:text-dim focus:outline-none"
-        />
-        <a href={site.routes.photoSearch} className="shrink-0 text-dim transition-colors hover:text-fg" title={t("header.photoSearch")}>
-          <Camera aria-hidden size={17} />
+        <Search aria-hidden size={20} className="shrink-0 text-dim transition-colors group-focus-within/s:text-fg" />
+        <div className="relative h-12 min-w-0 flex-1">
+          <input
+            id="szukaj"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            autoComplete="off"
+            spellCheck={false}
+            className="size-full bg-transparent pl-1 text-[1.1875rem] tracking-[-0.01em] text-fg focus:outline-none sm:text-[1.3125rem]"
+          />
+          {/* Podpowiedź zamiast placeholdera, żeby przykłady mogły mieć własną czcionkę i kursor */}
+          {!value && (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 flex items-center gap-[0.35em] overflow-hidden whitespace-nowrap pl-1 text-[1.1875rem] tracking-[-0.01em] text-dim sm:text-[1.3125rem]"
+            >
+              <span className="shrink-0">{t("search.hintName")}</span>
+              <span className="fancy min-w-0 truncate text-[1.12em] text-muted">{shown}</span>
+              {!still && !focused && <span className="caret -ml-[0.2em] h-[1.1em] w-px shrink-0 bg-fg/70" />}
+            </span>
+          )}
+        </div>
+        <a
+          href={site.routes.photoSearch}
+          title={t("header.photoSearch")}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-muted ring-1 ring-line transition-colors hover:text-fg hover:ring-line-strong"
+        >
+          <Camera aria-hidden size={18} />
           <span className="sr-only">{t("header.photoSearch")}</span>
         </a>
-        <button type="submit" className={`${btnPrimary} group/go h-11 shrink-0 px-3.5 text-sm transition-transform duration-150 active:scale-[0.96] sm:px-4`}>
-          <span className="sr-only sm:not-sr-only">{converted ? t("search.open") : t("search.browse")}</span>
+        <button
+          type="submit"
+          title={action}
+          className="group/go grid size-11 shrink-0 place-items-center rounded-full bg-fg text-bg transition-[background-color,transform] duration-150 hover:bg-white active:scale-[0.94]"
+        >
+          <span className="sr-only">{action}</span>
           {/* Po najechaniu strzałka przejeżdża na wylot, po kliknięciu wystrzeliwuje (klucz zip restartuje animację) */}
-          <span aria-hidden="true" className="relative block size-4 overflow-hidden">
+          <span aria-hidden="true" className="relative block size-[18px] overflow-hidden">
             <span key={zip} className={`absolute inset-0 ${zip ? "arrow-zip" : ""}`}>
-              <ArrowRight size={16} className="absolute inset-0 transition-transform duration-300 ease-out group-hover/go:translate-x-[140%]" />
-              <ArrowRight size={16} className="absolute inset-0 -translate-x-[140%] transition-transform duration-300 ease-out group-hover/go:translate-x-0" />
+              {converted ? (
+                <ArrowUpRight size={18} className="absolute inset-0" />
+              ) : (
+                <>
+                  <ArrowRight size={18} className="absolute inset-0 transition-transform duration-300 ease-out group-hover/go:translate-x-[140%]" />
+                  <ArrowRight size={18} className="absolute inset-0 -translate-x-[140%] transition-transform duration-300 ease-out group-hover/go:translate-x-0" />
+                </>
+              )}
             </span>
           </span>
         </button>
+        {/* Linia pod polem: szara, a po kliknięciu wypełnia się na biało od lewej */}
+        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-line-strong" />
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-fg transition-transform duration-500 ease-[var(--ease-out-soft)] group-focus-within/s:scale-x-100 motion-reduce:transition-none"
+        />
       </form>
 
       {converted && source && (
