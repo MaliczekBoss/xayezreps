@@ -115,7 +115,8 @@ def main():
     checked_path = ROOT.parent / ".import" / f"classified-{args.category}.json"
     checked = json.loads(checked_path.read_text(encoding="utf-8")) if checked_path.exists() else {}
 
-    todo = [f for f in finds if f["category"] == args.category and not f.get("hidden") and f.get("image") and f["id"] not in checked]
+    # Pomijamy już sprawdzone; te bez odpowiedzi (limit, przeciążenie) próbujemy ponownie
+    todo = [f for f in finds if f["category"] == args.category and not f.get("hidden") and f.get("image") and not checked.get(f["id"])]
     print(f"Do sprawdzenia: {len(todo)} produktów z kategorii {args.category}", flush=True)
     key = api_key()
     for start in range(0, len(todo), args.batch):
