@@ -23,13 +23,12 @@ const glass = "bg-black/50 ring-1 ring-white/10 backdrop-blur-md";
 
 /**
  * Karta findu bez ramki: zdjęcie na kafelku, pod nim nazwa, cena i batch. Po najechaniu produkt
- * podnosi się (klasa .lift w globals.css), a gdy mamy zdjęcie QC z magazynu – przechodzi w nie.
+ * podnosi się (klasa .lift w globals.css).
  */
 export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boolean }) {
   const f = useFormat();
   const { t } = f;
   const qc = find.qc ?? 0;
-  const peek = Boolean(find.qcCover);
 
   return (
     <article className="group relative flex h-full flex-col">
@@ -37,11 +36,6 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
         <span className="lift absolute inset-0">
           <ProductImage src={find.image} sizes={SIZES} />
         </span>
-        {find.qcCover && (
-          <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[inherit] opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none">
-            <ProductImage src={find.qcCover} sizes={SIZES} />
-          </span>
-        )}
 
         {isNew && <span className="absolute left-2 top-2 rounded-full bg-gl px-2 py-1 text-[10.5px] font-semibold leading-none text-white">{t("card.new")}</span>}
 
@@ -54,14 +48,7 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
         {qc > 0 && (
           <span className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium leading-none text-white tabular ${glass}`}>
             <Camera aria-hidden size={11} />
-            <span aria-hidden="true" className={peek ? "group-hover:hidden" : ""}>
-              {qc}
-            </span>
-            {peek && (
-              <span aria-hidden="true" className="hidden group-hover:inline">
-                {t("card.qcPeek", { n: qc })}
-              </span>
-            )}
+            <span aria-hidden="true">{qc}</span>
             <span className="sr-only">{t("card.qcSr", { n: qc })}</span>
           </span>
         )}
