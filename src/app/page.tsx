@@ -3,14 +3,11 @@ import { Hero } from "@/components/hero";
 import { ProductRow } from "@/components/product-row";
 import { PromoPopup } from "@/components/promo-popup";
 import { QcFeed } from "@/components/qc-feed";
-import { SellersRow } from "@/components/sellers-row";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Tools } from "@/components/tools";
 import { NEW_FOR_DAYS, sortNewest, sortPopular } from "@/lib/finds";
 import { getQcFeed, getQcIndex, withQc } from "@/lib/qc-feed";
-import { getSellers } from "@/lib/remote";
-import { sellerStats } from "@/lib/seller-stats";
 import { getToolPreviews } from "@/lib/tool-previews";
 import { site } from "@/lib/site";
 import { getAllFinds, getFinds, getOutfits } from "@/lib/store";
@@ -46,12 +43,11 @@ const HERO_CATEGORIES: [category: string, coverId: string][] = [
 ];
 
 export default async function Home() {
-  const [raw, all, qcIndex, qcFeed, sellers, outfits, toolPreviews] = await Promise.all([
+  const [raw, all, qcIndex, qcFeed, outfits, toolPreviews] = await Promise.all([
     getFinds(),
     getAllFinds(),
     getQcIndex(),
     getQcFeed(),
-    getSellers(),
     getOutfits(),
     getToolPreviews(),
   ]);
@@ -81,10 +77,6 @@ export default async function Home() {
   const newestRow = newest.slice(0, ROW);
   const popularRow = popular.slice(0, ROW);
 
-  const sellerCards = sellers
-    .slice(0, 8)
-    .map(({ slug, name, description, items }) => ({ slug, name, description, ...sellerStats(items), thumbs: items.slice(0, 3).map((i) => i.image) }));
-
   return (
     <>
       <SiteHeader />
@@ -95,7 +87,6 @@ export default async function Home() {
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popularRow} newIds={newIn(popularRow)} />
         <QcFeed entries={qcFeed} />
         <OutfitsRow outfits={summarizeOutfits(outfits, all).slice(0, 12)} />
-        <SellersRow sellers={sellerCards} />
         <HaulSection />
         {CATEGORY_ROWS.map((c) => {
           const items = popular.filter((f) => f.category === c).slice(0, ROW);
