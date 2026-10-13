@@ -7,6 +7,7 @@ import { ToolSkeleton } from "@/components/tools/tool-skeleton";
 import { resolveOutfits, summarizeOutfits } from "@/lib/outfits";
 import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getAllFinds, getOutfits } from "@/lib/store";
+import { live } from "@/lib/live";
 
 // Przy buildzie tylko najnowsze outfity; reszta renderuje się przy pierwszym wejściu i trafia do cache
 const PRERENDER = 48;
@@ -40,7 +41,7 @@ export default function OutfitPage({ params }: PageProps<"/outfits/[id]">) {
 
 async function OutfitContent({ params }: { params: PageProps<"/outfits/[id]">["params"] }) {
   const { id } = await params;
-  const [outfits, raw, qcIndex] = await Promise.all([getOutfits(), getAllFinds(), getQcIndex()]);
+  const [outfits, raw, qcIndex] = await Promise.all([getOutfits(), getAllFinds().then(live), getQcIndex()]);
   const finds = withQc(raw, qcIndex);
   const own = outfits.find((o) => o.id === id);
   const [outfit] = own ? resolveOutfits([own], finds) : [];

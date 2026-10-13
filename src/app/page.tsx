@@ -14,7 +14,7 @@ import { sellerStats } from "@/lib/seller-stats";
 import { getToolPreviews } from "@/lib/tool-previews";
 import { site } from "@/lib/site";
 import { getAllFinds, getFinds, getOutfits } from "@/lib/store";
-import { getProductViews, withViews } from "@/lib/views";
+import { live } from "@/lib/live";
 import { OutfitsRow } from "@/components/outfits";
 import { summarizeOutfits } from "@/lib/outfits";
 
@@ -55,7 +55,7 @@ export default async function Home() {
     getOutfits(),
     getToolPreviews(),
   ]);
-  const finds = withQc(withViews(raw, await getProductViews()), qcIndex);
+  const finds = withQc(await live(raw), qcIndex);
   const newest = sortNewest(finds);
   const popular = sortPopular(finds);
 

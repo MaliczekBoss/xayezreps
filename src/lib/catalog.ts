@@ -1,10 +1,10 @@
 import "server-only";
 
-import { categories, sortNewest, sortPopular, type Find } from "./finds";
+import { categories, genders, sortNewest, sortPopular, type Find, type Gender } from "./finds";
 import { getQcIndex, withQc } from "./qc-feed";
 import { buildSearchIndex, searchFinds, type SearchIndex } from "./search";
 import { getFinds } from "./store";
-import { getProductViews, withViews } from "./views";
+import { live } from "./live";
 
 // Katalog jest za duży, żeby wysyłać go w całości do przeglądarki: wyszukiwanie, filtry i sortowanie
 // liczymy tutaj, a strona dostaje tylko jedną porcję produktów.
@@ -19,6 +19,8 @@ export type CatalogQuery = {
   category?: string;
   batch?: string;
   qcOnly?: boolean;
+  /** „Dla niego” – wszystko oprócz rzeczy damskich, „Dla niej” – tylko rzeczy damskie */
+  gender?: Gender | "";
   /** Bez sortowania przy wpisanym zapytaniu liczy się trafność */
   sort?: CatalogSort | null;
   offset?: number;
@@ -52,8 +54,8 @@ const signature = (list: Find[]) => `${list.length}|${list.reduce((h, f) => (h *
 
 async function prepare(): Promise<Prepared> {
   if (prepared && Date.now() - prepared.at < FRESH_MS) return prepared.value;
-  const [raw, qcIndex, views] = await Promise.all([getFinds(), getQcIndex(), getProductViews()]);
-  const finds = sortPopular(withQc(withViews(raw, views), qcIndex));
+  const [raw, qcIndex] = await Promise.all([getFinds().then(live), getQcIndex()]);
+  const finds = sortPopular(withQc(raw, qcIndex));
   const key = signature(finds);
   if (prepared?.key === key) {
     prepared.at = Date.now();
@@ -80,7 +82,11 @@ export async function queryCatalog(query: CatalogQuery): Promise<CatalogPage> {
   const { finds, index } = await prepare();
   const q = (query.q ?? "").trim().slice(0, 100);
   const base = finds.filter(
-    (f) => (!query.category || f.category === query.category) && (!query.batch || f.batch === query.batch) && (!query.qcOnly || Boolean(f.qc)),
+    (f) =>
+      (!query.category || f.category === query.category) &&
+      (!query.batch || f.batch === query.batch) &&
+      (!query.qcOnly || Boolean(f.qc)) &&
+      (!query.gender || (query.gender === "women" ? f.gender === "women" : f.gender !== "women")),
   );
   const found = searchFinds(index, base, q);
 
@@ -124,6 +130,7 @@ export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
     category: params.get("category") ?? "",
     batch: params.get("batch") ?? "",
     qcOnly: params.get("qc") === "1",
+    gender: genders.find((g) => g === params.get("gender")) ?? "",
     sort: SORTS.includes(sort as CatalogSort) ? (sort as CatalogSort) : null,
     offset: Number(params.get("offset")) || 0,
   };

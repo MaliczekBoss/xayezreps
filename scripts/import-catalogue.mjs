@@ -43,6 +43,11 @@ async function plnPerCny() {
 }
 const PLN_PER_CNY = await plnPerCny();
 
+// Dla kogo jest produkt (npm run gender:classify): id → men | women | unisex
+const gendersFile = path.join(root, "data", "gender.json");
+const genders = existsSync(gendersFile) ? JSON.parse(readFileSync(gendersFile, "utf8")) : {};
+const genderOf = (id) => (["men", "women"].includes(genders[id]) ? { gender: genders[id] } : {});
+
 // Aktualne ceny ze strony agenta (npm run prices:snapshot): aukcja → cena w juanach
 const pricesFile = path.join(root, "data", "prices.json");
 const agentPrices = existsSync(pricesFile) ? JSON.parse(readFileSync(pricesFile, "utf8")) : {};
@@ -215,18 +220,22 @@ const imported = rows.map((r) => {
   const pln = Number(r.price_pln);
   const cny = Number(r.price_cny);
   const pricePln = agentCny > 0 ? agentCny * PLN_PER_CNY : pln > 0 ? pln : cny > 0 ? cny * PLN_PER_CNY : 0;
+  // Ta sama cena w juanach: strona przelicza ją bieżącym kursem, tak jak cenę na stronie produktu
+  const priceCny = agentCny > 0 ? agentCny : pln > 0 ? Math.round((pln / PLN_PER_CNY) * 100) / 100 : cny > 0 ? cny : 0;
   return {
     id: r.id.trim(),
     name: cleanName(r.name),
     category,
     batch: batchOf(r.name),
     pricePln: Math.round(pricePln),
+    ...(priceCny > 0 ? { priceCny } : {}),
     weightGrams: WEIGHT[category] ?? 300,
     // Wyświetlenia z bazy (np. ze starej strony); nasze odsłony dolicza strona (src/lib/views.ts)
     views: Number(r.views) > 0 ? Math.round(Number(r.views)) : 0,
     // Polecane w eksporcie trafiają na górę „Najpopularniejszych”
     ...(r.featured === "true" ? { featured: true } : {}),
     image: imageOf(r.id.trim()),
+    ...genderOf(r.id.trim()),
     source,
     createdAt: new Date(r.added_at).toISOString(),
   };
@@ -237,7 +246,7 @@ const findsFile = path.join(root, "data", "finds.json");
 const outfits = JSON.parse(readFileSync(path.join(root, "data", "outfits.json"), "utf8"));
 const used = new Set(outfits.flatMap((o) => o.parts.map((p) => p.findId)));
 const old = JSON.parse(readFileSync(findsFile, "utf8"));
-const kept = old.filter((f) => used.has(f.id)).map((f) => ({ ...f, image: imageOf(f.id), hidden: true }));
+const kept = old.filter((f) => used.has(f.id)).map(({ gender, ...f }) => ({ ...f, image: imageOf(f.id), ...genderOf(f.id), hidden: true }));
 
 const ids = new Set();
 for (const f of [...imported, ...kept]) {

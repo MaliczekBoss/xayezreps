@@ -2,6 +2,7 @@ import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { site } from "@/lib/site";
 import { trustedOrigin } from "@/lib/site-url";
 import { getAllFinds, getOutfits } from "@/lib/store";
+import { live } from "@/lib/live";
 
 // Podgląd linku dla Discorda (proxy.ts kieruje tu Discordbota). Oprócz zwykłych tagów Open Graph strona daje
 // Discordowi gotowy układ (component embed): logo i „xayezreps”, tytuł z linkiem, opis, grafikę, biały pasek
@@ -34,7 +35,7 @@ type Embed = { title: string; url: string; description: string; image?: string; 
 async function embedFor(pathname: string, origin: string): Promise<Embed> {
   const product = pathname.match(/^\/product\/([^/]+)$/);
   if (product) {
-    const [all, qcIndex] = await Promise.all([getAllFinds(), getQcIndex()]);
+    const [all, qcIndex] = await Promise.all([getAllFinds().then(live), getQcIndex()]);
     const raw = all.find((f) => f.id === decode(product[1]));
     if (raw) {
       const [find] = withQc([raw], qcIndex);

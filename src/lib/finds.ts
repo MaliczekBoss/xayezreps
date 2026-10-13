@@ -6,6 +6,8 @@ export type Find = {
   category: Category;
   batch: Batch;
   pricePln: number;
+  /** Cena w juanach (u agenta albo przeliczona przy imporcie) – strona przelicza ją bieżącym kursem, jak na stronie produktu */
+  priceCny?: number;
   /** Szacowana waga do kalkulatora paczki */
   weightGrams: number;
   views: number;
@@ -21,7 +23,12 @@ export type Find = {
   hidden?: boolean;
   /** Polecany: przy tej samej liczbie wyświetleń idzie wyżej w „Najpopularniejszych” */
   featured?: boolean;
+  /** Dla kogo (filtr „Dla niego” / „Dla niej”); bez pola – unisex: jest w „Dla niego”, a „Dla niej” to tylko rzeczy damskie */
+  gender?: Gender;
 };
+
+export type Gender = "men" | "women";
+export const genders: Gender[] = ["men", "women"];
 
 export const categories = [
   "Bluzy",

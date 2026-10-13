@@ -6,6 +6,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { sourceUrl, type ProductSource } from "./agents";
 import { sortNewest, type Find } from "./finds";
 import { qcKey, storedQcIndex, type QcInfo } from "./qc-store";
+import { live } from "./live";
 import { getAllFinds, getFinds } from "./store";
 
 export type QcEntry = {
@@ -66,7 +67,7 @@ export function withQc(finds: Find[], index: Record<string, QcInfo>): Find[] {
 
 /** Najnowsze findy, które mają prawdziwe zdjęcia QC – do rzędu na stronie głównej */
 export async function getQcFeed(): Promise<QcEntry[]> {
-  const [finds, index] = await Promise.all([getFinds(), getQcIndex()]);
+  const [finds, index] = await Promise.all([getFinds().then(live), getQcIndex()]);
   const seen = new Set<string>();
   const entries: QcEntry[] = [];
   for (const f of sortNewest(finds)) {

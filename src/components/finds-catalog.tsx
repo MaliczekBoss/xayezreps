@@ -6,7 +6,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Camera, LayoutGrid, Search, Table2, X } from "lucide-react";
 import type { CatalogFacets, CatalogPage } from "@/lib/catalog";
 import type { DictKey } from "@/lib/dict";
-import { batches, type Find } from "@/lib/finds";
+import { batches, genders, type Find } from "@/lib/finds";
+import { useLivePricePln } from "@/lib/price-sync";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { FavoriteButton } from "./favorite-button";
@@ -22,18 +23,19 @@ const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc", "qc"];
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
-type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean };
+type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean; gender: string };
 
 /** Klucz zestawu filtrów: te same filtry = ta sama porcja katalogu */
-const keyOf = ({ q, category, batch, sort, qcOnly }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly]);
+const keyOf = ({ q, category, batch, sort, qcOnly, gender }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly, gender]);
 
-const urlOf = ({ q, category, batch, sort, qcOnly }: Filters, offset = 0) => {
+const urlOf = ({ q, category, batch, sort, qcOnly, gender }: Filters, offset = 0) => {
   const next = new URLSearchParams();
   if (q) next.set("q", q);
   if (category) next.set("category", category);
   if (batch) next.set("batch", batch);
   if (sort) next.set("sort", sort);
   if (qcOnly) next.set("qc", "1");
+  if (gender) next.set("gender", gender);
   if (offset) next.set("offset", String(offset));
   return `/api/finds?${next}`;
 };
@@ -59,9 +61,10 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
   const validSort = sortParam && SORTS.includes(sortParam) ? sortParam : null;
   const sort: Sort = validSort ?? "popular";
   const qcOnly = params.get("qc") === "1";
+  const gender = genders.find((g) => g === params.get("gender")) ?? "";
   const sheet = params.get("view") === "sheet";
 
-  const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly };
+  const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly, gender };
   const filterKey = keyOf(filters);
   const [data, setData] = useState(() => ({ key: filterKey, page: initial }));
   const [loading, setLoading] = useState(false);
@@ -138,7 +141,7 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
     }, 1500);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [batch, validSort, qcOnly, deferredQuery]);
+  }, [batch, validSort, qcOnly, gender, deferredQuery]);
 
   const loadMore = () => {
     setLoading(true);
@@ -162,7 +165,7 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
   const items = page.items;
   const stale = data.key !== filterKey;
   const countOf = new Map(facets.counts);
-  const filtered = Boolean(category || batch || qcOnly || query.trim());
+  const filtered = Boolean(category || batch || qcOnly || gender || query.trim());
 
   const reset = () => {
     setQuery("");
@@ -254,7 +257,7 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
       </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {facets.hasQc && (
             <button
               type="button"
@@ -268,6 +271,23 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
               {t("finds.qcOnly")}
             </button>
           )}
+          {/* Dla kogo: „Dla niego” to wszystko oprócz rzeczy damskich, „Dla niej” – tylko damskie */}
+          <div role="group" aria-label={t("finds.gender")} className="flex rounded-xl border border-line bg-card p-1">
+            {(["", ...genders] as const).map((g) => {
+              const active = gender === g;
+              return (
+                <button
+                  key={g || "all"}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setParam("gender", g)}
+                  className={`inline-flex h-7 items-center rounded-lg px-2.5 text-[13px] font-medium transition-colors ${active ? "bg-fg text-bg" : "text-muted hover:text-fg"}`}
+                >
+                  {t(g === "men" ? "finds.men" : g === "women" ? "finds.women" : "finds.genderAll")}
+                </button>
+              );
+            })}
+          </div>
           <p className="text-sm text-muted" aria-live="polite">
             {t("finds.count", { shown: items.length, total: page.total })}
           </p>
@@ -396,7 +416,9 @@ function FindsSheet({ items }: { items: Find[] }) {
                   <span className="text-dim">–</span>
                 )}
               </td>
-              <td className="whitespace-nowrap px-3 py-2 text-right font-mono tabular">{f.money(item.pricePln)}</td>
+              <td className="whitespace-nowrap px-3 py-2 text-right font-mono tabular">
+                <LivePrice find={item} />
+              </td>
               <td className="px-3 py-2 sm:pr-4">
                 <div className="flex items-center justify-end gap-1.5">
                   <FavoriteButton find={item} className="!border-line !bg-bg" />
@@ -419,4 +441,11 @@ function FindsSheet({ items }: { items: Find[] }) {
       </table>
     </div>
   );
+}
+
+/** Cena w tabeli – synchronizowana z agentem jak na kartach */
+function LivePrice({ find }: { find: Find }) {
+  const f = useFormat();
+  const pricePln = useLivePricePln(find);
+  return <>{pricePln > 0 ? f.money(pricePln) : "–"}</>;
 }

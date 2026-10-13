@@ -3,6 +3,7 @@ import { OutfitsIndex } from "@/components/outfits";
 import { PageShell } from "@/components/page-shell";
 import { summarizeOutfits } from "@/lib/outfits";
 import { getAllFinds, getOutfits } from "@/lib/store";
+import { live } from "@/lib/live";
 
 export const metadata: Metadata = {
   title: "Outfity",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OutfitsPage() {
-  const [outfits, finds] = await Promise.all([getOutfits(), getAllFinds()]);
+  const [outfits, finds] = await Promise.all([getOutfits(), getAllFinds().then(live)]);
   return (
     <PageShell>
       <OutfitsIndex outfits={summarizeOutfits(outfits, finds)} />

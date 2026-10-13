@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Camera } from "lucide-react";
 import type { Find } from "@/lib/finds";
+import { useLivePricePln } from "@/lib/price-sync";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { FavoriteButton } from "./favorite-button";
@@ -29,6 +30,8 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
   const f = useFormat();
   const { t } = f;
   const qc = find.qc ?? 0;
+  // Cena synchronizuje się z agentem, gdy karta się pokaże (price-sync.ts)
+  const pricePln = useLivePricePln(find);
 
   return (
     <article className="group relative flex h-full flex-col">
@@ -61,7 +64,7 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
           </Link>
         </h3>
         <div className="mt-auto flex items-baseline justify-between gap-2 pt-1.5">
-          <span className="font-mono text-[15px] font-semibold tabular">{find.pricePln > 0 ? f.money(find.pricePln) : "–"}</span>
+          <span className="font-mono text-[15px] font-semibold tabular">{pricePln > 0 ? f.money(pricePln) : "–"}</span>
           <span className="inline-flex min-w-0 items-center gap-1.5 text-[12px] text-muted">
             {BATCH_DOT[find.batch] ? (
               <>

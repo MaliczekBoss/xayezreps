@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "qc:snapshot": "node scripts/qc-snapshot.mjs",
-    "prices:snapshot": "node scripts/price-snapshot.mjs"
+    "prices:snapshot": "node scripts/price-snapshot.mjs",
+    "gender:classify": "node scripts/classify-gender.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.55.0",

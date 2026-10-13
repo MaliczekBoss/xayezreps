@@ -4,6 +4,10 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
+  "finds.gender": "Dla kogo",
+  "finds.genderAll": "Wszystko",
+  "finds.men": "Dla niego",
+  "finds.women": "Dla niej",
   "hero.proofBuyers": "kupujących",
   "hero.proofFinds": {"one": "find", "few": "findy", "many": "findów", "other": "findu"},
   "hero.proofQc": "ze zdjęciami QC",
@@ -585,6 +589,10 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
+  "finds.gender": "Who for",
+  "finds.genderAll": "Everyone",
+  "finds.men": "For him",
+  "finds.women": "For her",
   "hero.proofBuyers": "buyers",
   "hero.proofFinds": {"one": "find", "other": "finds"},
   "hero.proofQc": "with QC photos",
@@ -1151,6 +1159,10 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
+  "finds.gender": "Für wen",
+  "finds.genderAll": "Alle",
+  "finds.men": "Für ihn",
+  "finds.women": "Für sie",
   "hero.proofBuyers": "Käufer",
   "hero.proofFinds": {"one": "Find", "other": "Finds"},
   "hero.proofQc": "mit QC-Fotos",
@@ -1355,6 +1367,10 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
+  "finds.gender": "Pour qui",
+  "finds.genderAll": "Tout",
+  "finds.men": "Pour lui",
+  "finds.women": "Pour elle",
   "hero.proofBuyers": "acheteurs",
   "hero.proofFinds": {"one": "find", "other": "finds"},
   "hero.proofQc": "avec photos QC",
@@ -1559,6 +1575,10 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
+  "finds.gender": "Para quién",
+  "finds.genderAll": "Todo",
+  "finds.men": "Para él",
+  "finds.women": "Para ella",
   "hero.proofBuyers": "compradores",
   "hero.proofFinds": {"one": "find", "other": "finds"},
   "hero.proofQc": "con fotos QC",
@@ -1763,6 +1783,10 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
+  "finds.gender": "Per chi",
+  "finds.genderAll": "Tutto",
+  "finds.men": "Per lui",
+  "finds.women": "Per lei",
   "hero.proofBuyers": "acquirenti",
   "hero.proofFinds": {"one": "find", "other": "find"},
   "hero.proofQc": "con foto QC",
@@ -1967,6 +1991,10 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
+  "finds.gender": "适用人群",
+  "finds.genderAll": "全部",
+  "finds.men": "男士",
+  "finds.women": "女士",
   "hero.proofBuyers": "位买家",
   "hero.proofFinds": {"one": "件好物", "other": "件好物"},
   "hero.proofQc": "件有 QC 照片",
