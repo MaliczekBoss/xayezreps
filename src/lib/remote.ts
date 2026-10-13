@@ -4,25 +4,60 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { ProductSource } from "./agents";
 import { FALLBACK_RATES, type Rates } from "./money";
 
-// Dane z API obecnej strony xayezreps.com (kursy, sprzedawcy, QC, szczegóły produktów)
+// Dane z API obecnej strony xayezreps.com (sprzedawcy, QC, szczegóły produktów); kursy walut z NBP
 const API = "https://xayezreps.com/api";
 const HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
 
-/** Kursy walut (ile jednostek za 1 zł), odświeżane co godzinę */
+/**
+ * Kursy walut (ile jednostek za 1 zł) – te, po których USFans przelicza ceny klientom, więc ceny na stronie
+ * zgadzają się z kasą agenta. Gdy USFans nie odpowiada – średnie kursy NBP, a w ostateczności kursy zapasowe.
+ * Odświeżamy co godzinę.
+ */
 export async function getRates(): Promise<Rates> {
   "use cache";
   cacheLife("hours");
   cacheTag("rates");
+  return (await usfansRates()) ?? (await nbpRates()) ?? FALLBACK_RATES;
+}
+
+/** Kursy USFans: ile jednostek waluty za 1 juana, przeliczone na „za 1 zł” */
+async function usfansRates(): Promise<Rates | null> {
   try {
-    const res = await fetch(`${API}/exchange-rates`, { headers: HEADERS, signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return FALLBACK_RATES;
-    const data = (await res.json()) as Partial<Rates>;
-    const ok = (v: unknown) => typeof v === "number" && v > 0;
-    return ok(data.USD) && ok(data.EUR) && ok(data.CNY)
-      ? { PLN: 1, USD: data.USD!, EUR: data.EUR!, CNY: data.CNY! }
-      : FALLBACK_RATES;
+    const res = await fetch("https://www.usfans.com/api/config/aggregation", {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const list = (await res.json())?.data?.exchangeRateList as { currencyCode: string; exchangeRate: number }[] | undefined;
+    const perCny = (code: string) => {
+      const rate = list?.find((r) => r.currencyCode === code)?.exchangeRate;
+      return typeof rate === "number" && rate > 0 ? rate : null;
+    };
+    const [pln, usd, eur] = [perCny("PLN"), perCny("USD"), perCny("EUR")];
+    return pln && usd && eur ? { PLN: 1, USD: usd / pln, EUR: eur / pln, CNY: 1 / pln } : null;
   } catch {
-    return FALLBACK_RATES;
+    return null;
+  }
+}
+
+/** Średnie kursy NBP z tabeli A (publikowane w dni robocze około południa) */
+async function nbpRates(): Promise<Rates | null> {
+  try {
+    const res = await fetch("https://api.nbp.pl/api/exchangerates/tables/a/?format=json", {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const [table] = (await res.json()) as { rates?: { code: string; mid: number }[] }[];
+    // NBP podaje, ile złotych kosztuje 1 jednostka waluty, a my liczymy odwrotnie
+    const perPln = (code: string) => {
+      const mid = table?.rates?.find((r) => r.code === code)?.mid;
+      return typeof mid === "number" && mid > 0 ? 1 / mid : null;
+    };
+    const [USD, EUR, CNY] = [perPln("USD"), perPln("EUR"), perPln("CNY")];
+    return USD && EUR && CNY ? { PLN: 1, USD, EUR, CNY } : null;
+  } catch {
+    return null;
   }
 }
 
@@ -123,6 +158,26 @@ export async function fetchItemDetails(source: ProductSource): Promise<ItemDetai
     priceRangeCny: [Math.min(...all), Math.max(...all)],
     qcCount: typeof d.qcCount === "number" ? d.qcCount : 0,
   };
+}
+
+const USFANS_CHANNEL: Record<ProductSource["platform"], number> = { "1688": 1, taobao: 2, weidian: 3 };
+
+/** Aktualna cena u agenta (USFans) w juanach: najtańszy wariant, z promocją, jeśli jest */
+export async function fetchAgentPriceCny(source: ProductSource): Promise<number | null> {
+  const url = `https://www.usfans.com/api/goods/info?channel=${USFANS_CHANNEL[source.platform]}&goodsId=${encodeURIComponent(source.id)}&refresh=false&queryDelivery=false&activityId=`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
+    signal: AbortSignal.timeout(10000),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const d = await res.json().catch(() => null);
+  if (d?.code !== 200 || !d.data) return null;
+  type Sku = { price?: number; discountPrice?: number | null };
+  const skus: Sku[] = Array.isArray(d.data.skuList) ? d.data.skuList : [];
+  const prices = skus.map((s) => (s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price)).filter((p): p is number => typeof p === "number" && p > 0);
+  if (prices.length) return Math.min(...prices);
+  return typeof d.data.price === "number" && d.data.price > 0 ? d.data.price : null;
 }
 
 /** Zdjęcia QC z magazynów agentów */

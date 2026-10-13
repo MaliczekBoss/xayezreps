@@ -4,6 +4,7 @@
 
 import { readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { dropPartial, loadPartial, progress, savePartial } from "./lib/progress.mjs";
 
 const root = process.cwd();
 const USFANS = { 1688: 1, taobao: 2, weidian: 3 };
@@ -38,18 +39,31 @@ const finds = JSON.parse(await readFile(path.join(root, "data", "finds.json"), "
 const sources = [...new Map(finds.map((f) => [`${f.source.platform}:${f.source.id}`, f.source])).entries()];
 const file = path.join(root, "data", "qc-index.json");
 const previous = JSON.parse(await readFile(file, "utf-8").catch(() => "{}"));
-const index = {};
+// Wynik przerwanego uruchomienia: sprawdzone aukcje pomijamy
+const partialFile = `${file}.partial`;
+const index = await loadPartial(partialFile);
+const todo = sources.filter(([key]) => !(key in index));
+if (Object.keys(index).length) console.log(`Wznawiam: ${Object.keys(index).length} aukcji już sprawdzonych, zostało ${todo.length}`);
+const bar = progress(todo.length, "QC");
 let next = 0;
 let failed = 0;
+let withQc = Object.values(index).filter((v) => v.count > 0).length;
+let unsaved = 0;
 
 await Promise.all(
   Array.from({ length: CONCURRENCY }, async () => {
-    while (next < sources.length) {
-      const [key, source] = sources[next++];
+    while (next < todo.length) {
+      const [key, source] = todo[next++];
       const info = await qc(source);
       if (info) index[key] = info;
       else if (previous[key]) index[key] = previous[key];
       else failed++;
+      if (index[key]?.count > 0) withQc++;
+      bar.tick(`ze zdjęciami: ${withQc}, bez odpowiedzi: ${failed}`);
+      if (++unsaved >= 100) {
+        unsaved = 0;
+        await savePartial(partialFile, index);
+      }
     }
   }),
 );
@@ -57,5 +71,6 @@ await Promise.all(
 const sorted = Object.fromEntries(Object.entries(index).sort(([a], [b]) => a.localeCompare(b)));
 await writeFile(`${file}.tmp`, JSON.stringify(sorted));
 await rename(`${file}.tmp`, file);
+await dropPartial(partialFile);
 const withPhotos = Object.values(sorted).filter((v) => v.count > 0).length;
 console.log(`aukcje: ${sources.length}, w migawce: ${Object.keys(sorted).length}, ze zdjęciami: ${withPhotos}, bez odpowiedzi: ${failed}`);

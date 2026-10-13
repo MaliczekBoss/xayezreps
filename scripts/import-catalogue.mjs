@@ -14,8 +14,38 @@ if (!csvFile) {
 }
 
 const root = process.cwd();
-// Kurs z xayezreps.com/api/exchange-rates w dniu importu: ile juanów za 1 zł
-const CNY_PER_PLN = 1.7146;
+/**
+ * Ile złotych za 1 juana: kurs USFans (ten, po którym agent liczy klientom), gdy agent nie odpowiada –
+ * średni kurs NBP (tabela A), a bez internetu – ostatni znany kurs NBP
+ */
+async function plnPerCny() {
+  try {
+    const res = await fetch("https://www.usfans.com/api/config/aggregation", {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
+      signal: AbortSignal.timeout(10000),
+    });
+    const rate = (await res.json()).data.exchangeRateList.find((r) => r.currencyCode === "PLN");
+    if (rate?.exchangeRate > 0) {
+      console.log(`Kurs USFans z ${rate.updateTime}: 1 CNY = ${rate.exchangeRate} zł`);
+      return rate.exchangeRate;
+    }
+  } catch {}
+  try {
+    const res = await fetch("https://api.nbp.pl/api/exchangerates/rates/a/cny/?format=json", { signal: AbortSignal.timeout(10000) });
+    const { rates, table } = await res.json();
+    const { mid, no, effectiveDate } = rates[0];
+    console.log(`USFans nie odpowiada – kurs NBP ${no} (tabela ${table}) z ${effectiveDate}: 1 CNY = ${mid} zł`);
+    return mid;
+  } catch {
+    console.warn("USFans i NBP nie odpowiadają – kurs z tabeli 199/A/NBP/2026 (13.10.2026)");
+    return 0.5852;
+  }
+}
+const PLN_PER_CNY = await plnPerCny();
+
+// Aktualne ceny ze strony agenta (npm run prices:snapshot): aukcja → cena w juanach
+const pricesFile = path.join(root, "data", "prices.json");
+const agentPrices = existsSync(pricesFile) ? JSON.parse(readFileSync(pricesFile, "utf8")) : {};
 
 const WEIGHT = {
   Bluzy: 750,
@@ -179,19 +209,24 @@ const allRows = csvFile.toLowerCase().endsWith(".json")
 const rows = allRows.filter((r) => imageOf(r.id.trim()));
 const imported = rows.map((r) => {
   const category = overrides[r.id.trim()] ?? categoryOf(r);
+  const source = sourceOf(r);
+  // Cena: aktualna ze strony agenta, potem w złotówkach z bazy (np. przeniesiona ze starej strony), potem juany z bazy
+  const agentCny = Number(agentPrices[`${source.platform}:${source.id}`]?.cny);
+  const pln = Number(r.price_pln);
   const cny = Number(r.price_cny);
+  const pricePln = agentCny > 0 ? agentCny * PLN_PER_CNY : pln > 0 ? pln : cny > 0 ? cny * PLN_PER_CNY : 0;
   return {
     id: r.id.trim(),
     name: cleanName(r.name),
     category,
     batch: batchOf(r.name),
-    pricePln: Number.isFinite(cny) && cny > 0 ? Math.round(cny / CNY_PER_PLN) : 0,
+    pricePln: Math.round(pricePln),
     weightGrams: WEIGHT[category] ?? 300,
     views: 0,
     // Polecane w eksporcie trafiają na górę „Najpopularniejszych”
     ...(r.featured === "true" ? { featured: true } : {}),
     image: imageOf(r.id.trim()),
-    source: sourceOf(r),
+    source,
     createdAt: new Date(r.added_at).toISOString(),
   };
 });

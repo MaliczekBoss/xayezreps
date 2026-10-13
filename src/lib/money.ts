@@ -2,8 +2,9 @@ import type { Currency } from "./settings";
 
 export type Rates = Record<Currency, number>;
 
-// Zapasowe kursy (ile jednostek waluty za 1 zł). Aktualne pobieramy z API co godzinę.
-export const FALLBACK_RATES: Rates = { PLN: 1, USD: 0.27, EUR: 0.235, CNY: 1.95 };
+// Zapasowe kursy (ile jednostek waluty za 1 zł) – średnie NBP z tabeli 199/A/NBP/2026 (13.10.2026).
+// Aktualne pobieramy z NBP co godzinę (remote.ts → getRates).
+export const FALLBACK_RATES: Rates = { PLN: 1, USD: 0.2553, EUR: 0.2283, CNY: 1.7088 };
 
 export const cnyToPln = (cny: number, rates: Rates = FALLBACK_RATES) => cny / rates.CNY;
 

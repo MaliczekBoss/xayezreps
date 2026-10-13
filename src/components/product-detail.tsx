@@ -8,6 +8,7 @@ import { agents, platformLabel, sourceUrl } from "@/lib/agents";
 import { copyWithNotice } from "@/lib/clipboard";
 import type { Find } from "@/lib/finds";
 import { haulActions, shippingCost, useHaul, withPackaging } from "@/lib/haul";
+import { cnyToPln } from "@/lib/money";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 import { Carousel, cardSlot } from "./carousel";
@@ -47,6 +48,8 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
   const link = sourceUrl(find.source);
 
   const [details, setDetails] = useState<ItemDetails | null>(null);
+  // Aktualna cena u agenta w juanach; dopóki nie przyjdzie, pokazujemy cenę z katalogu
+  const [agentPriceCny, setAgentPriceCny] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(() => new Set());
   const [active, setActive] = useState(find.image);
   const [zoom, setZoom] = useState<number | null>(null);
@@ -58,7 +61,10 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
     const ctrl = new AbortController();
     fetch(`/api/item?url=${encodeURIComponent(link)}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.item && setDetails(d.item))
+      .then((d) => {
+        if (d?.item) setDetails(d.item);
+        if (typeof d?.agentPriceCny === "number" && d.agentPriceCny > 0) setAgentPriceCny(d.agentPriceCny);
+      })
       .catch(() => {});
     return () => ctrl.abort();
   }, [link]);
@@ -74,10 +80,12 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
     if (src === active) setActive(find.image);
   };
 
+  // Cena w złotówkach: aktualna u agenta przeliczona jego kursem (kursy na stronie są z USFans), a bez niej – z katalogu
+  const pricePln = agentPriceCny ? cnyToPln(agentPriceCny, f.rates) : find.pricePln;
   const secondary =
     f.settings.currency === "PLN"
-      ? new Intl.NumberFormat(f.locale, { style: "currency", currency: "EUR" }).format(find.pricePln * f.rates.EUR)
-      : new Intl.NumberFormat(f.locale, { style: "currency", currency: "PLN", maximumFractionDigits: 0 }).format(find.pricePln);
+      ? new Intl.NumberFormat(f.locale, { style: "currency", currency: "EUR" }).format(pricePln * f.rates.EUR)
+      : new Intl.NumberFormat(f.locale, { style: "currency", currency: "PLN", maximumFractionDigits: 0 }).format(pricePln);
 
   const colors = details?.colors ?? [];
   const shownColors = allColors || colors.length <= COLOR_LIMIT + 1 ? colors : colors.slice(0, COLOR_LIMIT);
@@ -209,7 +217,7 @@ export function ProductDetail({ find, related, variants = [] }: { find: Find; re
           )}
 
           <p className="mt-5 flex flex-wrap items-baseline gap-x-3">
-            <span className="font-mono text-[1.625rem] font-medium tabular">{find.pricePln > 0 ? f.money(find.pricePln) : "–"}</span>
+            <span className="font-mono text-[1.625rem] font-medium tabular">{pricePln > 0 ? f.money(pricePln) : "–"}</span>
             <span className="text-sm text-muted tabular">≈ {secondary}</span>
           </p>
           {details && !details.available && <p className="mt-1 text-sm font-medium text-amber-300">{t("product.unavailable")}</p>}
