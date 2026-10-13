@@ -45,7 +45,7 @@ async function embedFor(pathname: string, origin: string): Promise<Embed> {
       return {
         title: find.name,
         url,
-        description: `Kup ${find.name}${price}.${qc} Link do agenta i kalkulator paczki w jednym miejscu.`,
+        description: `Kup ${find.name}${price}.${qc} Link do agenta i kalkulator paczki.`,
         image: `${origin}/api/og/${encodeURIComponent(find.id)}`,
         buttons: [
           { label: "Zobacz przedmiot", url },

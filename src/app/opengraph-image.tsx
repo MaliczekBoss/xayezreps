@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "xayezreps.pl – najlepsze repy z Chin w jednym miejscu";
+export const alt = "xayezreps.pl – sprawdzone findy z Chin z linkami i QC";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -35,7 +35,7 @@ export default function OpengraphImage() {
           xayezreps<span style={{ color: "#5f5f66" }}>.pl</span>
         </div>
         <div style={{ marginTop: 18, fontSize: 38, color: "#8f8f94" }}>
-          Najlepsze repy z Chin w jednym miejscu
+          Sprawdzone findy z Chin z linkami i QC
         </div>
         <div
           style={{

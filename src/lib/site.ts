@@ -6,7 +6,7 @@ export const site = {
   domain: "xayezreps.pl",
   url: "https://xayezreps.pl",
   description:
-    "Najlepsze repy z Chin w jednym miejscu: sprawdzone findy, zdjęcia QC, konwerter linków, śledzenie paczek i kalkulator wysyłki do Polski.",
+    "Sprawdzone findy z Chin z linkami do agentów i zdjęciami QC. Do tego konwerter linków, tracking paczek i kalkulator wysyłki do Polski.",
   tagline: "Nowe findy każdego dnia",
   buyers: "11 000+",
   ticketReplyTime: "poniżej 9 minut",

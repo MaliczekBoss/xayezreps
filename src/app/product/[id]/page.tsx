@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/product/[id]">): 
   const find = (await getAllFinds()).find((f) => f.id === id);
   if (!find) return { title: "Nie znaleziono" };
   const price = find.pricePln > 0 ? ` za ${new Intl.NumberFormat("pl-PL").format(Math.round(find.pricePln))} zł` : "";
-  const description = `Kup ${find.name}${price}. Zdjęcia QC z magazynu, link do agenta i kalkulator paczki w jednym miejscu.`;
+  const description = `Kup ${find.name}${price}. Zdjęcia QC z magazynu, link do agenta i kalkulator paczki.`;
   // Grafika z produktem bez tła, ceną i kodem (src/app/api/og/[id])
   const image = { url: `/api/og/${encodeURIComponent(find.id)}`, width: 1200, height: 630, alt: find.name };
   return {
