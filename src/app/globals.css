@@ -128,7 +128,7 @@
   /* Produkty bez tła leżą prosto na grafitowej stronie. Cienka jasna poświata na krawędzi oddziela
      czarne rzeczy od ciemnego tła, a cień pod spodem sprawia, że nie wiszą w powietrzu. */
   .cutout {
-    filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.32)) drop-shadow(0 0 10px rgb(255 255 255 / 0.05)) drop-shadow(0 14px 16px rgb(0 0 0 / 0.55));
+    filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.32)) drop-shadow(0 12px 12px rgb(0 0 0 / 0.5));
   }
 
   dialog.modal::backdrop {

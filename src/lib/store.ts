@@ -27,7 +27,7 @@ export async function getFinds(): Promise<Find[]> {
 }
 
 /** Aktualna lista prosto z magazynu, dla panelu admina */
-export const getFindsFresh = () => readDoc<Find>("finds");
+export const getFindsFresh = () => readDoc<Find>("finds", { fresh: true });
 
 export const saveFinds = (list: Find[]) => writeDoc("finds", list);
 
@@ -38,6 +38,6 @@ export async function getOutfits(): Promise<Outfit[]> {
   return readDoc<Outfit>("outfits");
 }
 
-export const getOutfitsFresh = () => readDoc<Outfit>("outfits");
+export const getOutfitsFresh = () => readDoc<Outfit>("outfits", { fresh: true });
 
 export const saveOutfits = (list: Outfit[]) => writeDoc("outfits", list);

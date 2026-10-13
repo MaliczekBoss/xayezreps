@@ -22,8 +22,24 @@ const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc", "qc"];
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
+type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean };
+
 /** Klucz zestawu filtrów: te same filtry = ta sama porcja katalogu */
-const keyOf = (q: string, category: string, batch: string, sort: string, qcOnly: boolean) => JSON.stringify([q, category, batch, sort, qcOnly]);
+const keyOf = ({ q, category, batch, sort, qcOnly }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly]);
+
+const urlOf = ({ q, category, batch, sort, qcOnly }: Filters, offset = 0) => {
+  const next = new URLSearchParams();
+  if (q) next.set("q", q);
+  if (category) next.set("category", category);
+  if (batch) next.set("batch", batch);
+  if (sort) next.set("sort", sort);
+  if (qcOnly) next.set("qc", "1");
+  if (offset) next.set("offset", String(offset));
+  return `/api/finds?${next}`;
+};
+
+// Ile pierwszych zdjęć z kategorii pobieramy zawczasu, gdy ktoś najedzie na jej zakładkę
+const PRELOAD_IMAGES = 10;
 
 /**
  * Katalog: pierwszą porcję renderuje serwer dla filtrów z adresu, a każdą zmianę (wpisywanie, kategoria,
@@ -45,53 +61,89 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
   const qcOnly = params.get("qc") === "1";
   const sheet = params.get("view") === "sheet";
 
-  const filterKey = keyOf(deferredQuery, category, batch, validSort ?? "", qcOnly);
+  const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly };
+  const filterKey = keyOf(filters);
   const [data, setData] = useState(() => ({ key: filterKey, page: initial }));
   const [loading, setLoading] = useState(false);
   const loadedKey = useRef(data.key);
 
-  const apiUrl = (offset: number) => {
-    const next = new URLSearchParams();
-    if (deferredQuery) next.set("q", deferredQuery);
-    if (category) next.set("category", category);
-    if (batch) next.set("batch", batch);
-    if (validSort) next.set("sort", validSort);
-    if (qcOnly) next.set("qc", "1");
-    if (offset) next.set("offset", String(offset));
-    return `/api/finds?${next}`;
+  // Porcje pobrane w tej wizycie (także zawczasu): powrót do kategorii albo kliknięcie w nią jest natychmiastowe
+  const pending = useRef(new Map<string, Promise<CatalogPage>>());
+  const ready = useRef(new Map<string, CatalogPage>([[data.key, initial]]));
+
+  const getPage = (wanted: Filters) => {
+    const key = keyOf(wanted);
+    let promise = pending.current.get(key);
+    if (!promise) {
+      promise = fetch(urlOf(wanted)).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))));
+      pending.current.set(key, promise);
+      promise.then(
+        (page) => ready.current.set(key, page),
+        () => pending.current.delete(key),
+      );
+    }
+    return promise;
   };
 
-  // Nowe filtry: dociągamy pierwszą porcję (przy wpisywaniu z małym opóźnieniem)
+  /** Pobiera kategorię zawczasu; z images – także jej pierwsze zdjęcia (po najechaniu myszką) */
+  const prefetchCategory = (c: string, images = false) => {
+    const promise = getPage({ ...filters, category: c });
+    if (images)
+      promise
+        .then((page) => page.items.slice(0, PRELOAD_IMAGES).forEach((item) => item.image && (new Image().src = item.image)))
+        .catch(() => {});
+  };
+
+  // Nowe filtry: pokazujemy porcję od razu, jeśli już ją mamy, a jeśli nie – dociągamy (przy wpisywaniu z małym opóźnieniem)
   useEffect(() => {
     if (loadedKey.current === filterKey) return;
-    const ctrl = new AbortController();
-    const url = apiUrl(0);
+    const cached = ready.current.get(filterKey);
+    if (cached) {
+      loadedKey.current = filterKey;
+      setData({ key: filterKey, page: cached });
+      return;
+    }
+    let cancelled = false;
     const timer = window.setTimeout(
       () => {
         setLoading(true);
-        fetch(url, { signal: ctrl.signal })
-          .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-          .then((page: CatalogPage) => {
+        getPage(filters)
+          .then((page) => {
+            if (cancelled) return;
             loadedKey.current = filterKey;
             setData({ key: filterKey, page });
           })
           .catch(() => {})
-          .finally(() => setLoading(false));
+          .finally(() => !cancelled && setLoading(false));
       },
       deferredQuery ? 180 : 0,
     );
     return () => {
+      cancelled = true;
       window.clearTimeout(timer);
-      ctrl.abort();
     };
-    // apiUrl składa adres z tych samych wartości, z których powstaje filterKey
+    // getPage i filters wynikają z tych samych wartości co filterKey
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey]);
+
+  // Gdy strona już stoi, po cichu pobieramy wszystkie kategorie z obecnymi filtrami, żeby przełączanie było natychmiastowe
+  useEffect(() => {
+    if (deferredQuery) return;
+    const queue = ["", ...facets.counts.map(([c]) => c)];
+    let i = 0;
+    let timer = window.setTimeout(function step() {
+      if (i >= queue.length) return;
+      prefetchCategory(queue[i++]);
+      timer = window.setTimeout(step, 120);
+    }, 1500);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batch, validSort, qcOnly, deferredQuery]);
 
   const loadMore = () => {
     setLoading(true);
     const key = data.key;
-    fetch(apiUrl(data.page.items.length))
+    fetch(urlOf(filters, data.page.items.length))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((page: CatalogPage) => setData((d) => (d.key === key ? { key, page: { ...page, items: [...d.page.items, ...page.items] } } : d)))
       .catch(() => {})
@@ -187,6 +239,8 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
               key={c || "all"}
               type="button"
               aria-pressed={active}
+              onPointerEnter={() => prefetchCategory(c, true)}
+              onFocus={() => prefetchCategory(c, true)}
               onClick={() => setParam("category", c)}
               className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border px-3.5 text-[0.8125rem] font-medium transition-colors ${
                 active ? "border-fg bg-fg text-bg" : "border-line bg-card text-muted hover:border-line-strong hover:text-fg"

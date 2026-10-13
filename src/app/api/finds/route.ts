@@ -1,6 +1,6 @@
 import { findsByIds, parseCatalogQuery, queryCatalog } from "@/lib/catalog";
 
-const HEADERS = { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=3600" };
+const HEADERS = { "Cache-Control": "public, max-age=120, s-maxage=600, stale-while-revalidate=86400" };
 
 /**
  * Porcja katalogu: /api/finds?q=…&category=…&batch=…&qc=1&sort=…&offset=…

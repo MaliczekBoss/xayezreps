@@ -42,16 +42,22 @@ export type CatalogFacets = {
 
 type Prepared = { finds: Find[]; index: SearchIndex; facets: CatalogFacets };
 
-// Indeks wyszukiwania budujemy raz na wersję katalogu, a nie przy każdym zapytaniu
-let prepared: { key: string; value: Prepared } | null = null;
+// Indeks wyszukiwania budujemy raz na wersję katalogu, a nie przy każdym zapytaniu.
+// Przez 30 s nie sprawdzamy nawet, czy katalog się zmienił – zapytania idą prosto do gotowego indeksu.
+const FRESH_MS = 30_000;
+let prepared: { key: string; at: number; value: Prepared } | null = null;
 
 const signature = (list: Find[]) => `${list.length}|${list.reduce((h, f) => (h * 31 + f.id.length * 7 + f.name.length + f.pricePln + (f.qc ?? 0)) | 0, 7)}`;
 
 async function prepare(): Promise<Prepared> {
+  if (prepared && Date.now() - prepared.at < FRESH_MS) return prepared.value;
   const [raw, qcIndex] = await Promise.all([getFinds(), getQcIndex()]);
   const finds = sortPopular(withQc(raw, qcIndex));
   const key = signature(finds);
-  if (prepared?.key === key) return prepared.value;
+  if (prepared?.key === key) {
+    prepared.at = Date.now();
+    return prepared.value;
+  }
 
   const byCategory = new Map<string, number>();
   for (const f of finds) byCategory.set(f.category, (byCategory.get(f.category) ?? 0) + 1);
@@ -61,7 +67,7 @@ async function prepare(): Promise<Prepared> {
     hasQc: finds.some((f) => f.qc),
   };
   const value = { finds, index: buildSearchIndex(finds), facets };
-  prepared = { key, value };
+  prepared = { key, at: Date.now(), value };
   return value;
 }
 

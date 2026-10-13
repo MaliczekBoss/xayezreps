@@ -41,7 +41,22 @@ async function readFileRaw(name: DocName): Promise<string> {
   }
 }
 
-export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
+// Ostatnio wczytana lista na tej instancji serwera. Katalog ma kilka MB, a strony czytają go wiele razy,
+// więc przez chwilę używamy kopii w pamięci (zapis z panelu podmienia ją od razu).
+const MEMO_MS = 30_000;
+const memo = new Map<DocName, { at: number; list: unknown[] }>();
+
+/** Lista z magazynu; fresh – zawsze prosto z magazynu (panel admina przed zapisem) */
+export async function readDoc<T extends WithId>(name: DocName, { fresh = false } = {}): Promise<T[]> {
+  const hit = memo.get(name);
+  if (!fresh && hit && Date.now() - hit.at < MEMO_MS) return hit.list as T[];
+  const list = await loadDoc<T>(name);
+  memo.set(name, { at: Date.now(), list });
+  // Panel admina zmienia listę w miejscu, więc dostaje własną kopię
+  return fresh ? structuredClone(list) : list;
+}
+
+async function loadDoc<T extends WithId>(name: DocName): Promise<T[]> {
   const fileRaw = await readFileRaw(name);
   if (storageKind() !== "redis") return JSON.parse(fileRaw) as T[];
 
@@ -73,6 +88,7 @@ export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
 }
 
 export async function writeDoc<T>(name: DocName, list: T[]) {
+  memo.set(name, { at: Date.now(), list: structuredClone(list) as unknown[] });
   if (storageKind() === "redis") {
     await redisCall(["SET", `xd:${name}`, JSON.stringify(list)]);
     return;

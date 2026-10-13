@@ -86,7 +86,7 @@ export async function saveFind(_prev: FormState, formData: FormData): Promise<Fo
     return { error: "Waga musi być liczbą gramów od 1 do 30 000." };
   }
   if (views !== null && (!Number.isInteger(views) || views < 0)) return { error: "Wyświetlenia muszą być liczbą całkowitą." };
-  if (imageUrl && !/^https?:\/\//i.test(imageUrl) && !imageUrl.startsWith("/uploads/")) {
+  if (imageUrl && !/^https?:\/\//i.test(imageUrl) && !imageUrl.startsWith("/uploads/") && !imageUrl.startsWith("/i/")) {
     return { error: "Link do zdjęcia musi zaczynać się od https://." };
   }
 
