@@ -44,8 +44,8 @@ export const agents: Agent[] = [
     id: "litbuy",
     name: "Litbuy",
     logo: "/agents/litbuy.png",
-    signupUrl: "https://litbuy.com/?inviteCode=JACEK",
-    productUrl: (s) => `https://litbuy.com/product/${s.platform}/${s.id}?inviteCode=JACEK`,
+    signupUrl: "https://litbuy.com/register?inviteCode=TDKBOD8PW",
+    productUrl: (s) => `https://litbuy.com/product/${s.platform}/${s.id}?inviteCode=TDKBOD8PW`,
   },
   {
     id: "oopbuy",

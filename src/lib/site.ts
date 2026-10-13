@@ -22,7 +22,7 @@ export const site = {
   },
 
   promo: {
-    code: "xayez67",
+    code: "xayez",
     headline: "Zapłać za 10 kg tylko 350 zł",
     coupon: "−40%",
   },
