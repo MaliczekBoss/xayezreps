@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { AGENT_HOSTS, isSource, normalizePath, SESSION_ID } from "@/lib/analytics/shared";
 import { record, stamp, type TrackEvent, type Visitor } from "@/lib/analytics/stats";
+import { getAllFinds } from "@/lib/store";
 
 const BOT = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|embedly|whatsapp|curl|wget|python|axios/i;
 const MAX_DUR_S = 30 * 60;
@@ -31,7 +32,11 @@ export async function POST(request: Request) {
 
   let event: TrackEvent | null = null;
   if (body.t === "pv") {
-    event = { t: "pv", sid, src, dur, path: normalizePath(String(body.p ?? "/")), isNew: body.new === true, n: Math.max(1, Math.round(Number(body.n) || 1)) };
+    const path = normalizePath(String(body.p ?? "/"));
+    // Wyświetlenia liczymy tylko ofertom z katalogu – inaczej dowolny adres dopisywałby się do licznika
+    const id = path.match(/^\/product\/([a-z0-9-]+)$/)?.[1];
+    const product = id && (await getAllFinds()).some((f) => f.id === id) ? id : undefined;
+    event = { t: "pv", sid, src, dur, path, isNew: body.new === true, n: Math.max(1, Math.round(Number(body.n) || 1)), product };
   } else if (body.t === "ping") {
     event = { t: "ping", sid, src, dur };
   } else if (body.t === "out") {

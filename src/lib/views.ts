@@ -1,15 +1,15 @@
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
-import { stamp } from "./analytics/stats";
+import { stamp, VIEWS_KEY } from "./analytics/stats";
 import { redisCall, run, storageKind } from "./analytics/store";
 import type { Find } from "./finds";
+import { getAllFinds } from "./store";
 
 // Wyświetlenia ofert do sortowania „najpopularniejsze”: stały licznik xs:views (id produktu → odsłony strony
-// produktu), dopisywany przy każdej odsłonie (analytics/stats.ts → record). Za pierwszym razem doliczamy odsłony
-// z dziennych statystyk (trzymanych 100 dni). Do tego wyświetlenia z katalogu (pole views, np. ze starej strony).
+// produktu, najwyżej jedna na odwiedzającego dziennie – analytics/stats.ts → record). Za pierwszym razem doliczamy
+// odsłony z dziennych statystyk (trzymanych 100 dni). Do tego wyświetlenia z katalogu (pole views, np. ze starej strony).
 
-export const VIEWS_KEY = "xs:views";
 const HISTORY_DAYS = 100;
 
 /** Jednorazowo: odsłony produktów z dziennych statystyk do stałego licznika */
@@ -18,11 +18,12 @@ async function backfill() {
   const now = Date.now();
   const days = [...new Set(Array.from({ length: HISTORY_DAYS }, (_, i) => stamp(now - i * 86_400_000).day))];
   const pages = (await run(days.map((day) => ({ op: "HGETALL", keys: [`xs:pg:${day}`] })))) as (string[] | null)[];
+  const known = new Set((await getAllFinds()).map((f) => f.id));
   const totals = new Map<string, number>();
   for (const flat of pages) {
     for (let i = 0; flat && i < flat.length; i += 2) {
       const id = flat[i].match(/^\/product\/([a-z0-9-]+)$/)?.[1];
-      if (id) totals.set(id, (totals.get(id) ?? 0) + Number(flat[i + 1]));
+      if (id && known.has(id)) totals.set(id, (totals.get(id) ?? 0) + Number(flat[i + 1]));
     }
   }
   if (totals.size) await run([...totals].map(([id, n]) => ({ op: "HINCRBY", keys: [VIEWS_KEY], args: [id, n] })));

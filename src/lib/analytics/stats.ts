@@ -40,8 +40,12 @@ const hoursOf = (day: string) => Array.from({ length: 24 }, (_, h) => `${day}${S
 
 /* ---------- Zapis ---------- */
 
+/** Stały licznik wyświetleń ofert (id produktu → odsłony) do sortowania „najpopularniejsze” – bez wygasania */
+export const VIEWS_KEY = "xs:views";
+
 export type TrackEvent =
-  | { t: "pv"; path: string; sid: string; src: SourceId; isNew: boolean; n: number; dur: number }
+  /** product – id oferty z katalogu, gdy odsłona to strona produktu (sprawdzone w /api/track) */
+  | { t: "pv"; path: string; sid: string; src: SourceId; isNew: boolean; n: number; dur: number; product?: string }
   | { t: "ping"; sid: string; src: SourceId; dur: number }
   | { t: "out"; sid: string; src: SourceId; agent: string };
 
@@ -62,9 +66,12 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
     incr(H, "pv");
     incr(D, "pv");
     incr(`xs:pg:${day}`, e.path);
-    // Stały licznik odsłon oferty do sortowania „najpopularniejsze” (bez wygasania, w przeciwieństwie do statystyk)
-    const product = e.path.match(/^\/product\/([a-z0-9-]+)$/);
-    if (product) cmds.push({ op: "HINCRBY", keys: ["xs:views"], args: [product[1], 1] });
+    // Wyświetlenie oferty: najwyżej jedno na odwiedzającego dziennie, żeby odświeżanie nie podbijało popularności
+    if (e.product) {
+      const first = cmds.push({ op: "SADD", keys: [`xs:vv:${day}`], args: [`${v.id}|${e.product}`] }) - 1;
+      cmds.push({ op: "EXPIRE", keys: [`xs:vv:${day}`], args: [2 * 86400] });
+      cmds.push({ op: "HINCRBY", keys: [VIEWS_KEY], args: [e.product, 1], when: first });
+    }
     if (e.isNew) {
       incr(H, "s");
       incr(D, "s");
