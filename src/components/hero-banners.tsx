@@ -290,12 +290,7 @@ function CouponsArt({ code, coupon }: { code: string; coupon: string }) {
             na wysyłkę z kodem <span className="rounded border border-dashed border-[#94a3b8] px-1 font-mono font-bold text-[#0f172a]">{code}</span>
           </p>
           <div className="mt-2.5 flex items-center justify-between border-t border-dashed border-[#e2e8f0] pt-2.5">
-            <span className="flex items-center gap-1.5 text-[10px] text-[#64748b]">
-              <span className="relative size-4 overflow-hidden rounded bg-black">
-                <Image src="/agents/usfans.png" alt="" fill sizes="1rem" className="object-contain" />
-              </span>
-              USFans
-            </span>
+            <Image src="/agents/usfans-wordmark-dark.png" alt="USFans" width={221} height={46} className="h-3 w-auto" />
             <span className="rounded-md bg-[#0f172a] px-2.5 py-1 text-[10px] font-semibold text-white">Użyj</span>
           </div>
         </div>

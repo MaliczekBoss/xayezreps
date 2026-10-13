@@ -13,9 +13,13 @@ import { normalize } from "./search";
 
 export type MatchKind = "exact" | "similar";
 
+/** Co model odczytał ze zdjęcia (po angielsku, tak jak w nazwach produktów) */
+export type ImageRead = { brand: string; model: string; type: string; color: string };
+
 export type ImageSearchResult = {
   description: string;
   category: string | null;
+  read: ImageRead;
   matches: { find: Find; match: MatchKind }[];
   related: Find[];
 };
@@ -198,5 +202,5 @@ export async function searchByImage(dataUrl: string, ip: string): Promise<ImageS
 
   const related = category ? await popularIn(category, 12, seen) : [];
   const description = text(answer.description, 120) || [brand, model, type].filter(Boolean).join(" ");
-  return { description, category: category ?? matches[0]?.find.category ?? null, matches, related };
+  return { description, category: category ?? matches[0]?.find.category ?? null, read: { brand, model, type, color }, matches, related };
 }

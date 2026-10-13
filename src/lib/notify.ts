@@ -16,7 +16,7 @@ export type IslandNotice = {
   text?: string;
   /** Miniatura produktu; bez niej wyspa pokazuje ikonę */
   image?: string;
-  /** Obrazek to logo – pokazujemy je w całości na białym tle */
+  /** Obrazek to logo – pokazujemy je w całości na czarnym tle */
   logo?: boolean;
   /** Krzyżyk zamykający powiadomienie; wywoływany po kliknięciu */
   onDismiss?: () => void;

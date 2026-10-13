@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUpRight, Check, Copy, X } from "lucide-react";
@@ -252,8 +253,8 @@ function SignupScene({ f }: { f: Format }) {
   const code = site.promo.code;
   return (
     <div className={scene} aria-hidden="true">
-      <p className="text-xs text-muted">{site.partner.name}</p>
-      <p className="mt-3 text-xs text-muted">{t("guide.mEmail")}</p>
+      <Image src="/agents/usfans-wordmark.png" alt="" width={221} height={46} className="h-4 w-auto" />
+      <p className="mt-4 text-xs text-muted">{t("guide.mEmail")}</p>
       <div className={`${fakeField} mt-1.5 text-dim`}>ty@mail.pl</div>
       <p className="mt-3 text-xs text-muted">{t("guide.mCode")}</p>
       <div className={`${fakeField} mt-1.5 justify-between border-fg/40`}>

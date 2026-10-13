@@ -193,6 +193,29 @@
   }
 }
 
+/* Szukanie po zdjęciu: linia skanu nad zdjęciem i odczyt AI „dopisywany” od lewej */
+.scan-line {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .scan-line {
+    display: block;
+    animation: scan 1.7s ease-in-out infinite alternate;
+  }
+  .read-in {
+    animation: intro-write 0.8s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0ms) both;
+  }
+}
+
+@keyframes scan {
+  from {
+    top: 7%;
+  }
+  to {
+    top: 93%;
+  }
+}
+
 /* Strzałka w przycisku wyszukiwarki: wylatuje w prawo i wraca z lewej */
 @media (prefers-reduced-motion: no-preference) {
   .arrow-zip {

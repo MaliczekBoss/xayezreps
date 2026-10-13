@@ -288,7 +288,7 @@ export function SiteHeader() {
               >
                 <div className="flex items-center gap-3 px-3 pb-3 pt-0.5">
                   {notice.image ? (
-                    <span className={`relative size-10 shrink-0 overflow-hidden border ${notice.logo ? "rounded-xl border-white/20 bg-white" : "rounded-full border-line bg-bg"}`}>
+                    <span className={`relative size-10 shrink-0 overflow-hidden border ${notice.logo ? "rounded-xl border-white/15 bg-black" : "rounded-full border-line bg-bg"}`}>
                       <Image src={notice.image} alt="" fill sizes="2.5rem" className={notice.logo ? "object-contain p-0.5" : "object-cover"} />
                     </span>
                   ) : (
