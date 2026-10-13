@@ -131,6 +131,31 @@
     filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.32)) drop-shadow(0 12px 12px rgb(0 0 0 / 0.5));
   }
 
+  /* Karta findu: po najechaniu produkt „podnosi się” – rośnie, unosi się i lekko przechyla, a cień pod nim się wydłuża.
+     Tylko przy myszce, żeby na telefonie efekt nie zostawał po dotknięciu. */
+  .lift,
+  .lift .cutout {
+    transition:
+      transform 450ms var(--ease-out-soft),
+      filter 450ms var(--ease-out-soft);
+  }
+  @media (hover: hover) {
+    .group:hover .lift .cutout {
+      filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.4)) drop-shadow(0 30px 22px rgb(0 0 0 / 0.65));
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .group:hover .lift {
+      transform: translateY(-10px) rotate(-2.5deg) scale(1.12);
+    }
+  }
+  /* To samo przy przechodzeniu klawiaturą (Tab) */
+  @media (prefers-reduced-motion: no-preference) {
+    .group:has(a:focus-visible) .lift {
+      transform: translateY(-10px) rotate(-2.5deg) scale(1.12);
+    }
+  }
+
   dialog.modal::backdrop {
     background: rgb(4 6 11 / 0.72);
     backdrop-filter: blur(6px);

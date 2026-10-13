@@ -22,8 +22,8 @@ const BATCH_DOT: Record<string, string> = {
 const glass = "bg-black/50 ring-1 ring-white/10 backdrop-blur-md";
 
 /**
- * Karta findu bez ramki: zdjęcie na kafelku, pod nim nazwa, cena i batch. Po najechaniu zdjęcie
- * ze sklepu przechodzi w prawdziwe zdjęcie QC z magazynu, jeśli je mamy.
+ * Karta findu bez ramki: zdjęcie na kafelku, pod nim nazwa, cena i batch. Po najechaniu produkt
+ * podnosi się (klasa .lift w globals.css), a gdy mamy zdjęcie QC z magazynu – przechodzi w nie.
  */
 export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boolean }) {
   const f = useFormat();
@@ -34,7 +34,9 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
   return (
     <article className="group relative flex h-full flex-col">
       <div className="relative aspect-square rounded-[14px]">
-        <ProductImage src={find.image} sizes={SIZES} />
+        <span className="lift absolute inset-0">
+          <ProductImage src={find.image} sizes={SIZES} />
+        </span>
         {find.qcCover && (
           <span aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[inherit] opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none">
             <ProductImage src={find.qcCover} sizes={SIZES} />
@@ -66,7 +68,7 @@ export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boole
       </div>
 
       <div className="flex flex-1 flex-col px-0.5 pt-2.5">
-        <h3 className="line-clamp-2 text-[14px] font-medium leading-[1.3] tracking-[-0.01em]">
+        <h3 className="line-clamp-2 text-[14px] font-medium leading-[1.3] tracking-[-0.01em] transition-colors group-hover:text-white">
           <Link href={site.routes.product(find.id)} className="after:absolute after:inset-0 after:rounded-[14px]">
             {find.name}
           </Link>
