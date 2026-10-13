@@ -4,6 +4,9 @@ export type Plural = { one: string; few?: string; many?: string; other: string }
 type Entry = string | Plural;
 
 const pl = {
+  "hero.proofBuyers": "kupujących",
+  "hero.proofFinds": {"one": "find", "few": "findy", "many": "findów", "other": "findu"},
+  "hero.proofQc": "ze zdjęciami QC",
   "search.hintName": "Szukaj",
   "photo.dropTitle": "Wrzuć zdjęcie",
   "photo.dropHere": "Puść, żeby szukać",
@@ -583,6 +586,9 @@ type Dict = Record<DictKey, Entry>;
 type PartialDict = Partial<Dict>;
 
 const en: Dict = {
+  "hero.proofBuyers": "buyers",
+  "hero.proofFinds": {"one": "find", "other": "finds"},
+  "hero.proofQc": "with QC photos",
   "search.hintName": "Search",
   "photo.dropTitle": "Drop a photo",
   "photo.dropHere": "Let go to search",
@@ -1147,6 +1153,9 @@ const en: Dict = {
 };
 
 const de: PartialDict = {
+  "hero.proofBuyers": "Käufer",
+  "hero.proofFinds": {"one": "Find", "other": "Finds"},
+  "hero.proofQc": "mit QC-Fotos",
   "search.hintName": "Suche",
   "product.variants": "Weitere Varianten dieses Angebots",
   "hero.title1": "Geprüfte Finds.",
@@ -1349,6 +1358,9 @@ const de: PartialDict = {
 };
 
 const fr: PartialDict = {
+  "hero.proofBuyers": "acheteurs",
+  "hero.proofFinds": {"one": "find", "other": "finds"},
+  "hero.proofQc": "avec photos QC",
   "search.hintName": "Cherche",
   "product.variants": "Autres variantes de cette annonce",
   "hero.title1": "Des finds vérifiés.",
@@ -1551,6 +1563,9 @@ const fr: PartialDict = {
 };
 
 const es: PartialDict = {
+  "hero.proofBuyers": "compradores",
+  "hero.proofFinds": {"one": "find", "other": "finds"},
+  "hero.proofQc": "con fotos QC",
   "search.hintName": "Busca",
   "product.variants": "Otras variantes de este anuncio",
   "hero.title1": "Finds verificados.",
@@ -1753,6 +1768,9 @@ const es: PartialDict = {
 };
 
 const it: PartialDict = {
+  "hero.proofBuyers": "acquirenti",
+  "hero.proofFinds": {"one": "find", "other": "find"},
+  "hero.proofQc": "con foto QC",
   "search.hintName": "Cerca",
   "product.variants": "Altre varianti di questo annuncio",
   "hero.title1": "Find verificati.",
@@ -1955,6 +1973,9 @@ const it: PartialDict = {
 };
 
 const zh: PartialDict = {
+  "hero.proofBuyers": "位买家",
+  "hero.proofFinds": {"one": "件好物", "other": "件好物"},
+  "hero.proofQc": "件有 QC 照片",
   "search.hintName": "搜索",
   "product.variants": "同一商品的其他款式",
   "hero.title1": "精选好物。",

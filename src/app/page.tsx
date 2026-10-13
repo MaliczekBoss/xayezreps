@@ -69,6 +69,14 @@ export default async function Home() {
     category,
     image: byId.get(id)?.image || popular.find((f) => f.category === category && f.image)?.image || "",
   })).filter((c) => c.image);
+  // Liczby pod wyszukiwarką: cały katalog i findy ze zdjęciami QC, z miniaturami produktów bez tła do każdej
+  // (same zdjęcia z magazynu są w tak małym rozmiarze nieczytelne)
+  const proof = {
+    finds: finds.length,
+    qc: finds.filter((f) => (f.qc ?? 0) > 0).length,
+    findThumbs: heroCategories.slice(0, 3).map((c) => c.image),
+    qcThumbs: popular.flatMap((f) => (f.qcCover && f.image.startsWith("/i/") ? [f.image] : [])).slice(0, 3),
+  };
   const newestRow = newest.slice(0, ROW);
   const popularRow = popular.slice(0, ROW);
 
@@ -81,7 +89,7 @@ export default async function Home() {
       <SiteHeader />
       <PromoPopup />
       <main>
-        <Hero categories={heroCategories} previews={toolPreviews} />
+        <Hero categories={heroCategories} proof={proof} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newestRow} newIds={newIn(newestRow)} />
         <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popularRow} newIds={newIn(popularRow)} />
         <QcFeed entries={qcFeed} />

@@ -16,9 +16,6 @@ let introPlayed = false;
 /** Opóźnienie kroku sekwencji wejścia (zmienna --d w globals.css) */
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
-// Miejsce na liczbę w tłumaczeniu „Zaufało nam {n} kupujących”
-const NUMBER_SLOT = "\u0000";
-
 /**
  * Liczba jak licznik w samochodzie: każda cyfra robi pełny obrót i staje na swojej wartości, kolejne z małym
  * opóźnieniem (zera też się kręcą). Spacje i „+” stoją w miejscu. Bez sekwencji wejścia liczba stoi od razu.
@@ -76,6 +73,27 @@ function RisingWords({ text, start }: { text: string; start: number }) {
 }
 
 export type HeroCategory = { category: string; image: string };
+
+/** Liczby pod wyszukiwarką i miniatury produktów bez tła do nich */
+export type HeroProof = { finds: number; qc: number; findThumbs: string[]; qcThumbs: string[] };
+
+/** Trzy zachodzące na siebie miniatury; po najechaniu na link lekko się rozsuwają */
+function Stack({ images }: { images: string[] }) {
+  return (
+    <span aria-hidden="true" className="flex">
+      {images.map((src, i) => (
+        <span
+          key={i}
+          className={`relative size-6 overflow-hidden rounded-full bg-card-hover ring-2 ring-bg transition-[margin] duration-300 ease-[var(--ease-out-soft)] ${
+            i ? "-ml-2 group-hover/p:-ml-0.5" : ""
+          }`}
+        >
+          <ProductImage src={src} sizes="1.5rem" className="p-0.5" />
+        </span>
+      ))}
+    </span>
+  );
+}
 
 /**
  * Pasek kategorii pod wyszukiwarką: duże zdjęcia produktów bez tła z podpisem, przewijany w bok.
@@ -141,7 +159,7 @@ function CategoryRail({ items, intro }: { items: HeroCategory[]; intro: boolean 
   );
 }
 
-export function Hero({ categories, previews }: { categories: HeroCategory[]; previews: ToolPreviews }) {
+export function Hero({ categories, proof, previews }: { categories: HeroCategory[]; proof: HeroProof; previews: ToolPreviews }) {
   const f = useFormat();
   const { t } = f;
   const [intro] = useState(() => !introPlayed);
@@ -175,18 +193,36 @@ export function Hero({ categories, previews }: { categories: HeroCategory[]; pre
             <HeroSearch typeIn={intro} />
           </div>
 
-          {/* Zielona kropka „na żywo” i liczba kupujących przewijana jak licznik */}
-          <p className="intro-fade mt-7 flex items-center gap-2.5 text-sm text-muted" style={at(1000)}>
-            <span aria-hidden="true" className="relative grid size-2 place-items-center">
-              <span className="absolute size-2 rounded-full bg-gl/60 [animation-duration:2.2s] motion-safe:animate-ping" />
-              <span className="relative size-2 rounded-full bg-gl" />
-            </span>
-            <span>
-              {t("footer.trust", { n: NUMBER_SLOT })
-                .split(NUMBER_SLOT)
-                .map((part, i) => (i === 0 ? part : [<RollingNumber key="n" value={site.buyers} roll={intro} start={1150} />, part]))}
-            </span>
-          </p>
+          {/* Trzy prawdziwe liczby kręcące się jak licznik: kupujący, findy w katalogu i findy ze zdjęciami QC */}
+          <ul className="intro-fade mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted" style={at(1000)}>
+            <li className="flex items-center gap-2.5">
+              <span aria-hidden="true" className="relative grid size-2 place-items-center">
+                <span className="absolute size-2 rounded-full bg-gl/60 [animation-duration:2.2s] motion-safe:animate-ping" />
+                <span className="relative size-2 rounded-full bg-gl" />
+              </span>
+              <span>
+                <RollingNumber value={site.buyers} roll={intro} start={1150} /> {t("hero.proofBuyers")}
+              </span>
+            </li>
+            <li>
+              <Link href={site.routes.finds} className="group/p flex items-center gap-2.5 transition-colors hover:text-fg">
+                <Stack images={proof.findThumbs} />
+                <span>
+                  <RollingNumber value={proof.finds.toLocaleString(f.locale)} roll={intro} start={1250} /> {t("hero.proofFinds", { n: proof.finds })}
+                </span>
+              </Link>
+            </li>
+            {proof.qc > 0 && (
+              <li>
+                <Link href={`${site.routes.finds}?qc=1`} className="group/p flex items-center gap-2.5 transition-colors hover:text-fg">
+                  <Stack images={proof.qcThumbs} />
+                  <span>
+                    <RollingNumber value={proof.qc.toLocaleString(f.locale)} roll={intro} start={1350} /> {t("hero.proofQc")}
+                  </span>
+                </Link>
+              </li>
+            )}
+          </ul>
         </div>
 
         {/* Na telefonie kategorie idą zaraz pod wyszukiwarką, a wachlarz banerów pod nimi */}
