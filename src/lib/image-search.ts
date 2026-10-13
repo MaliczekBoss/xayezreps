@@ -9,7 +9,8 @@ import { normalize } from "./search";
 
 // Wyszukiwanie po zdjęciu: model AI z obsługą obrazów rozpoznaje produkt (marka, model, typ, kolor),
 // a pasujące findy dobiera nasza wyszukiwarka katalogu. Dzięki temu do modelu nie trafia cały katalog.
-// Domyślnie darmowe Gemini (GEMINI_API_KEY), zapasowo Claude (ANTHROPIC_API_KEY).
+// Kolejność: API zgodne z OpenAI (OPENAI_API_KEY, np. codex.sale), Gemini (GEMINI_API_KEY), Claude (ANTHROPIC_API_KEY).
+// Gdy pierwsze nie odpowie albo jest przeciążone, pytamy następne.
 
 export type MatchKind = "exact" | "similar";
 
@@ -35,7 +36,15 @@ const PER_IP_PER_HOUR = Number(process.env.IMAGE_SEARCH_HOURLY_LIMIT) || 20;
 // Darmowy plan Gemini ma dzienny limit zapytań; przy płatnym API można podnieść nasz limit zmienną
 const PER_DAY = Number(process.env.IMAGE_SEARCH_DAILY_LIMIT) || (process.env.GEMINI_API_KEY ? 500 : 800);
 
-export const imageSearchProvider = () => (process.env.GEMINI_API_KEY ? "gemini" : process.env.ANTHROPIC_API_KEY ? "claude" : null);
+type Provider = "openai" | "gemini" | "claude";
+
+/** Skonfigurowane modele w kolejności, w jakiej je pytamy */
+export const imageSearchProviders = () =>
+  ([
+    process.env.OPENAI_API_KEY && "openai",
+    process.env.GEMINI_API_KEY && "gemini",
+    process.env.ANTHROPIC_API_KEY && "claude",
+  ].filter(Boolean) as Provider[]);
 
 const INSTRUCTIONS = `Jesteś wyszukiwarką sklepu xayezreps z replikami ubrań, butów i dodatków.
 Dostajesz zdjęcie od klienta. Rozpoznaj produkt i zwróć:
@@ -115,6 +124,55 @@ async function askGemini(mime: string, data: string): Promise<ModelAnswer> {
   throw new ImageSearchError(overloaded ? "busy" : "upstream");
 }
 
+// Dowolne API zgodne z OpenAI (Chat Completions). Bez „myślenia” model odpowiada w 2–3 sekundy.
+async function askOpenAI(mime: string, data: string): Promise<ModelAnswer> {
+  const base = (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
+  const effort = process.env.OPENAI_REASONING_EFFORT ?? "none";
+  const res = await fetch(`${base}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    signal: AbortSignal.timeout(30_000),
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-5.6-luna",
+      ...(effort ? { reasoning_effort: effort } : {}),
+      messages: [
+        { role: "system", content: INSTRUCTIONS },
+        {
+          role: "user",
+          content: [
+            { type: "image_url", image_url: { url: `data:${mime};base64,${data}` } },
+            { type: "text", text: "Co to za produkt?" },
+          ],
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "product",
+          strict: true,
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            properties: Object.fromEntries(ANSWER_FIELDS.map((k) => [k, { type: "string" }])),
+            required: [...ANSWER_FIELDS],
+          },
+        },
+      },
+    }),
+  });
+  if (res.status === 429) throw new ImageSearchError("busy");
+  if (!res.ok) {
+    console.error("[image-search] OpenAI:", res.status, (await res.text()).slice(0, 300));
+    throw new ImageSearchError("upstream");
+  }
+  const d = await res.json();
+  try {
+    return JSON.parse(d?.choices?.[0]?.message?.content ?? "{}");
+  } catch {
+    throw new ImageSearchError("upstream");
+  }
+}
+
 async function askClaude(mime: string, data: string): Promise<ModelAnswer> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -158,17 +216,35 @@ async function askClaude(mime: string, data: string): Promise<ModelAnswer> {
 
 const DATA_URL = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/;
 
-const text = (v: unknown, max = 60) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+// Modele zamiast pustego pola potrafią wpisać „Unknown” albo „Nieznany”
+const UNKNOWN = /^(unknown|nieznan[aey]?|brak|none|n\/?a|-+)$/i;
+const text = (v: unknown, max = 60) => (typeof v === "string" && !UNKNOWN.test(v.trim()) ? v.trim().slice(0, max) : "");
+
+const ASK: Record<Provider, (mime: string, data: string) => Promise<ModelAnswer>> = { openai: askOpenAI, gemini: askGemini, claude: askClaude };
+
+/** Pyta kolejne modele, aż któryś odpowie */
+async function ask(providers: Provider[], mime: string, data: string): Promise<ModelAnswer> {
+  let error: unknown;
+  for (const p of providers) {
+    try {
+      return await ASK[p](mime, data);
+    } catch (e) {
+      if (!(e instanceof ImageSearchError)) console.error(`[image-search] ${p}:`, e);
+      error = e;
+    }
+  }
+  throw error instanceof ImageSearchError ? error : new ImageSearchError("upstream");
+}
 
 export async function searchByImage(dataUrl: string, ip: string): Promise<ImageSearchResult> {
-  const provider = imageSearchProvider();
-  if (!provider) throw new ImageSearchError("not-configured");
+  const providers = imageSearchProviders();
+  if (!providers.length) throw new ImageSearchError("not-configured");
   const m = dataUrl.match(DATA_URL);
   if (!m || m[2].length > 3_000_000) throw new ImageSearchError("bad-image");
 
   await checkLimits(ip);
 
-  const answer = provider === "gemini" ? await askGemini(m[1], m[2]) : await askClaude(m[1], m[2]);
+  const answer = await ask(providers, m[1], m[2]);
   const brand = text(answer.brand);
   const model = text(answer.model);
   const type = text(answer.type);
