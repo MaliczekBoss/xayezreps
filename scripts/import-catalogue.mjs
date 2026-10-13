@@ -1,13 +1,15 @@
-// Zamienia katalog na eksport z pliku CSV (catalogue.csv): nowe produkty dostają nasze kategorie,
-// cenę w złotówkach i zdjęcie bez tła z /i/<id>.webp. Produkty użyte w outfitach zostają, ale ukryte
-// (widać je tylko w outfitach). Uruchom: node scripts/import-catalogue.mjs <catalogue.csv>
+// Zamienia katalog na eksport (catalogue.csv albo baza JSON z tymi samymi polami, np. database/new database.json):
+// nowe produkty dostają nasze kategorie, cenę w złotówkach i zdjęcie bez tła z /i/<id>.webp. Aukcję bierzemy
+// z pola link (link USFans albo Weidian), a gdy go nie ma – z marketplace i listing_id. Produkty użyte
+// w outfitach zostają, ale ukryte (widać je tylko w outfitach).
+// Uruchom: node scripts/import-catalogue.mjs <catalogue.csv | baza.json>
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const [, , csvFile] = process.argv;
 if (!csvFile) {
-  console.error("Użycie: node scripts/import-catalogue.mjs <catalogue.csv>");
+  console.error("Użycie: node scripts/import-catalogue.mjs <catalogue.csv | baza.json>");
   process.exit(1);
 }
 
@@ -125,11 +127,42 @@ function readCsv(text) {
   return data.filter((r) => r.length === header.length).map((r) => Object.fromEntries(header.map((h, i) => [h.trim(), r[i]])));
 }
 
+// Bajty, którymi Windows-1252 zapisuje znaki 0x80–0x9F (np. „€”, „™”)
+const CP1252 = { "€": 0x80, "‚": 0x82, ƒ: 0x83, "„": 0x84, "…": 0x85, "†": 0x86, "‡": 0x87, ˆ: 0x88, "‰": 0x89, Š: 0x8a, "‹": 0x8b, Œ: 0x8c, Ž: 0x8e, "‘": 0x91, "’": 0x92, "“": 0x93, "”": 0x94, "•": 0x95, "–": 0x96, "—": 0x97, "˜": 0x98, "™": 0x99, š: 0x9a, "›": 0x9b, œ: 0x9c, ž: 0x9e, Ÿ: 0x9f };
+
+/** Naprawia nazwy zapisane w złym kodowaniu („appliquÃ©” → „appliqué”); poprawne zostawia bez zmian */
+function fixEncoding(s) {
+  // Pierwszy bajt znaku UTF-8 (Â–ô), a po nim bajt kontynuacji – ślad złego kodowania (także „ï¼ˆ” zamiast „（”)
+  if (!/[Â-ô][\u0080-¿€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/.test(s)) return s;
+  const bytes = [];
+  for (const ch of s) {
+    const code = ch.codePointAt(0);
+    if (code < 256) bytes.push(code);
+    else if (CP1252[ch] !== undefined) bytes.push(CP1252[ch]);
+    else return s;
+  }
+  const fixed = Buffer.from(bytes).toString("utf8");
+  return fixed.includes("�") ? s : fixed;
+}
+
 const cleanName = (s) =>
-  s
+  fixEncoding(s)
     .replace(/"{2,}/g, '"')
     .replace(/\s+/g, " ")
     .trim();
+
+// Kanał w linku USFans (/product/<kanał>/<numer>) to sklep: 1 – 1688, 2 – Taobao, 3 – Weidian
+const USFANS_CHANNEL = { 1: "1688", 2: "taobao", 3: "weidian" };
+
+/** Aukcja, do której prowadzi link z bazy; bez rozpoznawalnego linku – marketplace i listing_id */
+function sourceOf(r) {
+  const link = r.link ?? "";
+  const usfans = link.match(/usfans\.com\/product\/(\d)\/(\d+)/);
+  if (usfans && USFANS_CHANNEL[usfans[1]]) return { platform: USFANS_CHANNEL[usfans[1]], id: usfans[2] };
+  const weidian = link.match(/weidian\.com\/.*itemI[Dd]=(\d+)/);
+  if (weidian) return { platform: "weidian", id: weidian[1] };
+  return { platform: r.marketplace.trim(), id: r.listing_id.trim() };
+}
 
 // Zdjęcie bez tła z public/i; gdy go nie ma (np. oryginał już nie istnieje), produkt zostaje bez zdjęcia
 const imageOf = (id) => (existsSync(path.join(root, "public", "i", `${id}.webp`)) ? `/i/${id}.webp` : "");
@@ -139,7 +172,10 @@ const imageOf = (id) => (existsSync(path.join(root, "public", "i", `${id}.webp`)
 const overridesFile = path.join(root, "data", "category-overrides.json");
 const overrides = existsSync(overridesFile) ? JSON.parse(readFileSync(overridesFile, "utf8")) : {};
 
-const allRows = readCsv(readFileSync(csvFile, "utf8"));
+// Baza JSON ma te same pola co CSV, tylko część wartości to liczby albo true/false
+const allRows = csvFile.toLowerCase().endsWith(".json")
+  ? JSON.parse(readFileSync(csvFile, "utf8").replace(/^﻿/, "")).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v == null ? "" : String(v)])))
+  : readCsv(readFileSync(csvFile, "utf8"));
 const rows = allRows.filter((r) => imageOf(r.id.trim()));
 const imported = rows.map((r) => {
   const category = overrides[r.id.trim()] ?? categoryOf(r);
@@ -155,7 +191,7 @@ const imported = rows.map((r) => {
     // Polecane w eksporcie trafiają na górę „Najpopularniejszych”
     ...(r.featured === "true" ? { featured: true } : {}),
     image: imageOf(r.id.trim()),
-    source: { platform: r.marketplace.trim(), id: r.listing_id.trim() },
+    source: sourceOf(r),
     createdAt: new Date(r.added_at).toISOString(),
   };
 });
