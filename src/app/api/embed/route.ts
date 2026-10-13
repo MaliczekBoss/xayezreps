@@ -1,6 +1,18 @@
 import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { site } from "@/lib/site";
+import { trustedOrigin } from "@/lib/site-url";
 import { getAllFinds, getOutfits } from "@/lib/store";
+
+// Tylko zwykłe ścieżki tej strony (bez „//”, „\” i „@”), żeby link w podglądzie nie prowadził nigdzie indziej
+const SAFE_PATH = /^\/(?!\/)[\w\-./%]*$/;
+
+const decode = (s: string) => {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+};
 
 // Podgląd linku dla Discorda (proxy.ts kieruje tu Discordbota): te same dane co na stronie, ale z białym
 // paskiem z lewej (theme-color). Przeglądarki dostają normalną stronę z grafitowym kolorem paska adresu.
@@ -13,7 +25,7 @@ async function embedFor(pathname: string, origin: string): Promise<Embed> {
   const product = pathname.match(/^\/product\/([^/]+)$/);
   if (product) {
     const [all, qcIndex] = await Promise.all([getAllFinds(), getQcIndex()]);
-    const raw = all.find((f) => f.id === decodeURIComponent(product[1]));
+    const raw = all.find((f) => f.id === decode(product[1]));
     if (raw) {
       const [find] = withQc([raw], qcIndex);
       const price = find.pricePln > 0 ? ` za ${new Intl.NumberFormat("pl-PL").format(Math.round(find.pricePln))} zł` : "";
@@ -29,7 +41,7 @@ async function embedFor(pathname: string, origin: string): Promise<Embed> {
 
   const outfit = pathname.match(/^\/outfits\/([^/]+)$/);
   if (outfit) {
-    const found = (await getOutfits()).find((o) => o.id === decodeURIComponent(outfit[1]));
+    const found = (await getOutfits()).find((o) => o.id === decode(outfit[1]));
     if (found)
       return {
         title: `${found.title} – outfit`,
@@ -44,9 +56,10 @@ async function embedFor(pathname: string, origin: string): Promise<Embed> {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const origin = url.origin;
+  const origin = trustedOrigin(request);
   // Po przekierowaniu z proxy adres bywa oryginalnym adresem strony, a nie /api/embed?path=…
-  const pathname = url.searchParams.get("path") || (url.pathname.startsWith("/api/embed") ? "/" : url.pathname);
+  const wanted = url.searchParams.get("path") || (url.pathname.startsWith("/api/embed") ? "/" : url.pathname);
+  const pathname = SAFE_PATH.test(wanted) ? wanted : "/";
   const e = await embedFor(pathname, origin);
   const html = `<!doctype html>
 <html lang="pl"><head><meta charset="utf-8">

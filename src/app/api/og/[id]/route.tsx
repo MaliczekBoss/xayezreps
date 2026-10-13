@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { OgLogo, ogFonts } from "@/lib/og";
 import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { site } from "@/lib/site";
+import { trustedOrigin } from "@/lib/site-url";
 import { getAllFinds } from "@/lib/store";
 
 const BATCH_DOT: Record<string, string> = { "Best batch": "#10b981", "Budget batch": "#fbbf24" };
@@ -15,11 +16,16 @@ const qcLabel = (n: number) => {
 
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
+// Zdjęcia spoza naszej strony pobieramy tylko z tych serwerów
+const IMAGE_HOSTS = new Set(["cdn.xayezreps.com", "xayezreps.com", "si.geilicdn.com", "img.alicdn.com"]);
+
 /** Zdjęcie produktu jako PNG (Satori nie czyta WEBP), przycięte do samego produktu, żeby cień trafił pod spód */
 async function productPng(image: string, origin: string) {
   if (!image) return null;
   try {
-    const res = await fetch(new URL(image, origin), { signal: AbortSignal.timeout(8000) });
+    const url = new URL(image, origin);
+    if (url.origin !== origin && !(url.protocol === "https:" && IMAGE_HOSTS.has(url.hostname))) return null;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000), redirect: "error" });
     if (!res.ok) return null;
     const trimmed = await sharp(Buffer.from(await res.arrayBuffer())).trim({ threshold: 1 }).toBuffer();
     const { data, info } = await sharp(trimmed).resize(470, 420, { fit: "inside" }).png().toBuffer({ resolveWithObject: true });
@@ -36,7 +42,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/og/[id]">) {
   const raw = all.find((f) => f.id === id);
   if (!raw) return new Response("Nie ma takiego produktu", { status: 404 });
   const [find] = withQc([raw], qcIndex);
-  const photo = await productPng(find.image, new URL(request.url).origin);
+  const photo = await productPng(find.image, trustedOrigin(request));
   const qc = find.qc ?? 0;
   const name = clip(find.name, 64);
   const dot = BATCH_DOT[find.batch];
