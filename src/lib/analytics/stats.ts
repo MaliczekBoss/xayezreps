@@ -62,6 +62,9 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
     incr(H, "pv");
     incr(D, "pv");
     incr(`xs:pg:${day}`, e.path);
+    // Stały licznik odsłon oferty do sortowania „najpopularniejsze” (bez wygasania, w przeciwieństwie do statystyk)
+    const product = e.path.match(/^\/product\/([a-z0-9-]+)$/);
+    if (product) cmds.push({ op: "HINCRBY", keys: ["xs:views"], args: [product[1], 1] });
     if (e.isNew) {
       incr(H, "s");
       incr(D, "s");

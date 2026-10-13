@@ -4,6 +4,7 @@ import { categories, sortNewest, sortPopular, type Find } from "./finds";
 import { getQcIndex, withQc } from "./qc-feed";
 import { buildSearchIndex, searchFinds, type SearchIndex } from "./search";
 import { getFinds } from "./store";
+import { getProductViews, withViews } from "./views";
 
 // Katalog jest za duży, żeby wysyłać go w całości do przeglądarki: wyszukiwanie, filtry i sortowanie
 // liczymy tutaj, a strona dostaje tylko jedną porcję produktów.
@@ -47,12 +48,12 @@ type Prepared = { finds: Find[]; index: SearchIndex; facets: CatalogFacets };
 const FRESH_MS = 30_000;
 let prepared: { key: string; at: number; value: Prepared } | null = null;
 
-const signature = (list: Find[]) => `${list.length}|${list.reduce((h, f) => (h * 31 + f.id.length * 7 + f.name.length + f.pricePln + (f.qc ?? 0)) | 0, 7)}`;
+const signature = (list: Find[]) => `${list.length}|${list.reduce((h, f) => (h * 31 + f.id.length * 7 + f.name.length + f.pricePln + (f.qc ?? 0) + f.views) | 0, 7)}`;
 
 async function prepare(): Promise<Prepared> {
   if (prepared && Date.now() - prepared.at < FRESH_MS) return prepared.value;
-  const [raw, qcIndex] = await Promise.all([getFinds(), getQcIndex()]);
-  const finds = sortPopular(withQc(raw, qcIndex));
+  const [raw, qcIndex, views] = await Promise.all([getFinds(), getQcIndex(), getProductViews()]);
+  const finds = sortPopular(withQc(withViews(raw, views), qcIndex));
   const key = signature(finds);
   if (prepared?.key === key) {
     prepared.at = Date.now();

@@ -18,7 +18,7 @@ type WithId = { id: string };
 // Wymiana całej listy: gdy znacznik się zmieni, lista w bazie jest zastępowana plikiem z repozytorium
 // (stara trafia do kopii xd:{nazwa}:backup:{znacznik}). Zmień znacznik tylko przy imporcie całego katalogu.
 const RESET: Record<DocName, string> = {
-  finds: "2026-10-14-qc-links-agent-prices",
+  finds: "2026-10-14-views-from-old-site",
   outfits: "",
 };
 

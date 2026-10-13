@@ -6,6 +6,7 @@ import { ProductDetail } from "@/components/product-detail";
 import { sortPopular } from "@/lib/finds";
 import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getAllFinds, getFinds } from "@/lib/store";
+import { getProductViews, withViews } from "@/lib/views";
 
 // Przy buildzie generujemy tylko najpopularniejsze produkty; reszta renderuje się przy pierwszym wejściu i trafia do cache
 const PRERENDER = 120;
@@ -46,7 +47,9 @@ export default function ProductPage({ params }: PageProps<"/product/[id]">) {
 
 async function ProductContent({ params }: { params: PageProps<"/product/[id]">["params"] }) {
   const { id } = await params;
-  const [all, qcIndex] = await Promise.all([getAllFinds(), getQcIndex()]);
+  const [stored, qcIndex, views] = await Promise.all([getAllFinds(), getQcIndex(), getProductViews()]);
+  // Wyświetlenia z katalogu plus nasze odsłony – do licznika na stronie i kolejności podobnych
+  const all = withViews(stored, views);
   const raw = all.find((f) => f.id === id);
   if (!raw) notFound();
   const [find] = withQc([raw], qcIndex);

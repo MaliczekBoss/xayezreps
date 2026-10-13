@@ -222,7 +222,8 @@ const imported = rows.map((r) => {
     batch: batchOf(r.name),
     pricePln: Math.round(pricePln),
     weightGrams: WEIGHT[category] ?? 300,
-    views: 0,
+    // Wyświetlenia z bazy (np. ze starej strony); nasze odsłony dolicza strona (src/lib/views.ts)
+    views: Number(r.views) > 0 ? Math.round(Number(r.views)) : 0,
     // Polecane w eksporcie trafiają na górę „Najpopularniejszych”
     ...(r.featured === "true" ? { featured: true } : {}),
     image: imageOf(r.id.trim()),
