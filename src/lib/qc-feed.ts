@@ -3,9 +3,10 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
-import { sourceUrl } from "./agents";
+import { sourceUrl, type ProductSource } from "./agents";
 import { sortNewest, type Find } from "./finds";
-import { getFinds } from "./store";
+import { qcKey, storedQcIndex, type QcInfo } from "./qc-store";
+import { getAllFinds, getFinds } from "./store";
 
 export type QcEntry = {
   id: string;
@@ -19,26 +20,40 @@ export type QcEntry = {
   url: string;
 };
 
-type QcInfo = { count: number; cover: string | null };
-
 const FEED_SIZE = 16;
 
-const sourceKey = (f: Pick<Find, "source">) => `${f.source.platform}:${f.source.id}`;
+const sourceKey = (f: Pick<Find, "source">) => qcKey(f.source);
 
 /**
- * Liczba zdjęć QC i okładka dla każdej aukcji – z migawki data/qc-index.json (npm run qc:snapshot).
- * Nie pytamy serwisu QC przy ładowaniu strony: przy kilku tysiącach aukcji każda wolna odpowiedź
- * blokowała cały katalog. Aukcje spoza migawki mają po prostu 0, a pełne QC i tak ładuje się na stronie produktu.
+ * Liczba zdjęć QC i okładka dla każdej aukcji: migawka data/qc-index.json (npm run qc:snapshot)
+ * uzupełniona o zdjęcia zapisane u nas (qc-store.ts) – większa liczba wygrywa, okładka jest najnowsza.
+ * Nie pytamy źródeł QC przy ładowaniu strony: przy kilku tysiącach aukcji każda wolna odpowiedź
+ * blokowała cały katalog. Nowe zdjęcia dopisują strona produktu i codzienny cron (/api/cron/qc).
  */
 export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   "use cache";
-  cacheLife("days");
+  cacheLife("hours");
   cacheTag("qc-index");
-  try {
-    return JSON.parse(await readFile(path.join(process.cwd(), "data", "qc-index.json"), "utf-8")) as Record<string, QcInfo>;
-  } catch {
-    return {};
+  const [snapshot, stored] = await Promise.all([
+    readFile(path.join(process.cwd(), "data", "qc-index.json"), "utf-8")
+      .then((t) => JSON.parse(t) as Record<string, QcInfo>)
+      .catch(() => ({}) as Record<string, QcInfo>),
+    storedQcIndex().catch((e) => {
+      console.error("[qc] zapisane QC:", (e as Error).message);
+      return {} as Record<string, QcInfo>;
+    }),
+  ]);
+  for (const [key, info] of Object.entries(stored)) {
+    const prev = snapshot[key];
+    snapshot[key] = { count: Math.max(info.count, prev?.count ?? 0), cover: info.cover ?? prev?.cover ?? null };
   }
+  return snapshot;
+}
+
+/** Aukcje z naszego katalogu (także ukryte części outfitów) – tylko dla nich zapisujemy QC */
+export async function isCatalogSource(source: ProductSource) {
+  const finds = await getAllFinds();
+  return finds.some((f) => qcKey(f.source) === qcKey(source));
 }
 
 /** Dokleja do findów liczbę zdjęć QC (qc) i pierwsze z nich (qcCover) */
