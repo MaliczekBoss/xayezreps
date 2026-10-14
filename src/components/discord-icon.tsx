@@ -1,4 +1,3 @@
-/** Logo Discorda (Simple Icons) */
 export function DiscordIcon({ size = 18 }: { size?: number }) {
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">

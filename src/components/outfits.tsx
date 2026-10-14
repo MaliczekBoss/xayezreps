@@ -17,8 +17,6 @@ import { PageHeader } from "./page";
 import { ProductImage } from "./product-image";
 import { SectionTitle } from "./ui";
 
-/* ---------- Flat lay: rzeczy ułożone na sylwetce, gdy outfit nie ma zdjęcia ---------- */
-
 type Slot = "head" | "outer" | "top" | "bottom" | "feet" | "acc";
 
 const slotOf = (category: string): Slot =>
@@ -91,8 +89,6 @@ const Marker = ({ n, active, className = "" }: { n: number; active: boolean; cla
   </span>
 );
 
-/* ---------- Karty i listy ---------- */
-
 function OutfitCard({ outfit, index = 0 }: { outfit: OutfitSummary; index?: number }) {
   const f = useFormat();
   const reduce = useReducedMotion();
@@ -112,7 +108,6 @@ function OutfitCard({ outfit, index = 0 }: { outfit: OutfitSummary; index?: numb
           <span className="absolute left-2.5 top-2.5 rounded-[5px] bg-[#18181b]/85 px-[7px] py-[3px] text-[10px] uppercase leading-[15px] tracking-[1px] text-muted backdrop-blur">
             {f.t("outfits.parts", { n: outfit.items.length })}
           </span>
-          {/* Po najechaniu od dołu wysuwają się miniatury części */}
           <span className="absolute inset-x-0 bottom-0 flex translate-y-full gap-1.5 bg-gradient-to-t from-black/90 to-black/0 p-2.5 pt-8 transition-transform duration-300 group-hover:translate-y-0">
             {outfit.items.slice(0, 5).map((item, i) => (
               <span key={i} className="relative size-11 shrink-0">
@@ -206,8 +201,6 @@ export function OutfitsIndex({ outfits }: { outfits: OutfitSummary[] }) {
     </>
   );
 }
-
-/* ---------- Strona outfitu ---------- */
 
 export function OutfitDetail({ outfit, more }: { outfit: ResolvedOutfit; more: OutfitSummary[] }) {
   const f = useFormat();
@@ -391,11 +384,8 @@ export function OutfitDetail({ outfit, more }: { outfit: ResolvedOutfit; more: O
   );
 }
 
-/* ---------- Zdjęcia QC jednej części ---------- */
-
 type QcState = { status: "loading" } | { status: "done"; photos: string[] } | { status: "error" };
 
-/** Pasek miniatur QC dla jednej części outfitu; kliknięcie otwiera podgląd wszystkich zdjęć */
 function PartQc({ url, expected }: { url: string; expected?: number }) {
   const { t } = useFormat();
   const reduce = useReducedMotion();

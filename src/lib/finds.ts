@@ -6,26 +6,17 @@ export type Find = {
   category: Category;
   batch: Batch;
   pricePln: number;
-  /** Cena w juanach (u agenta albo przeliczona przy imporcie) – strona przelicza ją bieżącym kursem, jak na stronie produktu */
   priceCny?: number;
-  /** Szacowana waga do kalkulatora paczki */
   weightGrams: number;
   views: number;
   image: string;
   source: ProductSource;
-  /** Data dodania (ISO), według niej sortujemy „Najnowsze” */
   createdAt: string;
-  /** Liczba zdjęć QC w magazynie – doklejana na stronach, nie zapisywana w katalogu */
   qc?: number;
-  /** Pierwsze zdjęcie QC – miniatura w rogu karty */
   qcCover?: string;
-  /** Produkt tylko do outfitów: nie pokazuje się w katalogu, wyszukiwarce ani rzędach */
   hidden?: boolean;
-  /** Polecany: przy tej samej liczbie wyświetleń idzie wyżej w „Najpopularniejszych” */
   featured?: boolean;
-  /** Strona oferty, gdy to nie /product/<id> – np. produkt sprzedawcy (seller-find.ts) */
   href?: string;
-  /** Dla kogo jest produkt (npm run gender:classify); bez pola – unisex. Strona na razie nie filtruje po tym polu */
   gender?: Gender;
 };
 
@@ -59,7 +50,6 @@ export const batches = ["Best batch", "Budget batch", "Random batch"] as const;
 
 export type Batch = (typeof batches)[number];
 
-/** Domyślna waga dla kategorii, podpowiadana w panelu admina */
 export const defaultWeight: Record<Category, number> = {
   Bluzy: 750,
   Swetry: 600,
@@ -82,7 +72,6 @@ export const defaultWeight: Record<Category, number> = {
   Akcesoria: 150,
 };
 
-/** Plakietka „Nowy” dla rzeczy dodanych w ostatnich dniach */
 export const NEW_FOR_DAYS = 3;
 
 export const sortNewest = (list: Find[]) => [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

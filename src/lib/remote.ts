@@ -8,16 +8,10 @@ import { FALLBACK_RATES, type Rates } from "./money";
 import { imageUrl } from "./images";
 import { snapshotItem } from "./snapshot";
 
-// Dane z zewnątrz: kursy walut (USFans, NBP), ceny i szczegóły produktów u agenta (USFans, na żywo), sprzedawcy.
-// Sprzedawców, galerie QC i szczegóły produktów ze starej strony (xayezreps.com) mamy zapisane u siebie
-// (data/sellers.json, data/qc, data/items) – to zapas, gdy USFans nie odpowie. Starą stronę pytamy już tylko
-// o to, czego nie ma w zapisie, z krótkim limitem czasu, więc jej wyłączenie niczego u nas nie psuje.
 const OLD_API = "https://xayezreps.com/api";
 const OLD_HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
 const OLD_TIMEOUT_MS = 5000;
 
-// Bezpiecznik: gdy stara strona leży, po 3 błędach z rzędu nie pytamy jej przez 30 min (na tej instancji serwera),
-// żeby nic u nas nie czekało na jej odpowiedź
 let oldSiteFailures = 0;
 let oldSitePausedUntil = 0;
 
@@ -38,11 +32,6 @@ async function fromOldSite(pathAndQuery: string): Promise<{ ok: boolean; body: u
   }
 }
 
-/**
- * Kursy walut (ile jednostek za 1 zł) – te, po których USFans przelicza ceny klientom, więc ceny na stronie
- * zgadzają się z kasą agenta. Gdy USFans nie odpowiada – średnie kursy NBP, a w ostateczności kursy zapasowe.
- * Odświeżamy co godzinę.
- */
 export async function getRates(): Promise<Rates> {
   "use cache";
   cacheLife("hours");
@@ -50,7 +39,6 @@ export async function getRates(): Promise<Rates> {
   return (await usfansRates()) ?? (await nbpRates()) ?? FALLBACK_RATES;
 }
 
-/** Kursy USFans: ile jednostek waluty za 1 juana, przeliczone na „za 1 zł” */
 async function usfansRates(): Promise<Rates | null> {
   try {
     const res = await fetch("https://www.usfans.com/api/config/aggregation", {
@@ -70,7 +58,6 @@ async function usfansRates(): Promise<Rates | null> {
   }
 }
 
-/** Średnie kursy NBP z tabeli A (publikowane w dni robocze około południa) */
 async function nbpRates(): Promise<Rates | null> {
   try {
     const res = await fetch("https://api.nbp.pl/api/exchangerates/tables/a/?format=json", {
@@ -79,7 +66,6 @@ async function nbpRates(): Promise<Rates | null> {
     });
     if (!res.ok) return null;
     const [table] = (await res.json()) as { rates?: { code: string; mid: number }[] }[];
-    // NBP podaje, ile złotych kosztuje 1 jednostka waluty, a my liczymy odwrotnie
     const perPln = (code: string) => {
       const mid = table?.rates?.find((r) => r.code === code)?.mid;
       return typeof mid === "number" && mid > 0 ? 1 / mid : null;
@@ -103,7 +89,6 @@ export type Seller = {
   items: SellerItem[];
 };
 
-/** Sprzedawcy razem z produktami – zapisani u nas ze starej strony (npm run sellers:snapshot), zdjęcia w public/s */
 export async function getSellers(): Promise<Seller[]> {
   "use cache";
   cacheLife("max");
@@ -130,7 +115,6 @@ export type ItemDetails = {
   priceCny: number;
   domesticShipCny: number;
   images: string[];
-  /** Zdjęcia z opisu w sklepie (np. tabela rozmiarów) */
   descriptionImages: string[];
   available: boolean;
   seller: string | null;
@@ -140,11 +124,6 @@ export type ItemDetails = {
   qcCount: number;
 };
 
-/**
- * Szczegóły produktu (tytuł, zdjęcia, warianty, dostępność, cena w juanach) – na żywo z USFans, więc zmiany
- * u agenta od razu widać u nas. Gdy USFans nie odpowie: zapis ze starej strony, a dla aukcji spoza zapisu
- * (np. link wklejony w narzędziu QC) – stara strona, dopóki odpowiada.
- */
 export async function fetchItemDetails(source: ProductSource): Promise<ItemDetails | null> {
   const { data } = await fetchUsfansGoods(source);
   const live = data && parseUsfansGoods(data);
@@ -157,28 +136,20 @@ export async function fetchItemDetails(source: ProductSource): Promise<ItemDetai
 
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-/** Kwota z odpowiedzi agenta – liczba albo liczba zapisana tekstem („89.00”); inaczej 0 */
 const amount = (v: unknown) => {
   const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
   return Number.isFinite(n) && n > 0 ? n : 0;
 };
 
-/** Ceny wariantów u USFans w juanach, z promocją, jeśli jest */
 const skuPrices = (d: Record<string, unknown>) =>
   (list(d.skuList) as { price?: unknown; discountPrice?: unknown }[])
     .map((s) => amount(s.discountPrice) || amount(s.price))
     .filter((p) => p > 0);
-/** Adres zdjęcia ze sklepu: „//host/…” i http → https, inne odrzucamy */
 const httpsUrl = (v: unknown) => {
   const url = text(v).replace(/^\/\//, "https://").replace(/^http:\/\//, "https://");
   return /^https:\/\/[^\s"'<>]+$/.test(url) ? url : null;
 };
 
-/**
- * Odpowiedź USFans (api/goods/info) → szczegóły na stronie produktu. Pola jak na ich stronie produktu:
- * properties [{ propNameEn, valuesList [{ valueNameEn, valueName, picUrl }] }], skuList [{ price, discountPrice, stock }],
- * images, description (HTML), deliveryPrice, shopName, stock.
- */
 function parseUsfansGoods(d: Record<string, unknown>): ItemDetails | null {
   const title = text(d.titleEn) || text(d.title);
   if (!title) return null;
@@ -198,7 +169,6 @@ function parseUsfansGoods(d: Record<string, unknown>): ItemDetails | null {
   const prices = skuPrices(d);
   const base = prices.length ? Math.min(...prices) : amount(d.price);
   const all = prices.length ? prices : [base];
-  // Stan magazynu: suma wariantów, a bez niej – całej aukcji; brak danych = dostępny
   const stocks = skus.map((s) => s.stock).filter((n): n is number => typeof n === "number");
   const stock = stocks.length ? stocks.reduce((sum, n) => sum + Math.max(0, n), 0) : typeof d.stock === "number" ? d.stock : null;
   const descriptionImages = [...text(d.description).matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map((m) => httpsUrl(m[1])).filter((u): u is string => Boolean(u));
@@ -249,8 +219,6 @@ function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
 
 const USFANS_CHANNEL: Record<ProductSource["platform"], number> = { "1688": 1, taobao: 2, weidian: 3 };
 
-// Cena i szczegóły biorą tę samą odpowiedź USFans: zapytania o tę samą aukcję w tej samej chwili idą raz.
-// status – krótki opis odpowiedzi (tylko ASCII) do nagłówka X-Agent-Status w /api/item, np. „200 title=1 skus=12 prices=12”
 type Goods = { data: Record<string, unknown> | null; status: string };
 const goodsInFlight = new Map<string, Promise<Goods>>();
 
@@ -280,13 +248,11 @@ function fetchUsfansGoods(source: ProductSource): Promise<Goods> {
   return pending;
 }
 
-/** Jak USFans odpowiedział na ostatnie (sprzed najwyżej kilku sekund) pytanie o tę aukcję; pusty – nie pytaliśmy */
 export async function agentStatus(source: ProductSource) {
   const pending = goodsInFlight.get(`${source.platform}:${source.id}`);
   return pending ? (await pending).status : "";
 }
 
-/** Aktualna cena u agenta (USFans) w juanach: najtańszy wariant, z promocją, jeśli jest */
 export async function fetchAgentPriceCny(source: ProductSource): Promise<number | null> {
   const { data: d } = await fetchUsfansGoods(source);
   if (!d) return null;
@@ -294,10 +260,6 @@ export async function fetchAgentPriceCny(source: ProductSource): Promise<number 
   return prices.length ? Math.min(...prices) : amount(d.price) || null;
 }
 
-/**
- * Zdjęcia QC ze starej strony na żywo – dopóki odpowiada (zapis jej galerii mamy w data/qc).
- * Dla produktów bez zdjęć API odpowiada 500 z pustą listą, więc patrzymy na treść, a nie na status.
- */
 export async function fetchOldSiteQc(productUrl: string): Promise<string[] | null> {
   const res = await fromOldSite(`/qc?url=${encodeURIComponent(productUrl)}`);
   if (!res) return null;

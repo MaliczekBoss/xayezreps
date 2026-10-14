@@ -4,17 +4,12 @@ import { redisCall, run, storageKind } from "./analytics/store";
 import { createToken, readToken, SESSION_MAX_AGE_S, sha256, totpEnabled, totpStep } from "./auth-token";
 import { hit } from "./rate-limit";
 
-// Sesje admina zapisane w bazie: token w ciasteczku musi mieć poprawny podpis I istnieć w bazie,
-// więc wylogowanie (także „wyloguj wszędzie”) od razu unieważnia skradzione ciasteczko.
-// Do tego blokada zgadywania hasła i jednorazowe kody 2FA. Bez Upstash (lokalnie) – pamięć procesu.
-
 const SESSIONS = "adm:sessions";
 const sessionKey = (sid: string) => `adm:s:${sha256(sid).slice(0, 40)}`;
 
 type Mem = { sessions: Map<string, number>; used: Map<string, number> };
 const mem: Mem = ((globalThis as { __xayezAdmin?: Mem }).__xayezAdmin ??= { sessions: new Map(), used: new Map() });
 
-/** Nowa sesja po poprawnym logowaniu; zwraca token do ciasteczka */
 export async function createSession(meta: { ip: string; ua: string }) {
   const now = Date.now();
   const { token, sid } = createToken(now);
@@ -30,7 +25,6 @@ export async function createSession(meta: { ip: string; ua: string }) {
   return token;
 }
 
-/** Czy token należy do aktywnej sesji admina (podpis, ważność i wpis w bazie) */
 export async function verifySession(token: string | undefined): Promise<boolean> {
   const sid = readToken(token, Date.now());
   if (!sid) return false;
@@ -39,12 +33,10 @@ export async function verifySession(token: string | undefined): Promise<boolean>
   try {
     return (await redisCall(["EXISTS", key])) === 1;
   } catch {
-    // Bez bazy nie da się sprawdzić unieważnienia – bezpieczniej odmówić
     return false;
   }
 }
 
-/** Wylogowanie: usuwa tę jedną sesję */
 export async function destroySession(token: string | undefined) {
   const sid = readToken(token, Date.now());
   if (!sid) return;
@@ -59,7 +51,6 @@ export async function destroySession(token: string | undefined) {
   ]);
 }
 
-/** „Wyloguj wszędzie”: unieważnia wszystkie sesje admina na wszystkich urządzeniach */
 export async function destroyAllSessions() {
   if (storageKind() !== "redis") {
     mem.sessions.clear();
@@ -69,25 +60,12 @@ export async function destroyAllSessions() {
   await run([...keys.map((key) => ({ op: "DEL", keys: [key] })), { op: "DEL", keys: [SESSIONS] }]);
 }
 
-/* ---------- Blokada zgadywania hasła ---------- */
-
 const WINDOW_S = 15 * 60;
-// Z jednego adresu: tyle prób na 15 minut
 const PER_IP = 5;
-// Ze wszystkich adresów razem (zgadywanie z wielu IP naraz): tyle prób na 15 minut
 const GLOBAL = 40;
-// Z 2FA: tyle złych kodów po dobrym haśle na dobę, ze wszystkich adresów razem
 const TOTP_FAILS_PER_DAY = 10;
 const DAY_S = 24 * 60 * 60;
 
-/**
- * Rezerwuje próbę logowania, zanim sprawdzimy hasło: licznik rośnie atomowo, więc równoległe zapytania
- * nie przejdą ponad limit. Licznik wspólny rośnie dopiero, gdy adres mieści się w swoim limicie – jeden
- * adres nie zablokuje logowania wszystkim. Błąd bazy leci dalej: logowanie wtedy odmawia.
- *
- * Wspólny limit działa tylko bez 2FA, bo przez niego obcy może zablokować logowanie prawdziwemu adminowi.
- * Z 2FA zastępuje go dobowy limit złych kodów po dobrym haśle (consumeTotp).
- */
 export async function reserveLoginAttempt(ip: string): Promise<{ ok: boolean; retryAfter: number }> {
   const own = await hit("adm-login", ip, PER_IP, WINDOW_S);
   if (!own.ok) return { ok: false, retryAfter: own.retryAfter };
@@ -100,19 +78,12 @@ export async function reserveLoginAttempt(ip: string): Promise<{ ok: boolean; re
   return { ok: true, retryAfter: 0 };
 }
 
-/** Udane logowanie oddaje zarezerwowaną próbę – liczą się tylko nieudane */
 export async function releaseLoginAttempt(ip: string) {
   await hit("adm-login", ip, PER_IP, WINDOW_S, -1);
   if (!totpEnabled()) await hit("adm-login", "all", GLOBAL, WINDOW_S, -1);
 }
 
-/**
- * Kod 2FA z aplikacji: poprawny i jeszcze nieużyty. Każdy kod działa tylko raz – podsłuchany albo
- * podejrzany kod nie wpuści drugi raz.
- */
 export async function consumeTotp(code: string): Promise<boolean> {
-  // Złe kody po dobrym haśle, ze wszystkich adresów razem: najwyżej tyle na dobę. Zgadywać kod może tylko
-  // ktoś, kto zna hasło, więc obcy tym limitem nie zablokuje logowania adminowi.
   const reserved = await hit("adm-totp", "all", TOTP_FAILS_PER_DAY, DAY_S);
   if (!reserved.ok) {
     console.warn("[admin] dobowy limit złych kodów 2FA wyczerpany – ktoś zna hasło, zmień je");

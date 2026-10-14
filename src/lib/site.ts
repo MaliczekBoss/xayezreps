@@ -1,6 +1,3 @@
-// Wszystko, co trzeba podmienić przed startem strony, jest w tym pliku
-// i w src/lib/finds.ts (produkty) oraz src/lib/qc-feed.ts (ostatnie QC).
-
 export const site = {
   name: "xayezreps.pl",
   domain: "xayezreps.pl",
@@ -15,7 +12,6 @@ export const site = {
     discord: "https://discord.gg/xayez",
   },
 
-  // Oferta partnerska zawsze dotyczy USFans
   partner: {
     name: "USFans",
     signupUrl: "https://www.usfans.com/register?ref=xayez",
@@ -27,7 +23,6 @@ export const site = {
     coupon: "−40%",
   },
 
-  // Podstrony serwisu
   routes: {
     finds: "/finds",
     tools: "/tools",
@@ -46,22 +41,14 @@ export const site = {
   },
 } as const;
 
-/**
- * Oferty partnerów pokazywane co jakiś czas jako powiadomienie w dynamicznej wyspie.
- * url: link rejestracyjny z waszym kodem polecającym.
- */
 export const islandPromos = [
   { id: "usfans", name: "USFans", logo: "/agents/usfans.png", url: "https://www.usfans.com/register?ref=xayez" },
 ] as const;
 
-// Kalkulator paczki – kwoty orientacyjne w złotówkach. Zaktualizuj, gdy agent zmieni cennik.
 export const pricing = {
-  // Dostawa od sprzedawcy do magazynu agenta, za każdy przedmiot
   domesticPlnPerItem: 7,
-  // Karton i wypełnienie: 10% wagi, nie mniej niż 200 g
   packagingRatio: 0.1,
   packagingMinGrams: 200,
-  // Linie liczą wysyłkę w krokach po 500 g
   stepGrams: 500,
   lines: [
     { id: "standard", name: "EU Standard", days: { from: 12, to: 18 }, firstStepPln: 40, nextStepPln: 20 },

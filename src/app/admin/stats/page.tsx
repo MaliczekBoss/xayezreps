@@ -17,7 +17,6 @@ export default function StatsPage() {
 
 async function StatsContent() {
   if (!(await isAdmin())) redirect("/admin/login");
-  // Nazwy produktów, żeby w „Najczęściej oglądane” zamiast /product/123 była nazwa
   const productNames = Object.fromEntries((await getAllFinds()).map((f) => [f.id, f.name]));
   return <StatsDashboard productNames={productNames} />;
 }

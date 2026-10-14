@@ -4,7 +4,6 @@ import { useActionState, useState } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { login, type FormState } from "../actions";
 
-/** twoFactor – gdy włączone 2FA (ADMIN_TOTP_SECRET), formularz pyta też o kod z aplikacji */
 export function LoginForm({ twoFactor = false }: { twoFactor?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, {});
   const [show, setShow] = useState(false);

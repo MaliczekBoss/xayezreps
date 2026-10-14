@@ -7,9 +7,6 @@ import { isAdmin } from "@/lib/auth";
 import { SESSION_COOKIE, adminConfigured, checkPassword, sessionCookie, totpEnabled } from "@/lib/auth-token";
 import { clientIp, ipKey } from "@/lib/rate-limit";
 
-// Panel admina ma tylko statystyki, więc jedyne akcje to logowanie i wylogowanie.
-// Next sprawdza przy każdej akcji, czy zapytanie przyszło z tej samej strony (ochrona przed CSRF).
-
 export type FormState = { error?: string };
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -21,7 +18,6 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const h = await headers();
   const ip = ipKey(clientIp(h));
 
-  // Próba jest liczona, zanim sprawdzimy hasło; bez działającego licznika nie wpuszczamy nikogo
   const allowed = await reserveLoginAttempt(ip).catch(() => null);
   if (!allowed) {
     console.error(`[admin] licznik prób nie działa – logowanie odrzucone (${ip.slice(0, 8)})`);
@@ -34,12 +30,9 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
 
   const password = String(formData.get("password") ?? "");
   const code = String(formData.get("code") ?? "").replace(/\s/g, "");
-  // Kod 2FA sprawdzamy dopiero przy dobrym haśle, żeby nie zużyć go na próbach z cudzym hasłem
-  // Awaria bazy przy sprawdzaniu kodu = odmowa
   const ok = checkPassword(password) && (!totpEnabled() || (await consumeTotp(code).catch(() => false)));
   if (!ok) {
     console.warn(`[admin] nieudane logowanie (${ip.slice(0, 8)})`);
-    // Spowolnienie z losowym rozrzutem utrudnia zgadywanie i pomiar czasu odpowiedzi
     await pause(500 + Math.random() * 500);
     return { error: totpEnabled() ? "Nieprawidłowe hasło albo kod z aplikacji." : "Nieprawidłowe hasło." };
   }
@@ -51,7 +44,6 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   redirect("/admin/stats");
 }
 
-/** Wylogowanie z tego urządzenia – sesja jest unieważniana w bazie, nie tylko usuwana z przeglądarki */
 export async function logout() {
   const jar = await cookies();
   await destroySession(jar.get(SESSION_COOKIE)?.value).catch(() => {});
@@ -59,7 +51,6 @@ export async function logout() {
   redirect("/admin/login");
 }
 
-/** Wylogowanie ze wszystkich urządzeń – np. gdy ktoś mógł przejąć sesję */
 export async function logoutEverywhere() {
   if (!(await isAdmin())) redirect("/admin/login");
   await destroyAllSessions();

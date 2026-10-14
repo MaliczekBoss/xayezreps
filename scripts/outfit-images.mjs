@@ -1,7 +1,3 @@
-// Przenosi zdjęcia outfitów ze starej strony (xayezreps.com, cdn.xayezreps.com) do public/o/<id>.webp
-// i podmienia adresy w data/outfits.json. Pobrane zdjęcia są pomijane, więc można przerwać i puścić ponownie.
-// Uruchom: npm run outfits:images
-
 import { existsSync, mkdirSync } from "node:fs";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";

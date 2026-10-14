@@ -5,10 +5,6 @@ import type { Find } from "./finds";
 import { cnyToPln } from "./money";
 import { useRates } from "./rates";
 
-// Ceny widocznych ofert zsynchronizowane z agentem: każda pokazana karta zgłasza swoje id, a zgłoszenia z krótkiej
-// chwili idą razem do /api/prices. Serwer odświeża dawno niesprawdzane ceny u agenta i zapisuje je w bazie,
-// a karty na ekranie podmieniają cenę bez przeładowania strony.
-
 const BATCH = 40;
 const WAIT_MS = 350;
 
@@ -54,7 +50,6 @@ const subscribe = (listener: () => void) => {
   return () => listeners.delete(listener);
 };
 
-/** Cena oferty w złotówkach: z serwera, a po synchronizacji z agentem – aktualna (tym samym kursem co strona produktu) */
 export function useLivePricePln(find: Pick<Find, "id" | "pricePln">): number {
   const rates = useRates();
   useSyncExternalStore(subscribe, () => version, () => 0);

@@ -10,7 +10,6 @@ type State = { status: "loading" } | { status: "error" } | { status: "ready"; ph
 
 const STEP = 12;
 
-/** Zdjęcia QC z magazynów agentów dla linku produktu, z podglądem na pełnym ekranie */
 export function QcGallery({ productUrl, titleId }: { productUrl: string; titleId: string }) {
   const { t } = useFormat();
   const [state, setState] = useState<State>({ status: "loading" });

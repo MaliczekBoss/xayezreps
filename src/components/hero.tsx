@@ -10,16 +10,10 @@ import { HeroSearch } from "./hero-search";
 import { ProductImage } from "./product-image";
 import type { ToolPreviews } from "./tools";
 
-// Sekwencja wejścia gra tylko przy otwarciu strony, a nie po każdym powrocie na stronę główną
 let introPlayed = false;
 
-/** Opóźnienie kroku sekwencji wejścia (zmienna --d w globals.css) */
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
-/**
- * Liczba jak licznik w samochodzie: każda cyfra robi pełny obrót i staje na swojej wartości, kolejne z małym
- * opóźnieniem (zera też się kręcą). Spacje i „+” stoją w miejscu. Bez sekwencji wejścia liczba stoi od razu.
- */
 function RollingNumber({ value, roll, start }: { value: string; roll: boolean; start: number }) {
   const [go, setGo] = useState(!roll);
   useEffect(() => {
@@ -55,10 +49,8 @@ function RollingNumber({ value, roll, start }: { value: string; roll: boolean; s
   );
 }
 
-// Dwa razy 0–9: cyfra przewija się przez pełne koło i staje w drugiej dziesiątce
 const DIGITS = Array.from({ length: 20 }, (_, i) => String(i % 10));
 
-/** Słowa nagłówka wjeżdżające po kolei spod krawędzi */
 function RisingWords({ text, start }: { text: string; start: number }) {
   return text.split(" ").map((word, i) => (
     <span key={i}>
@@ -74,10 +66,8 @@ function RisingWords({ text, start }: { text: string; start: number }) {
 
 export type HeroCategory = { category: string; image: string };
 
-/** Liczba findów pod wyszukiwarką i miniatury produktów bez tła do niej */
 export type HeroProof = { finds: number; findThumbs: string[] };
 
-/** Trzy zachodzące na siebie miniatury; po najechaniu na link lekko się rozsuwają */
 function Stack({ images }: { images: string[] }) {
   return (
     <span aria-hidden="true" className="flex">
@@ -95,10 +85,6 @@ function Stack({ images }: { images: string[] }) {
   );
 }
 
-/**
- * Pasek kategorii pod wyszukiwarką: duże zdjęcia produktów bez tła z podpisem, przewijany w bok.
- * Na komputerze strzałki po bokach przesuwają o prawie cały ekran, a brzegi paska gasną tam, gdzie coś jeszcze jest.
- */
 function CategoryRail({ items, intro }: { items: HeroCategory[]; intro: boolean }) {
   const f = useFormat();
   const { t } = f;
@@ -168,7 +154,6 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
   }, []);
 
   return (
-    // Wylatująca karta wachlarza nie może przesuwać strony w bok
     <div className="overflow-x-clip">
       <section
         id="top"
@@ -180,7 +165,6 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
             <span className="block">
               <RisingWords text={t("hero.title1")} start={60} />
             </span>
-            {/* Kursywa pojawia się od lewej, jakby ktoś ją dopisywał */}
             <span className="fancy intro-write block text-[1.1em] leading-[1] text-muted" style={at(300)}>
               {t("hero.title2")}
             </span>
@@ -193,7 +177,6 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
             <HeroSearch typeIn={intro} />
           </div>
 
-          {/* Społeczność kupujących i liczba findów w katalogu, kręcąca się jak licznik */}
           <ul className="intro-fade mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted" style={at(1000)}>
             <li className="flex items-center gap-2.5">
               <span aria-hidden="true" className="relative grid size-2 place-items-center">
@@ -213,7 +196,6 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
           </ul>
         </div>
 
-        {/* Na telefonie kategorie idą zaraz pod wyszukiwarką, a wachlarz banerów pod nimi */}
         <div className="intro-fade order-3 min-w-0 lg:order-none" style={at(240)}>
           <HeroBanners data={previews} />
         </div>

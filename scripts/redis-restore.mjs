@@ -1,12 +1,3 @@
-// Wgrywa kopię z `npm run db:backup` do bazy Upstash Redis – np. przy przenosinach na nowe konto.
-// Domyślnie tylko do PUSTEJ bazy (żeby niczego nie nadpisać); --force wgrywa mimo to, zastępując klucze z kopii.
-// Potrzebny pełny token (nie „read only”):
-//
-//   KV_REST_API_URL=… KV_REST_API_TOKEN=… npm run db:restore -- <plik.json> [--force]
-//
-// Liczniki unikalnych odwiedzających (xs:uh, xs:ud – binarne HyperLogLog) przez REST nie dadzą się wgrać
-// bajt w bajt, więc są pomijane: statystyki unikalnych osób zaczną się od zera, reszta danych wraca w całości.
-
 import { readFile } from "node:fs/promises";
 
 const url = (process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? "").replace(/\/$/, "");

@@ -12,7 +12,6 @@ import { SectionTitle, btnPrimary } from "./ui";
 
 const LIMIT_GRAMS = 10000;
 
-/** Waga i paragon paczki; `embedded` – bez własnego kontenera, gdy sekcja stoi na podstronie */
 export function HaulSection({ embedded = false }: { embedded?: boolean }) {
   const f = useFormat();
   const haul = useHaul();
@@ -57,7 +56,6 @@ function useTween(target: number) {
   return reduce ? target : value;
 }
 
-// Miejsca na szalce: dolny rząd, potem kolejne warstwy
 const PILE = [
   { x: 4, y: 0, r: -6 },
   { x: 36, y: 0, r: 3 },
@@ -77,7 +75,6 @@ function Scale({ lines, grams, f }: { lines: HaulLine[]; grams: number; f: Forma
 
   return (
     <div className="rounded-xl border border-line bg-card px-5 pb-5 pt-7 sm:px-7 sm:pb-6">
-      {/* Rzeczy na szalce */}
       <div className="relative mx-[7%] h-[11.5rem] sm:h-[14.5rem]">
         <AnimatePresence>
           {visible.map((line, i) => {
@@ -120,14 +117,12 @@ function Scale({ lines, grams, f }: { lines: HaulLine[]; grams: number; f: Forma
         )}
       </div>
 
-      {/* Szalka */}
       <div
         aria-hidden="true"
         className="relative z-10 h-4 rounded-md border border-line-strong bg-[linear-gradient(180deg,#4a4a52,#2b2b31)] shadow-[0_1px_0_rgb(255_255_255/0.15)_inset]"
       />
       <div aria-hidden="true" className="mx-auto h-3 w-[30%] bg-[#232327]" />
 
-      {/* Korpus z wyświetlaczem */}
       <div className="rounded-xl border border-line bg-bg p-3">
         <div className="flex items-center gap-4 rounded-lg border border-black bg-lcd px-4 py-3 shadow-[inset_0_2px_10px_rgb(0_0_0/0.8)]">
           <SevenSegment
@@ -149,7 +144,6 @@ function Scale({ lines, grams, f }: { lines: HaulLine[]; grams: number; f: Forma
         </div>
       </div>
 
-      {/* Pasek do limitu promocji */}
       <div className="mt-5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-xs text-muted">
           <span>{t("scale.limit", { code: site.promo.code })}</span>

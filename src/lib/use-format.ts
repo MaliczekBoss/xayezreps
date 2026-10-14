@@ -34,10 +34,8 @@ function makeFormat(s: Settings, rates: Rates) {
 
 export type Format = ReturnType<typeof makeFormat>;
 
-/** Tłumaczenia, waluta, waga i linki agenta według ustawień użytkownika */
 export function useFormat(): Format {
   return makeFormat(useSettings(), useRates());
 }
 
-/** To samo poza Reactem, np. w powiadomieniach */
 export const formatNow = () => makeFormat(getSettings(), getLiveRates());

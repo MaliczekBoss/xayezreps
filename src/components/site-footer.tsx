@@ -48,13 +48,11 @@ export function SiteFooter() {
 
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line bg-[#0d0d0e]">
-      {/* Tło: delikatna siatka linii od dołu */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="line-grid absolute inset-0 [mask-image:linear-gradient(to_top,#000_10%,transparent_70%)]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Zaproszenie do społeczności */}
         <div className="flex flex-col gap-8 border-b border-line py-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-[34rem]">
             <h2 className="text-[clamp(2rem,4.2vw,3rem)] font-semibold leading-[1.05] tracking-[-0.035em]">
@@ -77,7 +75,6 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Linki */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 lg:grid-cols-[1.3fr_repeat(3,1fr)]">
           <div className="col-span-2 lg:col-span-1">
             <Logo />
@@ -111,7 +108,6 @@ export function SiteFooter() {
           ))}
         </div>
 
-        {/* Informacje prawne */}
         <div className="flex flex-col gap-6 border-t border-line py-8 md:flex-row md:items-start md:justify-between">
           <p className="max-w-[46rem] text-xs leading-relaxed text-dim">{t("footer.legal")}</p>
           <div className="flex shrink-0 items-center gap-4 text-xs text-dim">
@@ -127,7 +123,6 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* Ogromny napis przycięty dołem strony */}
       <div aria-hidden="true" className="relative -mt-4 select-none overflow-hidden sm:-mt-14">
         <p className="mx-auto max-w-7xl translate-y-[22%] whitespace-nowrap px-4 text-center text-[clamp(4.5rem,20vw,17.5rem)] leading-[0.85] tracking-[-0.06em] sm:px-6 lg:px-8">
           <span className="bg-[linear-gradient(180deg,rgb(255_255_255/0.2),rgb(255_255_255/0.02)_85%)] bg-clip-text text-transparent">

@@ -1,9 +1,5 @@
-// Postęp długich skryptów: linijka z postępem co kilka sekund i częściowy wynik zapisywany po drodze,
-// od którego następne uruchomienie zaczyna, zamiast liczyć wszystko od zera.
-
 import { readFile, rename, rm, writeFile } from "node:fs/promises";
 
-/** Licznik: tick() po każdej sprawdzonej pozycji; wypisuje postęp najwyżej co 3 sekundy i na koniec */
 export function progress(total, label) {
   const start = Date.now();
   let done = 0;
@@ -22,7 +18,6 @@ export function progress(total, label) {
   };
 }
 
-/** Częściowy wynik z poprzedniego, przerwanego uruchomienia (albo pusty) */
 export const loadPartial = async (file) => JSON.parse(await readFile(file, "utf-8").catch(() => "{}"));
 
 export async function savePartial(file, data) {

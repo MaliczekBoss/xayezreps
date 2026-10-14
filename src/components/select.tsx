@@ -11,9 +11,7 @@ type SelectProps = {
   value: string;
   options: Option[];
   onChange: (value: string) => void;
-  /** Nazwa pola, gdy lista jest częścią formularza */
   name?: string;
-  /** "pill" w filtrach strony, "field" w formularzach */
   look?: "pill" | "field";
   className?: string;
 };
@@ -23,7 +21,6 @@ const looks = {
   field: "rounded-xl bg-bg pl-3.5 pr-3",
 };
 
-/** Rozwijana lista w stylu strony (zamiast systemowego <select>), obsługiwana też klawiaturą */
 export function Select({ label, value, options, onChange, name, look = "pill", className = "" }: SelectProps) {
   const id = useId();
   const reduce = useReducedMotion();

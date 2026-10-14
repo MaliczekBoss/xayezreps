@@ -5,8 +5,6 @@ import type { Find } from "./finds";
 import { notify } from "./notify";
 import { formatNow } from "./use-format";
 
-// Ulubione findy zapisane w przeglądarce: id → kiedy dodano. Dane produktu bierzemy z katalogu.
-
 export type Favorites = Record<string, number>;
 
 const STORAGE_KEY = "xayez-favorites-v1";
@@ -81,7 +79,6 @@ export const favoriteActions = {
       return;
     }
     next[find.id] = Date.now();
-    // Najstarsze wypadają, gdy lista robi się za długa
     const ids = Object.keys(next).sort((a, b) => next[b] - next[a]);
     for (const id of ids.slice(MAX)) delete next[id];
     commit(next);

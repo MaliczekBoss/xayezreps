@@ -12,25 +12,17 @@ import { ProductImage } from "./product-image";
 
 const SIZES = "(min-width: 768px) 14rem, (min-width: 640px) 12.5rem, 11rem";
 
-// Kolor kropki przy batchu: od razu widać, czy to najlepsza wersja, czy budżetowa.
-// Zwykły batch („Random”) nic nie mówi, więc zamiast niego karta pokazuje kategorię.
 const BATCH_DOT: Record<string, string> = {
   "Best batch": "bg-gl",
   "Budget batch": "bg-amber-400",
 };
 
-// Szkło na zdjęciu: liczba QC, kapsuła z serduszkiem i paczką
 const glass = "bg-black/50 ring-1 ring-white/10 backdrop-blur-md";
 
-/**
- * Karta findu bez ramki: zdjęcie na kafelku, pod nim nazwa, cena i batch. Po najechaniu produkt
- * podnosi się (klasa .lift w globals.css).
- */
 export function ProductCard({ find, isNew = false }: { find: Find; isNew?: boolean }) {
   const f = useFormat();
   const { t } = f;
   const qc = find.qc ?? 0;
-  // Cena synchronizuje się z agentem, gdy karta się pokaże (price-sync.ts)
   const pricePln = useLivePricePln(find);
 
   return (

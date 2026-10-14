@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const dev = process.env.NODE_ENV === "development";
 
-// Serwer naszych zdjęć (i/, s/, o/), gdy nie są w paczce ze stroną – src/lib/images.ts, HOSTING.md
 const imagesUrl = (() => {
   try {
     return process.env.NEXT_PUBLIC_IMAGES_URL ? new URL(process.env.NEXT_PUBLIC_IMAGES_URL) : null;
@@ -11,10 +10,6 @@ const imagesUrl = (() => {
   }
 })();
 
-// Content Security Policy: skąd strona może ładować skrypty, style, zdjęcia i z kim się łączyć.
-// Skrypty tylko z naszej domeny (inline zostaje, bo Next wstawia własne skrypty startowe, a nonce wyłączyłby
-// statyczne strony), zdjęcia z dowolnego HTTPS (sklepy i magazyny agentów), żadnych ramek, obcych formularzy
-// ani wtyczek. Lokalnie dochodzi eval i websocket dla odświeżania na żywo.
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
@@ -35,14 +30,10 @@ const csp = [
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
-  // Zawsze HTTPS – przeglądarka nie spróbuje już połączenia bez szyfrowania (2 lata)
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
-  // Strony nie da się osadzić w cudzej ramce (clickjacking) – starsze przeglądarki nie znają frame-ancestors
   { key: "X-Frame-Options", value: "DENY" },
-  // Przeglądarka nie zgaduje typu pliku (np. nie potraktuje zdjęcia jak skryptu)
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // Strona nie potrzebuje kamery, mikrofonu, lokalizacji ani płatności przez przeglądarkę
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
@@ -50,9 +41,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
-  // Bez nagłówka X-Powered-By: Next.js – nie zdradzamy, na czym działa strona
   poweredByHeader: false,
-  // Zapis danych ze starej strony (scripts/old-site-snapshot.mjs, sellers-snapshot.mjs) czytany z dysku w tych trasach
   outputFileTracingIncludes: {
     "/api/qc": ["./data/qc/**"],
     "/api/cron/qc": ["./data/qc/**"],
@@ -64,13 +53,10 @@ const nextConfig: NextConfig = {
       ...(imagesUrl
         ? [{ protocol: imagesUrl.protocol === "http:" ? ("http" as const) : ("https" as const), hostname: imagesUrl.hostname, port: imagesUrl.port, pathname: "/**" }]
         : []),
-      // Miniatury z Weidiana i 1688 w sekcji QC
       { protocol: "https", hostname: "si.geilicdn.com", pathname: "/**" },
       { protocol: "https", hostname: "img.alicdn.com", pathname: "/**" },
-      // Zdjęcia QC z magazynu Kakobuy (oryginały mają po 2–3 MB, więc je zmniejszamy)
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobuy.com", pathname: "/**" },
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobyy.com", pathname: "/**" },
-      // kako-alosshk-pic.kakobuy.com ma zły certyfikat – te zdjęcia bierzemy z magazynu Aliyun (qc-store.ts → photoUrl)
       { protocol: "https", hostname: "kako-alosshk-pic.oss-cn-hongkong.aliyuncs.com", pathname: "/**" },
       { protocol: "https", hostname: "media.usfans.com", pathname: "/**" },
       { protocol: "https", hostname: "a-wh.loongbuy.com", pathname: "/**" },
@@ -78,12 +64,9 @@ const nextConfig: NextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
-  // Nagłówki bezpieczeństwa dla całej strony, panel admina bez cache; zdjęcia produktów bez tła (public/i),
-  // produktów sprzedawców (public/s) i outfitów (public/o) zmieniają się rzadko: przeglądarka trzyma je tydzień, CDN rok
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      // Panel admina i jego API: bez cache i bez indeksowania
       {
         source: "/admin/:path*",
         headers: [

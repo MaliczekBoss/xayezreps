@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function LinkConverterPage() {
-  // Przykład do wypróbowania: najpopularniejszy find z Weidiana
   const top = sortPopular(await getFinds()).find((f) => f.source.platform === "weidian");
   const example = top ? { name: top.name, image: top.image, url: sourceUrl(top.source) } : undefined;
   return (

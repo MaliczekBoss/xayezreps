@@ -1,9 +1,3 @@
-// Zamienia katalog na eksport (catalogue.csv albo baza JSON z tymi samymi polami, np. database/new database.json):
-// nowe produkty dostają nasze kategorie, cenę w złotówkach i zdjęcie bez tła z /i/<id>.webp. Aukcję bierzemy
-// z pola link (link USFans albo Weidian), a gdy go nie ma – z marketplace i listing_id. Produkty użyte
-// w outfitach zostają, ale ukryte (widać je tylko w outfitach).
-// Uruchom: node scripts/import-catalogue.mjs <catalogue.csv | baza.json>
-
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -14,10 +8,6 @@ if (!csvFile) {
 }
 
 const root = process.cwd();
-/**
- * Ile złotych za 1 juana: kurs USFans (ten, po którym agent liczy klientom), gdy agent nie odpowiada –
- * średni kurs NBP (tabela A), a bez internetu – ostatni znany kurs NBP
- */
 async function plnPerCny() {
   try {
     const res = await fetch("https://www.usfans.com/api/config/aggregation", {
@@ -43,12 +33,10 @@ async function plnPerCny() {
 }
 const PLN_PER_CNY = await plnPerCny();
 
-// Dla kogo jest produkt (npm run gender:classify): id → men | women | unisex
 const gendersFile = path.join(root, "data", "gender.json");
 const genders = existsSync(gendersFile) ? JSON.parse(readFileSync(gendersFile, "utf8")) : {};
 const genderOf = (id) => (["men", "women"].includes(genders[id]) ? { gender: genders[id] } : {});
 
-// Aktualne ceny ze strony agenta (npm run prices:snapshot): aukcja → cena w juanach
 const pricesFile = path.join(root, "data", "prices.json");
 const agentPrices = existsSync(pricesFile) ? JSON.parse(readFileSync(pricesFile, "utf8")) : {};
 
@@ -91,7 +79,6 @@ const BASE = {
   other: "Akcesoria",
 };
 
-// Kategorie, których eksport nie ma, rozpoznajemy po nazwie – te reguły są pewne w każdej kategorii
 const STRONG = [
   ["Klocki", /\blego\b|\btechnic\b|building blocks?/],
   ["Zegarki", /\bwatch(es)?\b|\brolex\b|\bomega\b|audemars|\bpatek\b|richard mill|\blongines\b|\btissot\b|\bcasio\b|g-shock|\bhublot\b|\bseiko\b|breitling|\brm-?0\d\d\b|oyster perpetual|datejust|day-date/],
@@ -100,7 +87,6 @@ const STRONG = [
   ["Bielizna", /\bboxers?\b|\bbriefs\b|underwear|\bthong\b|lingerie/],
 ];
 
-// Pełne rozpoznawanie dla „other”, „accessories” i „electronics”, gdzie eksport wrzuca wszystko
 const BY_NAME = [
   ...STRONG,
   ["Elektronika", /air ?pods|\biphone\b|phone case|\bcase\b|magsafe|mag safe|headphones|earbuds|\bbuds\b|\bjbl\b|\bmarshall\b|\bdyson\b|speaker|printer|charger|power bank|battery pack|\bipad\b|macbook|playstation|\bps5\b|nintendo|camera|vacuum|hairdryer|clippers|air tag/],
@@ -126,10 +112,8 @@ function categoryOf(row) {
   return base;
 }
 
-// Eksport nie ma batchy; wyciągamy je z nazwy, a resztę oznaczamy jako zwykły batch (karta go nie pokazuje)
 const batchOf = (name) => (/\bbudget\b/i.test(name) ? "Budget batch" : /\bbest\b/i.test(name) ? "Best batch" : "Random batch");
 
-/** Prosty czytnik CSV: pola w cudzysłowach i podwójne cudzysłowy w środku */
 function readCsv(text) {
   const rows = [];
   let field = "";
@@ -162,12 +146,9 @@ function readCsv(text) {
   return data.filter((r) => r.length === header.length).map((r) => Object.fromEntries(header.map((h, i) => [h.trim(), r[i]])));
 }
 
-// Bajty, którymi Windows-1252 zapisuje znaki 0x80–0x9F (np. „€”, „™”)
 const CP1252 = { "€": 0x80, "‚": 0x82, ƒ: 0x83, "„": 0x84, "…": 0x85, "†": 0x86, "‡": 0x87, ˆ: 0x88, "‰": 0x89, Š: 0x8a, "‹": 0x8b, Œ: 0x8c, Ž: 0x8e, "‘": 0x91, "’": 0x92, "“": 0x93, "”": 0x94, "•": 0x95, "–": 0x96, "—": 0x97, "˜": 0x98, "™": 0x99, š: 0x9a, "›": 0x9b, œ: 0x9c, ž: 0x9e, Ÿ: 0x9f };
 
-/** Naprawia nazwy zapisane w złym kodowaniu („appliquÃ©” → „appliqué”); poprawne zostawia bez zmian */
 function fixEncoding(s) {
-  // Pierwszy bajt znaku UTF-8 (Â–ô), a po nim bajt kontynuacji – ślad złego kodowania (także „ï¼ˆ” zamiast „（”)
   if (!/[Â-ô][\u0080-¿€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/.test(s)) return s;
   const bytes = [];
   for (const ch of s) {
@@ -186,10 +167,8 @@ const cleanName = (s) =>
     .replace(/\s+/g, " ")
     .trim();
 
-// Kanał w linku USFans (/product/<kanał>/<numer>) to sklep: 1 – 1688, 2 – Taobao, 3 – Weidian
 const USFANS_CHANNEL = { 1: "1688", 2: "taobao", 3: "weidian" };
 
-/** Aukcja, do której prowadzi link z bazy; bez rozpoznawalnego linku – marketplace i listing_id */
 function sourceOf(r) {
   const link = r.link ?? "";
   const usfans = link.match(/usfans\.com\/product\/(\d)\/(\d+)/);
@@ -199,15 +178,11 @@ function sourceOf(r) {
   return { platform: r.marketplace.trim(), id: r.listing_id.trim() };
 }
 
-// Zdjęcie bez tła z public/i; gdy go nie ma (np. oryginał już nie istnieje), produkt zostaje bez zdjęcia
 const imageOf = (id) => (existsSync(path.join(root, "public", "i", `${id}.webp`)) ? `/i/${id}.webp` : "");
 
-// Produkty bez zdjęcia (np. puste zdjęcie w eksporcie) pomijamy – na stronie wyglądałyby jak błąd
-// Kategorie poprawione po zdjęciach (scripts/classify-images.py) mają pierwszeństwo przed regułami z nazw
 const overridesFile = path.join(root, "data", "category-overrides.json");
 const overrides = existsSync(overridesFile) ? JSON.parse(readFileSync(overridesFile, "utf8")) : {};
 
-// Baza JSON ma te same pola co CSV, tylko część wartości to liczby albo true/false
 const allRows = csvFile.toLowerCase().endsWith(".json")
   ? JSON.parse(readFileSync(csvFile, "utf8").replace(/^﻿/, "")).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v == null ? "" : String(v)])))
   : readCsv(readFileSync(csvFile, "utf8"));
@@ -215,12 +190,10 @@ const rows = allRows.filter((r) => imageOf(r.id.trim()));
 const imported = rows.map((r) => {
   const category = overrides[r.id.trim()] ?? categoryOf(r);
   const source = sourceOf(r);
-  // Cena: aktualna ze strony agenta, potem w złotówkach z bazy (np. przeniesiona ze starej strony), potem juany z bazy
   const agentCny = Number(agentPrices[`${source.platform}:${source.id}`]?.cny);
   const pln = Number(r.price_pln);
   const cny = Number(r.price_cny);
   const pricePln = agentCny > 0 ? agentCny * PLN_PER_CNY : pln > 0 ? pln : cny > 0 ? cny * PLN_PER_CNY : 0;
-  // Ta sama cena w juanach: strona przelicza ją bieżącym kursem, tak jak cenę na stronie produktu
   const priceCny = agentCny > 0 ? agentCny : pln > 0 ? Math.round((pln / PLN_PER_CNY) * 100) / 100 : cny > 0 ? cny : 0;
   return {
     id: r.id.trim(),
@@ -230,9 +203,7 @@ const imported = rows.map((r) => {
     pricePln: Math.round(pricePln),
     ...(priceCny > 0 ? { priceCny } : {}),
     weightGrams: WEIGHT[category] ?? 300,
-    // Wyświetlenia z bazy (np. ze starej strony); nasze odsłony dolicza strona (src/lib/views.ts)
     views: Number(r.views) > 0 ? Math.round(Number(r.views)) : 0,
-    // Polecane w eksporcie trafiają na górę „Najpopularniejszych”
     ...(r.featured === "true" ? { featured: true } : {}),
     image: imageOf(r.id.trim()),
     ...genderOf(r.id.trim()),
@@ -241,7 +212,6 @@ const imported = rows.map((r) => {
   };
 });
 
-// Produkty z outfitów: zostają tylko do outfitów, ze zdjęciem bez tła
 const findsFile = path.join(root, "data", "finds.json");
 const outfits = JSON.parse(readFileSync(path.join(root, "data", "outfits.json"), "utf8"));
 const used = new Set(outfits.flatMap((o) => o.parts.map((p) => p.findId)));

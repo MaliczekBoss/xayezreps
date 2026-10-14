@@ -5,23 +5,15 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { redisCall, storageKind } from "./analytics/store";
 
-// Katalog (produkty, outfity) i zdjęcia wgrane kiedyś w panelu admina – strona tylko je czyta.
-// Z Upstash Redis (Vercel) lista siedzi w bazie; bez niego – w plikach w folderze data (lokalnie, VPS).
-// Plik z repozytorium jest „źródłem nowości”: gdy się zmieni (nowe wdrożenie), jego nowe pozycje trafiają do bazy.
-
 export type DocName = "finds" | "outfits";
 
 type WithId = { id: string };
 
-// Wymiana całej listy: gdy znacznik się zmieni, lista w bazie jest zastępowana plikiem z repozytorium
-// (stara trafia do kopii xd:{nazwa}:backup:{znacznik}). Zmień znacznik tylko przy imporcie całego katalogu.
 const RESET: Record<DocName, string> = {
   finds: "2026-10-14-gender-live-prices",
-  // Zdjęcia outfitów przeniesione ze starej strony do public/o – lista w bazie musi dostać nowe adresy
   outfits: "2026-10-14-outfits-local-images",
 };
 
-// Przykładowe outfity z pierwszej wersji strony – zastąpione outfitami z xayezreps.com
 const RETIRED: Record<DocName, string[]> = {
   finds: [],
   outfits: ["o-moncler-winter", "o-corteiz-daily", "o-summer"],
@@ -36,12 +28,9 @@ async function readFileRaw(name: DocName): Promise<string> {
   }
 }
 
-// Ostatnio wczytana lista na tej instancji serwera. Katalog ma kilka MB, a strony czytają go wiele razy,
-// więc przez chwilę używamy kopii w pamięci. Czas mierzy performance.now(): Date.now() Next blokuje przy prerenderze.
 const MEMO_MS = 30_000;
 const memo = new Map<DocName, { at: number; list: unknown[] }>();
 
-/** Lista z magazynu (przez krótką chwilę z pamięci) */
 export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
   const hit = memo.get(name);
   if (hit && performance.now() - hit.at < MEMO_MS) return hit.list as T[];
@@ -58,8 +47,6 @@ async function loadDoc<T extends WithId>(name: DocName): Promise<T[]> {
   const [raw, seeded, reset] = await Promise.all([redisCall(["GET", `xd:${name}`]), redisCall(["GET", `xd:${name}:seed`]), redisCall(["GET", `xd:${name}:reset`])]);
 
   if (RESET[name] && reset !== RESET[name]) {
-    // Nowy katalog z importu: stara lista do kopii, plik z repozytorium staje się listą w bazie
-    // NX: przy kilku jednoczesnych wejściach kopia zostaje z pierwszego, czyli ze starej listy
     if (typeof raw === "string") await redisCall(["SET", `xd:${name}:backup:${RESET[name]}`, raw, "NX"]);
     await redisCall(["DEL", `xd:${name}:deleted`]);
     await redisCall(["SET", `xd:${name}`, fileRaw]);
@@ -69,7 +56,6 @@ async function loadDoc<T extends WithId>(name: DocName): Promise<T[]> {
   }
   if (typeof raw === "string" && seeded === version) return JSON.parse(raw) as T[];
 
-  // Pierwsze uruchomienie albo nowa wersja pliku: dokładamy nowe pozycje z repozytorium
   const fromFile = JSON.parse(fileRaw) as T[];
   const current = typeof raw === "string" ? (JSON.parse(raw) as T[]) : [];
   const deleted = new Set(((await redisCall(["SMEMBERS", `xd:${name}:deleted`])) as string[] | null) ?? []);
@@ -80,8 +66,6 @@ async function loadDoc<T extends WithId>(name: DocName): Promise<T[]> {
   await redisCall(["SET", `xd:${name}:seed`, version]);
   return merged;
 }
-
-/* ---------- Zdjęcia ---------- */
 
 const UPLOAD_NAME = /^[\w-]+\.webp$/;
 const uploadPath = (name: string) => path.join(process.cwd(), "data", "uploads", path.basename(name));

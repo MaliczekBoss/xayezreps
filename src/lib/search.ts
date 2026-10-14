@@ -1,9 +1,5 @@
 import type { Category } from "./finds";
 
-// Wyszukiwarka findów i produktów sprzedawców: rozumie polskie i angielskie nazwy rzeczy („koszulka” znajdzie „tee”,
-// „shoes” znajdzie buty), kolory, skróty marek i literówki („chroma chearts” → „chrome hearts”).
-
-/** Małe litery bez polskich znaków; myślniki i apostrofy sklejamy (t-shirt → tshirt, off-white → offwhite) */
 export const normalize = (s: string) =>
   s
     .toLocaleLowerCase("pl")
@@ -14,17 +10,11 @@ export const normalize = (s: string) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
-/**
- * Grupy znaczące to samo po polsku i po angielsku. q – słowa, które ktoś wpisuje; n – słowa, które
- * w nazwie findu oznaczają tę rzecz; category – kategoria, która też się liczy. Gwiazdka na końcu
- * oznacza początek słowa („koszulk*” łapie koszulka, koszulki, koszulkę).
- */
 type Group = { q: string[]; n: string[]; category?: Category };
 
 const g = (q: string[], n: string[], category?: Category): Group => ({ q, n, category });
 
 const GROUPS: Group[] = [
-  // Ubrania
   g(["koszulka", "koszulki", "koszulk*", "tshirt*", "tee", "tees", "teeshirt*", "tiszert*"], ["tee", "tees", "tshirt*", "teeshirt*", "koszulk*", "longsleeve*", "jersey*", "polo", "polos"], "Koszulki"),
   g(["koszula", "koszule", "koszuli", "shirt", "shirts"], ["shirt", "shirts", "koszula", "koszule", "flannel*", "overshirt*"]),
   g(["bluza", "bluzy", "bluz*", "hoodie*", "hoody", "sweatshirt*"], ["hoodie*", "hoody", "sweatshirt*", "crewneck*", "zipup", "bluz*"], "Bluzy"),
@@ -41,11 +31,9 @@ const GROUPS: Group[] = [
   g(["bielizna", "bieliz*", "majtki", "majt*", "bokserki", "bokser*", "slipy", "stringi", "underwear", "boxer*", "briefs"], ["underwear", "boxer*", "briefs", "thong*", "bokser*", "majt*", "bieliz*"], "Bielizna"),
   g(["skarpetki", "skarpet*", "socks", "sock"], ["socks", "sock", "skarpet*"]),
   g(["kapielowki", "kapielow*", "bikini*", "swim*", "kostium*"], ["bikini*", "swim*", "kapielow*"]),
-  // Buty
   g(["buty", "but", "butow", "butach", "butami", "buta", "obuwie", "shoes", "shoe", "sneaker*", "trampki", "trampk*", "trainers"], ["shoes", "shoe", "sneaker*", "trainers", "buty", "trampk*"], "Buty"),
   g(["klapki", "klapk*", "slides", "slide", "slippers", "sandal*"], ["slides", "slide", "slippers", "sandal*", "klapk*"]),
   g(["kozaki", "trzewik*", "boots", "boot"], ["boots", "boot", "kozaki"]),
-  // Dodatki
   g(["czapka", "czapki", "czap*", "cap", "caps", "hat", "hats"], ["cap", "caps", "hat", "hats", "beanie*", "bucket", "snapback*", "trucker", "czap*"], "Czapki"),
   g(["torba", "torby", "torb*", "torebka", "torebk*", "bag", "bags", "nerka", "nerk*", "saszetk*"], ["bag", "bags", "tote*", "handbag*", "crossbody", "pouch", "backpack*", "duffle*", "torb*", "torebk*"], "Torby"),
   g(["plecak", "plecak*", "backpack*"], ["backpack*", "plecak*"]),
@@ -63,7 +51,6 @@ const GROUPS: Group[] = [
   g(["telefon", "telefon*", "phone*"], ["phone*", "iphone*"]),
   g(["sluchawki", "sluchaw*", "headphones", "earbuds"], ["airpods*", "headphones", "earbuds", "beats"]),
   g(["klocki", "kloc*", "lego", "bricks"], ["lego", "bricks"], "Klocki"),
-  // Kolory
   g(["czarny", "czarn*", "black"], ["black", "czarn*"]),
   g(["bialy", "bial*", "white"], ["white", "bial*"]),
   g(["szary", "szar*", "grey", "gray"], ["grey", "gray", "szar*"]),
@@ -79,7 +66,6 @@ const GROUPS: Group[] = [
   g(["fioletowy", "fiolet*", "purple"], ["purple", "fiolet*"]),
   g(["srebrny", "srebrn*", "silver"], ["silver", "srebrn*"]),
   g(["zloty", "zlot*", "gold"], ["gold", "zlot*"]),
-  // Skróty marek
   g(["lv", "louis", "vuitton", "vuiton", "viton"], ["lv", "louis", "vuitton"]),
   g(["ysl", "saint", "laurent"], ["ysl", "saint", "laurent"]),
   g(["tnf", "northface"], ["tnf", "north"]),
@@ -87,32 +73,25 @@ const GROUPS: Group[] = [
   g(["af1"], ["af1", "force"]),
 ];
 
-// Słowa, które nic nie zmieniają w wyszukiwaniu
 const STOP = new Set(["i", "a", "w", "z", "ze", "na", "do", "od", "dla", "po", "the", "and", "for", "with", "of", "rep", "reps", "replika", "repliki", "find", "findy"]);
 
-/** Wszystko, co da się przeszukać: findy (z kategorią) i produkty sprzedawców (bez niej) */
 export type Searchable = { id: string; name: string; category?: string };
 
 type Indexed = { words: string[]; compact: string; category?: string };
 
 export type SearchIndex = {
   byId: Map<string, Indexed>;
-  /** Wszystkie słowa z nazw findów i liczba ich wystąpień – do poprawiania literówek */
   vocab: Map<string, number>;
 };
 
 export type SearchResult<T> = {
-  /** Pozycje dopasowane do zapytania, od najlepiej pasującej */
   items: T[];
-  /** Zapytanie po poprawieniu literówek, gdy coś poprawiliśmy */
   corrected: string | null;
-  /** Nic nie pasowało do wszystkich słów, więc pokazujemy findy pasujące do większości */
   relaxed: boolean;
 };
 
 const matchesWord = (pattern: string, word: string) => (pattern.endsWith("*") ? word.startsWith(pattern.slice(0, -1)) : word === pattern);
 
-/** Grupy, do których należy słowo z zapytania */
 const groupsOf = (token: string) => GROUPS.filter((group) => group.q.some((p) => matchesWord(p, token)));
 
 export function buildSearchIndex(finds: Searchable[]): SearchIndex {
@@ -123,12 +102,10 @@ export function buildSearchIndex(finds: Searchable[]): SearchIndex {
     byId.set(f.id, { words, compact: words.join(""), category: f.category });
     for (const w of words) if (w.length >= 3) vocab.set(w, (vocab.get(w) ?? 0) + 1);
   }
-  // Słowa z grup też poprawiamy z literówek („kosulka” → „koszulka”)
   for (const group of GROUPS) for (const w of group.q) if (!w.endsWith("*") && !vocab.has(w)) vocab.set(w, 0);
   return { byId, vocab };
 }
 
-/** Odległość edycyjna z zamianą sąsiednich liter; przerywa liczenie powyżej max */
 function distance(a: string, b: string, max: number) {
   if (Math.abs(a.length - b.length) > max) return max + 1;
   const prev2 = new Array<number>(b.length + 1).fill(0);
@@ -150,7 +127,6 @@ function distance(a: string, b: string, max: number) {
   return prev[b.length];
 }
 
-/** Najbliższe słowa ze słownika dla słowa, którego nie ma w katalogu */
 function corrections(token: string, vocab: Map<string, number>) {
   if (token.length < 4 || /^\d+$/.test(token)) return [];
   const max = token.length >= 7 ? 2 : 1;
@@ -163,16 +139,13 @@ function corrections(token: string, vocab: Map<string, number>) {
       found = [word];
     } else if (d === best && d <= max) found.push(word);
   }
-  // Najczęstsze słowo pierwsze – to ono trafia do „Wyniki dla …”
   return found.sort((a, b) => (vocab.get(b) ?? 0) - (vocab.get(a) ?? 0));
 }
 
 type Token = { raw: string; groups: Group[]; fixes: string[] };
 
-/** Ile punktów daje słowo z zapytania danemu findowi (0 = nie pasuje) */
 function scoreToken(t: Token, item: Indexed) {
   let score = 0;
-  // Krótkie znane słowa („dres”, „but”, „pas”, „cap”) muszą pasować w całości, żeby „dres” nie łapał „dress”
   const exact = t.groups.length > 0 && t.raw.length < 5;
   if (item.words.some((w) => (exact ? w === t.raw : w.startsWith(t.raw)))) score = 3;
   else if (!exact && t.raw.length >= 4 && item.compact.includes(t.raw)) score = 2;
@@ -194,7 +167,6 @@ export function searchFinds<T extends Searchable>(index: SearchIndex, finds: T[]
   const known = (w: string) => groupsOf(w).length > 0 || vocab.some((v) => v.startsWith(w));
   const tokens: Token[] = raw.map((w) => {
     const fixes = known(w) ? [] : corrections(w, index.vocab);
-    // Grupy także dla poprawionych słów („kosulka” → koszulka → grupa koszulek)
     return { raw: w, groups: [...groupsOf(w), ...fixes.flatMap(groupsOf)], fixes };
   });
 
@@ -222,7 +194,6 @@ export function searchFinds<T extends Searchable>(index: SearchIndex, finds: T[]
     matching = scored.filter((s) => s.hits === most);
     relaxed = matching.length > 0;
   }
-  // sort jest stabilny, więc przy równej trafności zostaje kolejność, w jakiej findy przyszły
   matching.sort((a, b) => b.score - a.score);
   return { items: matching.map((s) => s.find), corrected, relaxed };
 }

@@ -7,16 +7,10 @@ import { isCronRequest } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
-// Ile czasu jedno uruchomienie może sprawdzać ceny (z zapasem do limitu funkcji)
 const BUDGET_MS = 45_000;
 const CONCURRENCY = 4;
 const CURSOR = "px:v1:cursor";
 
-/**
- * Codzienna synchronizacja cen z agentem (vercel.json → crons): kolejne aukcje z katalogu po kolei, ile się
- * zmieści w czasie. Następne uruchomienie zaczyna tam, gdzie skończyło poprzednie, więc ceny odświeżają się
- * także dla ofert, w które nikt nie wchodzi. Vercel wysyła nagłówek z CRON_SECRET.
- */
 export async function GET(request: Request) {
   if (!isCronRequest(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });

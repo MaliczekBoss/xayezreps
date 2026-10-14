@@ -24,7 +24,6 @@ function send(data: Record<string, unknown>) {
   }
 }
 
-/** Sesja trwa, dopóki między odsłonami nie minie 30 minut */
 function touchSession(): { session: Session; isNew: boolean } {
   const now = Date.now();
   let saved: Session | null = null;
@@ -49,7 +48,6 @@ function touchSession(): { session: Session; isNew: boolean } {
 
 type Active = { since: number; pending: number };
 
-/** Czas, w którym karta była widoczna, od ostatniego zgłoszenia (w sekundach) */
 function takeDuration(a: Active) {
   const now = Date.now();
   if (a.since) a.pending += now - a.since;
@@ -59,7 +57,6 @@ function takeDuration(a: Active) {
   return seconds;
 }
 
-/** Licznik odwiedzin bez ciasteczek: odsłony, czas aktywności na stronie i kliknięcia do agentów */
 export function Analytics() {
   const pathname = usePathname();
   const lastPath = useRef<string | null>(null);

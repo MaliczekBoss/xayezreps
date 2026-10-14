@@ -15,7 +15,6 @@ import { Flag } from "./flag";
 import { Modal } from "./modal";
 import { ProductImage } from "./product-image";
 
-/** Ustawione przy zamknięciu powitania; bez niego okno pokazuje się przy wejściu na stronę */
 export const WELCOME_KEY = "xayez-welcome-v1";
 const DELAY_MS = 900;
 
@@ -24,14 +23,12 @@ export type WelcomeSample = { name: string; image: string; pricePln: number; sou
 const STEPS = ["agent", "lang", "currency"] as const;
 type Step = (typeof STEPS)[number];
 
-// Krok wjeżdża z kierunku, w którym idziemy (dalej – z prawej, wstecz – z lewej)
 const stepVariants = {
   enter: (dir: number) => ({ opacity: 0, x: dir * 24 }),
   center: { opacity: 1, x: 0 },
   exit: (dir: number) => ({ opacity: 0, x: dir * -24 }),
 };
 
-/** Znak XR rysowany kreska po kresce przy otwarciu okna */
 function DrawnMark({ className = "" }: { className?: string }) {
   const reduce = useReducedMotion();
   const fill = (delay: number) =>
@@ -55,7 +52,6 @@ function DrawnMark({ className = "" }: { className?: string }) {
   );
 }
 
-/** Wartość, która przy zmianie wjeżdża od dołu – cena i nazwa agenta w podglądzie */
 function Swap({ id, children, className = "" }: { id: string; children: ReactNode; className?: string }) {
   const reduce = useReducedMotion();
   return (
@@ -76,10 +72,6 @@ function Swap({ id, children, className = "" }: { id: string; children: ReactNod
   );
 }
 
-/**
- * Powitanie przy pierwszym wejściu: trzy kroki (agent, język, waluta), a obok prawdziwy find,
- * który od razu pokazuje skutek wyboru – cenę w nowej walucie i przycisk do wybranego agenta.
- */
 export function Welcome({ sample }: { sample: WelcomeSample | null }) {
   const f = useFormat();
   const { t, settings } = f;
@@ -98,7 +90,6 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
     }
     const timer = window.setTimeout(() => setOpen(true), DELAY_MS);
     return () => window.clearTimeout(timer);
-    // Sprawdzamy tylko przy pierwszym wejściu, nie przy każdej zmianie strony
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -133,7 +124,6 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
   const current: Step = STEPS[step];
   const last = step === STEPS.length - 1;
   const buyUrl = sample ? f.buyUrl(sample.source) : null;
-  // Adres pokazujemy razem z kodem polecającym (ref, affcode…), a długi parametr z linkiem do sklepu skracamy
   const buyLink = (() => {
     if (!buyUrl) return null;
     const u = new URL(buyUrl);
@@ -221,13 +211,11 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
 
   return (
     <Modal open={open} onClose={skip} labelledBy="welcome-title" className="max-w-[52rem]">
-      {/* Fokus na całym oknie, a nie na pierwszym przycisku („Pomiń”), żeby nie świecił obramowaniem */}
       <div
         tabIndex={-1}
         autoFocus
         className="grid overflow-hidden rounded-[1.75rem] border border-line-strong bg-card shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] outline-none md:grid-cols-[19rem_minmax(0,1fr)]"
       >
-        {/* Podgląd: prawdziwy find, który zmienia się razem z wyborem */}
         <aside className="relative flex flex-col gap-4 border-b border-line bg-bg p-5 md:border-b-0 md:border-r md:p-6">
           <div className="flex items-center gap-2 text-fg">
             {open && <DrawnMark className="h-5 w-auto" />}
@@ -268,7 +256,6 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
           )}
         </aside>
 
-        {/* Kroki */}
         <div className="flex min-h-[26rem] flex-col p-5 sm:p-6 md:p-7">
           <div className="flex items-center gap-3">
             <p className="text-xs text-muted tabular">{t("welcome.step", { n: step + 1, total: STEPS.length })}</p>

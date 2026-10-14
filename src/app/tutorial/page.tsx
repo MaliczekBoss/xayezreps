@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 
 export default async function TutorialPage() {
   const [finds, qcIndex] = await Promise.all([getFinds(), getQcIndex()]);
-  // Przykład do poradnika: popularne buty z kilkoma zdjęciami QC, a gdy ich brak – dowolny find z QC
   const pool = withQc(sortPopular(finds), qcIndex).filter((f) => f.image && f.pricePln > 0 && f.qcCover && (f.qc ?? 0) >= 4);
   const pick = pool.find((f) => f.category === "Buty") ?? pool[0];
   const example: GuideExample | null = pick

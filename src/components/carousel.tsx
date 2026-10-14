@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useFormat } from "@/lib/use-format";
 
-/** Szerokość karty w rzędzie, jak na cadenreps */
 export const cardSlot = "w-[176px] shrink-0 snap-start sm:w-[200px] md:w-[218px]";
 
 type CarouselProps = {
@@ -12,7 +11,6 @@ type CarouselProps = {
   children: ReactNode;
 };
 
-/** Poziomy rząd kart. Na telefonie przewija się palcem, na komputerze strzałkami na krawędziach. */
 export function Carousel({ label, children }: CarouselProps) {
   const { t } = useFormat();
   const track = useRef<HTMLUListElement>(null);

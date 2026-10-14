@@ -11,10 +11,8 @@ type ProductRowProps = {
   id: string;
   href: string;
   items: Find[];
-  /** Tytuł ze słownika albo nazwa kategorii */
   title?: DictKey;
   category?: Category;
-  /** Produkty z plakietką „Nowy” */
   newIds?: string[];
 };
 

@@ -36,7 +36,6 @@ type Metric = {
   value: (t: StatsReport["totals"]) => number;
   bucket: (b: Bucket) => number;
   format: (n: number) => string;
-  /** Spadek jest dobry (np. odrzucenia) */
   lowerIsBetter?: boolean;
 };
 
@@ -64,7 +63,6 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
 
   const router = useRouter();
 
-  // Stan ładowania ustawiają przyciski; tu tylko pobieramy dane i zapisujemy wynik w callbackach
   const load = useCallback(
     (r: Range) =>
       fetch(`/api/admin/stats?range=${r}`, { cache: "no-store" })
@@ -141,7 +139,6 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
       )}
       {error && <p className="mt-4 rounded-xl border border-line bg-card px-4 py-3 text-sm text-muted">Nie udało się pobrać statystyk. Spróbujemy ponownie za chwilę.</p>}
 
-      {/* Kafelki */}
       <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
         {metrics.map((m) => (
           <StatTile key={m.label} metric={m} report={report} period={period.period} />
@@ -149,7 +146,6 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
         <LiveTile report={report} />
       </div>
 
-      {/* Wykres główny */}
       <section aria-labelledby="chart-title" className="mt-5 rounded-xl border border-line bg-card p-4 sm:p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 id="chart-title" className="font-semibold">
@@ -169,7 +165,6 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
         {report ? <LineChart report={report} /> : <div className="mt-4 h-64 animate-pulse rounded-lg bg-bg" />}
       </section>
 
-      {/* Rozbicia */}
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <Breakdown
           title="Najczęściej oglądane"
@@ -215,8 +210,6 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
     </div>
   );
 }
-
-/* ---------- Kafelki ---------- */
 
 function Change({ cur, prev, lowerIsBetter }: { cur: number; prev: number; lowerIsBetter?: boolean }) {
   if (!prev && !cur) return null;
@@ -314,8 +307,6 @@ function SourceMark({ id, small = false }: { id: string; small?: boolean }) {
   );
 }
 
-/* ---------- Wykres ---------- */
-
 const pad = { top: 12, right: 12, bottom: 28, left: 40 };
 
 function LineChart({ report }: { report: StatsReport }) {
@@ -346,7 +337,6 @@ function LineChart({ report }: { report: StatsReport }) {
 
   const label = (key: string) =>
     report.granularity === "hour" ? `${key.slice(8, 10)}:00` : `${Number(key.slice(6, 8))}.${key.slice(4, 6)}`;
-  // Tyle podpisów osi X, ile zmieści się bez nachodzenia (ok. 56 px na podpis)
   const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((width - pad.left - pad.right) / 56))));
   const labelled = new Set(Array.from({ length: n }, (_, i) => i).filter((i) => i % step === 0));
   if (!labelled.has(n - 1)) {
@@ -417,7 +407,6 @@ function LineChart({ report }: { report: StatsReport }) {
   );
 }
 
-/** Okrągła skala osi Y: krok 1, 2 albo 5 × 10ⁿ, około 4–5 linii */
 function niceScale(v: number) {
   const rough = v / 4;
   const pow = 10 ** Math.floor(Math.log10(rough));
@@ -425,8 +414,6 @@ function niceScale(v: number) {
   const step = Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow);
   return { step, max: Math.ceil(v / step) * step };
 }
-
-/* ---------- Rozbicia ---------- */
 
 function pageLabel(path: string, names: Record<string, string>) {
   if (path === "/") return "Strona główna";
@@ -493,7 +480,6 @@ function Breakdown({
   );
 }
 
-/** Wyłączenie liczenia własnych wizyt na tym urządzeniu */
 const readNoTrack = () => {
   try {
     return localStorage.getItem(NO_TRACK_KEY) === "1";

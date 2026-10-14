@@ -1,5 +1,3 @@
-// Reguły statystyk wspólne dla przeglądarki i serwera: źródła ruchu, ścieżki, agenci.
-
 export type SourceId =
   | "google"
   | "bing"
@@ -47,7 +45,6 @@ const HOSTS: [SourceId, RegExp][] = [
   ["telegram", /(^|\.)(t\.me|telegram\.org)$/],
 ];
 
-/** Skąd przyszła sesja: najpierw utm_source, potem domena z document.referrer */
 export function classifySource(referrer: string, utm: string | null, ownHost: string): SourceId {
   const tag = utm?.trim().toLowerCase();
   if (tag) {
@@ -67,7 +64,6 @@ export function classifySource(referrer: string, utm: string | null, ownHost: st
   return HOSTS.find(([, re]) => re.test(host))?.[0] ?? "other";
 }
 
-// Ścieżki, które liczymy osobno; wszystko inne trafia do „/inne”, żeby nikt nie zaśmiecił statystyk
 const PATHS = /^\/(?:finds|favorites|outfits(?:\/[a-z0-9-]{1,40})?|tools(?:\/(?:link|qc|tracking|ship|photo))?|sellers(?:\/[a-z0-9-]{1,60})?|tutorial|product\/[a-z0-9-]{1,40})?$/i;
 
 export function normalizePath(path: string) {

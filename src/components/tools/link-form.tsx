@@ -11,13 +11,11 @@ type LinkFormProps = {
   submitLabel: string;
   defaultValue?: string;
   icon: ReactNode;
-  /** Dodatkowe sprawdzenie przed wysłaniem; zwraca komunikat błędu albo null */
   validate?: (value: string) => string | null;
   onSubmit: (value: string) => void;
   inputMode?: "url" | "text";
 };
 
-/** Pole do wklejenia linku albo numeru z przyciskiem „Wklej” i wysyłką */
 export function LinkForm({ id, label, placeholder, submitLabel, defaultValue = "", icon, validate, onSubmit, inputMode = "url" }: LinkFormProps) {
   const { t } = useFormat();
   const [value, setValue] = useState(defaultValue);

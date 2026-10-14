@@ -47,7 +47,6 @@ const SHAPES: Record<string, string> = {
 
 type Cell = { char: string; dot: boolean };
 
-/** Rozbija tekst na komórki wyświetlacza; kropka zapala punkt dziesiętny poprzedniej cyfry */
 function toCells(text: string, digits: number): Cell[] {
   const cells: Cell[] = [];
   for (const char of text) {
@@ -60,13 +59,11 @@ function toCells(text: string, digits: number): Cell[] {
 }
 
 type SevenSegmentProps = {
-  /** Cyfry do wyświetlenia, np. "850" albo "3.40" */
   text: string;
   digits?: number;
   className?: string;
 };
 
-/** Wyświetlacz LCD wagi: zgaszone segmenty zostają lekko widoczne, jak w prawdziwym ciekłym krysztale. */
 export function SevenSegment({ text, digits = 5, className }: SevenSegmentProps) {
   const cells = toCells(text, digits);
 

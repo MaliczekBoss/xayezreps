@@ -1,13 +1,9 @@
 import type { Find } from "./finds";
 
-// Outfit: zdjęcie stylizacji (opcjonalnie z ponumerowanymi punktami na częściach), każda część to find z katalogu.
-
 export type OutfitPart = {
   findId: string;
-  /** Pozycja punktu na zdjęciu w procentach (0–100); bez niej część nie ma punktu na zdjęciu */
   x?: number;
   y?: number;
-  /** Własna nazwa części, np. „Czapka Chrome Hearts” – domyślnie nazwa findu */
   label?: string;
 };
 
@@ -16,9 +12,7 @@ export type OutfitGender = "girl" | "boy";
 export type Outfit = {
   id: string;
   title: string;
-  /** Kto nosi albo kto ułożył zestaw */
   author: string;
-  /** Zdjęcie stylizacji; puste = flat lay ze zdjęć części */
   image: string;
   gender?: OutfitGender;
   parts: OutfitPart[];
@@ -32,7 +26,6 @@ export const hasPoint = (p: OutfitPart): p is OutfitPart & { x: number; y: numbe
 export type ResolvedPart = OutfitPart & { find: Find };
 export type ResolvedOutfit = Omit<Outfit, "parts"> & { parts: ResolvedPart[] };
 
-/** Lekka wersja outfitu na listy (bez pełnych danych produktów) */
 export type OutfitSummary = {
   id: string;
   title: string;
@@ -40,11 +33,9 @@ export type OutfitSummary = {
   gender: OutfitGender;
   createdAt: string;
   total: number;
-  /** Zdjęcia i kategorie części – do podglądu i do flat lay, gdy outfit nie ma zdjęcia */
   items: { image: string; category: string }[];
 };
 
-/** Podpina findy do części outfitu; części z usuniętymi findami pomijamy */
 export function resolveOutfits(outfits: Outfit[], finds: Find[]): ResolvedOutfit[] {
   const byId = new Map(finds.map((f) => [f.id, f]));
   return outfits

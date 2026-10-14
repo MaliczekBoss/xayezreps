@@ -12,33 +12,27 @@ import { ProductImage } from "./product-image";
 import type { ToolPreviews } from "./tools";
 
 const ROTATE_MS = 5500;
-// Ile pikseli trzeba przeciągnąć kartę, żeby ją przełożyć
 const SWIPE_PX = 70;
-// Jak długo wierzchnia karta odlatuje w bok, zanim schowa się pod spód
 const FLY_MS = 320;
 
 type Slide = {
   id: string;
-  /** Tło i kolor tekstu banera */
   theme: string;
   chip: ReactNode;
   title: string;
   cta: string;
   href: string;
   external: boolean;
-  /** Ciemny przycisk na jasnym tle */
   darkCta?: boolean;
   art: ReactNode;
 };
 
-// Ułożenie kart w wachlarzu: 0 – na wierzchu, dalej coraz głębiej; ostatnia schowana pod spodem
 const POSES: TargetAndTransition[] = [
   { x: "0%", y: "0%", rotate: 0, scale: 1, opacity: 1 },
   { x: "-1.5%", y: "7%", rotate: -3, scale: 0.95, opacity: 1 },
   { x: "1.5%", y: "13%", rotate: 2.5, scale: 0.9, opacity: 1 },
   { x: "0%", y: "16%", rotate: 0, scale: 0.86, opacity: 0 },
 ];
-// Karta przekładana jak zdjęcie: odlatuje w bok (dalej – w prawo, wstecz – wychodzi spod spodu w lewo)
 const FLY_OUT: TargetAndTransition = { x: "75%", y: "-4%", rotate: 9, scale: 1, opacity: 1 };
 const FLY_BACK: TargetAndTransition = { x: "-75%", y: "-4%", rotate: -9, scale: 1, opacity: 1 };
 
@@ -46,10 +40,6 @@ const Thumb = ({ src, className = "" }: { src?: string; className?: string }) =>
   <span className={`relative block overflow-hidden ${className}`}>{src && <ProductImage src={src} sizes="10rem" />}</span>
 );
 
-/**
- * Banery w hero jako wachlarz kart: co kilka sekund wierzchnia karta odlatuje w bok i chowa się pod spód,
- * jak przy przeglądaniu zdjęć. Kartę można przerzucić palcem albo myszką, są też strzałki i kropki.
- */
 export function HeroBanners({ data }: { data: ToolPreviews }) {
   const f = useFormat();
   const { t } = f;
@@ -59,7 +49,6 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
   const [paused, setPaused] = useState(false);
   const frontRef = useRef(0);
   const busy = useRef(false);
-  // Po przeciągnięciu karty nie otwieramy linku, który leży pod palcem
   const dragged = useRef(false);
   const [first, second, third] = data.products;
 
@@ -149,7 +138,6 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
     [n, reduce],
   );
 
-  // Odliczanie startuje od nowa po każdym przełożeniu, także ręcznym
   useEffect(() => {
     if (reduce || paused) return;
     const timer = window.setTimeout(() => go(1), ROTATE_MS);
@@ -169,7 +157,6 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
           const isFlying = flying?.i === i;
           const active = depth === 0 && !isFlying;
           const pose = isFlying ? (flying.dir === 1 ? FLY_OUT : FLY_BACK) : POSES[Math.min(depth, POSES.length - 1)];
-          // Odlatująca karta jest nad wszystkimi, a wracająca spod spodu – pod nimi, dopóki nie wyjdzie z boku
           const zIndex = isFlying ? (flying.dir === 1 ? 50 : 5) : 40 - depth * 10;
           return (
             <motion.div
@@ -229,7 +216,6 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
                     {s.external && <span className="sr-only">, {t("newTab")}</span>}
                   </Link>
                 </div>
-                {/* Karty pod spodem są przyciemnione, żeby wierzchnia była wyraźna */}
                 <span
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-20 bg-[#111112] transition-opacity duration-500"
@@ -268,9 +254,6 @@ export function HeroBanners({ data }: { data: ToolPreviews }) {
   );
 }
 
-/* ---------- Ilustracje ---------- */
-
-/** Dwa kupony z ząbkowaną krawędzią: −40% z kodem i 10 kg za 350 zł */
 function CouponsArt({ code, coupon }: { code: string; coupon: string }) {
   const scallop = "[mask-image:radial-gradient(circle_at_7px_100%,transparent_5px,#000_5.5px)] [mask-size:14px_100%] [mask-repeat:repeat-x]";
   return (
@@ -299,7 +282,6 @@ function CouponsArt({ code, coupon }: { code: string; coupon: string }) {
   );
 }
 
-/** Karty kanałów z Discorda z prawdziwymi findami i zdjęciami QC – bez wymyślonych wiadomości */
 function DiscordArt({ products, qc, newLabel }: { products: ToolPreviews["products"]; qc: string[]; newLabel: string }) {
   return (
     <div className="absolute inset-0">
@@ -331,7 +313,6 @@ function DiscordArt({ products, qc, newLabel }: { products: ToolPreviews["produc
   );
 }
 
-/** Dwie karty sklepów z prawdziwymi produktami */
 function SellersArt({ sellers, label, count }: { sellers: ToolPreviews["sellers"]; label: string; count: (n: number) => string }) {
   const card = (s: ToolPreviews["sellers"][number] | undefined, className: string) =>
     s && (
@@ -360,7 +341,6 @@ function SellersArt({ sellers, label, count }: { sellers: ToolPreviews["sellers"
   );
 }
 
-/** Zdjęcie w ramce skanera i wyniki AI */
 function PhotoArt({ items }: { items: ToolPreviews["products"] }) {
   return (
     <div className="absolute inset-0 line-grid">

@@ -1,5 +1,3 @@
-// Teksty interfejsu w 7 językach. Polski jest źródłowy – inne języki muszą mieć te same klucze.
-
 export type Plural = { one: string; few?: string; many?: string; other: string };
 type Entry = string | Plural;
 

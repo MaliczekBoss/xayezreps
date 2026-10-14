@@ -10,10 +10,6 @@ import { SectionTitle } from "./ui";
 
 const qcHref = (url: string) => `${site.routes.qcFinder}?url=${encodeURIComponent(url)}`;
 
-/**
- * Ściana zdjęć QC prosto z magazynu: pas przez całą szerokość ekranu, który powoli płynie
- * i staje po najechaniu. Przy ograniczonym ruchu da się go po prostu przewijać.
- */
 export function QcFeed({ entries }: { entries: QcEntry[] }) {
   const f = useFormat();
   const { t } = f;
@@ -49,7 +45,6 @@ export function QcFeed({ entries }: { entries: QcEntry[] }) {
       <div className="mt-5 overflow-x-auto [mask-image:linear-gradient(to_right,transparent,#000_4%,#000_96%,transparent)] [scrollbar-width:none] motion-safe:overflow-hidden [&::-webkit-scrollbar]:hidden">
         <ul aria-label={heading} className="marquee flex w-max">
           {entries.map((e) => tile(e, false))}
-          {/* Kopia taśmy – dzięki niej przesuwanie się zapętla bez przeskoku */}
           {entries.map((e) => tile(e, true))}
         </ul>
       </div>

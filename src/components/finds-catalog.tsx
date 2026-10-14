@@ -23,10 +23,8 @@ const SORTS: Sort[] = ["random", "popular", "newest", "priceAsc", "priceDesc", "
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
-/** seed – ziarno kolejności „Losowo” (puste przy innym sortowaniu) */
 type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean; seed: string };
 
-/** Klucz zestawu filtrów: te same filtry = ta sama porcja katalogu */
 const keyOf = ({ q, category, batch, sort, qcOnly, seed }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly, seed]);
 
 const urlOf = ({ q, category, batch, sort, qcOnly, seed }: Filters, offset = 0) => {
@@ -41,13 +39,8 @@ const urlOf = ({ q, category, batch, sort, qcOnly, seed }: Filters, offset = 0) 
   return `/api/finds?${next}`;
 };
 
-// Ile pierwszych zdjęć z kategorii pobieramy zawczasu, gdy ktoś najedzie na jej zakładkę
 const PRELOAD_IMAGES = 10;
 
-/**
- * Katalog: pierwszą porcję renderuje serwer dla filtrów z adresu, a każdą zmianę (wpisywanie, kategoria,
- * batch, sortowanie, „Pokaż więcej”) dociąga z /api/finds. Filtry zmieniają adres bez przeładowania strony.
- */
 export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets; initial: CatalogPage; seed: string }) {
   const f = useFormat();
   const { t } = f;
@@ -63,7 +56,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
   const sort: Sort = validSort ?? "random";
   const qcOnly = params.get("qc") === "1";
   const sheet = params.get("view") === "sheet";
-  // Bez wybranego sortowania jest losowo, chyba że ktoś coś wpisał – wtedy liczy się trafność
   const randomOrder = validSort === "random" || (!validSort && !deferredQuery);
 
   const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly, seed: randomOrder ? seed : "" };
@@ -72,7 +64,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
   const [loading, setLoading] = useState(false);
   const loadedKey = useRef(data.key);
 
-  // Porcje pobrane w tej wizycie (także zawczasu): powrót do kategorii albo kliknięcie w nią jest natychmiastowe
   const pending = useRef(new Map<string, Promise<CatalogPage>>());
   const ready = useRef(new Map<string, CatalogPage>([[data.key, initial]]));
 
@@ -90,7 +81,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
     return promise;
   };
 
-  /** Pobiera kategorię zawczasu; z images – także jej pierwsze zdjęcia (po najechaniu myszką) */
   const prefetchCategory = (c: string, images = false) => {
     const promise = getPage({ ...filters, category: c });
     if (images)
@@ -99,7 +89,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
         .catch(() => {});
   };
 
-  // Nowe filtry: pokazujemy porcję od razu, jeśli już ją mamy, a jeśli nie – dociągamy (przy wpisywaniu z małym opóźnieniem)
   useEffect(() => {
     if (loadedKey.current === filterKey) return;
     const cached = ready.current.get(filterKey);
@@ -127,11 +116,9 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
       cancelled = true;
       window.clearTimeout(timer);
     };
-    // getPage i filters wynikają z tych samych wartości co filterKey
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey]);
 
-  // Gdy strona już stoi, po cichu pobieramy wszystkie kategorie z obecnymi filtrami, żeby przełączanie było natychmiastowe
   useEffect(() => {
     if (deferredQuery) return;
     const queue = ["", ...facets.counts.map(([c]) => c)];
@@ -155,7 +142,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
       .finally(() => setLoading(false));
   };
 
-  // Filtry trafiają do adresu bez przeładowania (strona nie renderuje się od nowa na serwerze)
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
     if (value) next.set(key, value);
@@ -348,7 +334,6 @@ export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets;
   );
 }
 
-/** Widok arkusza: zwarta tabela findów z ceną i linkiem do agenta, jak w spreadsheetach */
 function FindsSheet({ items }: { items: Find[] }) {
   const f = useFormat();
   const { t } = f;
@@ -428,7 +413,6 @@ function FindsSheet({ items }: { items: Find[] }) {
   );
 }
 
-/** Cena w tabeli – synchronizowana z agentem jak na kartach */
 function LivePrice({ find }: { find: Find }) {
   const f = useFormat();
   const pricePln = useLivePricePln(find);

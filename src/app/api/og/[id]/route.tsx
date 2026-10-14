@@ -19,10 +19,8 @@ const qcLabel = (n: number) => {
 
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
-// Zdjęcia spoza naszej strony pobieramy tylko z tych serwerów
 const IMAGE_HOSTS = new Set(["si.geilicdn.com", "img.alicdn.com", ...(IMAGES_URL ? [new URL(IMAGES_URL).hostname] : [])]);
 
-/** Zdjęcie produktu jako PNG (Satori nie czyta WEBP), przycięte do samego produktu, żeby cień trafił pod spód */
 async function productPng(image: string, origin: string) {
   if (!image) return null;
   try {
@@ -38,7 +36,6 @@ async function productPng(image: string, origin: string) {
   }
 }
 
-/** Grafika do podglądu linku produktu (1200×630): produkt bez tła, nazwa, cena, zdjęcia QC i kod USFans */
 export async function GET(request: Request, ctx: RouteContext<"/api/og/[id]">) {
   const limited = await limitRequest(request, "og", 300, 600);
   if (limited) return limited;
@@ -55,7 +52,6 @@ export async function GET(request: Request, ctx: RouteContext<"/api/og/[id]">) {
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", background: "#111112", color: "#ececee", fontFamily: "Geist" }}>
-        {/* Produkt na grafitowym tle z delikatnym światłem i cieniem pod spodem */}
         <div
           style={{
             width: 600,
@@ -69,9 +65,8 @@ export async function GET(request: Request, ctx: RouteContext<"/api/og/[id]">) {
         >
           {photo ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- grafika renderowana przez Satori, nie w przeglądarce */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.src} width={photo.width} height={photo.height} alt="" />
-              {/* Cień tuż pod produktem */}
               <div
                 style={{
                   marginTop: -18,

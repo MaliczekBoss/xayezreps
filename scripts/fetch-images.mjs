@@ -1,7 +1,3 @@
-// Pobiera oryginalne zdjęcia produktów do folderu roboczego, żeby potem usunąć z nich tło.
-// Lista to plik JSON [{ id, url }]. Plik już pobrany jest pomijany, więc można przerwać i puścić ponownie.
-// Uruchom: node scripts/fetch-images.mjs <lista.json> <folder>
-
 import { mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -11,7 +7,6 @@ if (!listFile || !outDir) {
   process.exit(1);
 }
 
-// Serwer z katalogu to darmowy adres deweloperski, więc pobieramy spokojnie: kilka naraz, z krótką przerwą
 const CONCURRENCY = 6;
 const PAUSE_MS = 60;
 const HEADERS = { "User-Agent": "xayezreps.pl image import (+https://xayezreps.pl)" };

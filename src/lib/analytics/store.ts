@@ -1,12 +1,7 @@
 import "server-only";
 
-// Magazyn statystyk: Upstash Redis przez REST, a bez konfiguracji – pamięć procesu (tylko do testów lokalnych).
-// Wszystkie komendy jednej operacji idą jednym skryptem Lua, więc wejście na stronę to jedna komenda w rozliczeniu Upstash.
-
-/** `when`: wykonaj tylko, jeśli komenda o tym indeksie zwróciła 1 (np. SADD dodał nowy element) */
 export type Cmd = { op: string; keys: string[]; args?: (string | number)[]; when?: number };
 
-/** Dane dostępowe Upstash. Vercel pozwala nadać zmiennym własny prefiks (np. STORAGE_REST_API_URL), więc szukamy każdego. */
 function findRedisEnv() {
   const env = process.env;
   const pairs: [string, string][] = [
@@ -26,7 +21,6 @@ const { url: URL_ENV, token: TOKEN_ENV } = findRedisEnv();
 
 export const storageKind = (): "redis" | "memory" => (URL_ENV && TOKEN_ENV ? "redis" : "memory");
 
-/** Pojedyncza komenda Redis (tylko gdy Upstash jest skonfigurowany) – do zapisu dokumentów i zdjęć */
 export async function redisCall(args: (string | number)[]): Promise<unknown> {
   if (storageKind() !== "redis") throw new Error("Upstash Redis nie jest skonfigurowany");
   const reply = (await rest("", args.map(String))) as { result?: unknown; error?: string };
@@ -39,10 +33,6 @@ export async function run(cmds: Cmd[]): Promise<unknown[]> {
   return storageKind() === "redis" ? runRedis(cmds) : runMemory(cmds);
 }
 
-/* ---------- Upstash Redis ---------- */
-
-// Wykonuje listę komend podaną w ARGV[1]: [warunek, op, liczba kluczy, indeksy kluczy…, argumenty…].
-// Warunek 0 = zawsze, n = tylko gdy komenda n zwróciła 1.
 const SCRIPT = `
 local cmds = cjson.decode(ARGV[1])
 local out = {}
@@ -92,15 +82,12 @@ async function runRedis(cmds: Cmd[]): Promise<unknown[]> {
     ]);
     const reply = (await rest("", ["EVAL", SCRIPT, String(keys.length), ...keys, JSON.stringify(encoded)])) as { result?: unknown[]; error?: string };
     if (Array.isArray(reply.result)) return reply.result;
-    // Gdyby skrypty Lua były niedostępne, przechodzimy na zwykły pipeline
     console.error("[stats] EVAL nie działa, przechodzę na pipeline:", reply.error);
     evalBroken = true;
   }
   const reply = (await rest("/pipeline", cmds.map((c) => [c.op, ...c.keys, ...(c.args ?? []).map(String)]))) as { result?: unknown }[];
   return Array.isArray(reply) ? reply.map((r) => r?.result ?? null) : [];
 }
-
-/* ---------- Pamięć (dev) ---------- */
 
 type Mem = { hashes: Map<string, Map<string, number>>; hll: Map<string, Set<string>>; zsets: Map<string, Map<string, number>> };
 
@@ -177,7 +164,6 @@ function memCommand(op: string, keys: string[], args: (string | number)[]): unkn
   }
 }
 
-/** Spłaszczona odpowiedź HGETALL na obiekt liczb */
 export function toCounts(reply: unknown): Record<string, number> {
   const out: Record<string, number> = {};
   if (!Array.isArray(reply)) return out;

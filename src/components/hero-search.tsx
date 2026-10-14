@@ -11,16 +11,10 @@ import { notify } from "@/lib/notify";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 
-// Przykłady, które podpowiedź wpisuje i kasuje po kolei, kursywą jak w nagłówku
 const EXAMPLES = ["Jordan 4", "Chrome Hearts", "Nike Tech Fleece", "Stone Island", "Moncler"];
 
 type Typing = { i: number; n: number; dir: 1 | -1 | 0 };
 
-/**
- * Szukajka z hero: tekst szuka findów, a link z Weidiana, Taobao, 1688 albo od innego agenta
- * od razu zamienia na link do wybranego agenta. Zamiast skrzynki – duży tekst na linii, która
- * po kliknięciu wypełnia się od lewej, a podpowiedź sama wpisuje kolejne przykłady.
- */
 export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const f = useFormat();
   const { t } = f;
@@ -28,10 +22,8 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const [value, setValue] = useState("");
   const [focused, setFocused] = useState(false);
   const still = Boolean(useReducedMotion());
-  // Przy wejściu na stronę pierwszy przykład wpisuje się od zera, przy powrocie stoi gotowy
   const [typing, setTyping] = useState<Typing>(() => (typeIn ? { i: 0, n: 0, dir: 1 } : { i: 0, n: EXAMPLES[0].length, dir: 0 }));
 
-  // Pisanie, chwila przerwy, kasowanie, następny przykład; stoi, gdy ktoś pisze albo ma kursor w polu
   useEffect(() => {
     if (still || focused || value) return;
     const word = EXAMPLES[typing.i];
@@ -59,7 +51,6 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
   const source = parseSource(value);
   const converted = source ? f.buyUrl(source) : null;
 
-  // Po kliknięciu strzałka wystrzeliwuje w prawo; strona zmienia się, gdy już wylatuje
   const [zip, setZip] = useState(0);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -96,7 +87,6 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
             spellCheck={false}
             className="size-full bg-transparent pl-1 text-[1.1875rem] tracking-[-0.01em] text-fg focus:outline-none sm:text-[1.3125rem]"
           />
-          {/* Podpowiedź zamiast placeholdera, żeby przykłady mogły mieć własną czcionkę i kursor */}
           {!value && (
             <span
               aria-hidden="true"
@@ -122,7 +112,6 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
           className="group/go grid size-11 shrink-0 place-items-center rounded-full bg-fg text-bg transition-[background-color,transform] duration-150 hover:bg-white active:scale-[0.94]"
         >
           <span className="sr-only">{action}</span>
-          {/* Po najechaniu strzałka przejeżdża na wylot, po kliknięciu wystrzeliwuje (klucz zip restartuje animację) */}
           <span aria-hidden="true" className="relative block size-[18px] overflow-hidden">
             <span key={zip} className={`absolute inset-0 ${zip ? "arrow-zip" : ""}`}>
               {converted ? (
@@ -136,7 +125,6 @@ export function HeroSearch({ typeIn = false }: { typeIn?: boolean }) {
             </span>
           </span>
         </button>
-        {/* Linia pod polem: szara, a po kliknięciu wypełnia się na biało od lewej */}
         <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-line-strong" />
         <span
           aria-hidden="true"

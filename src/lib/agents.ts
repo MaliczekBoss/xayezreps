@@ -1,6 +1,3 @@
-// Agenci zakupowi i budowanie linków do produktów.
-// Formaty i kody polecające są takie jak w konwerterze na xayezreps.com.
-
 export type Platform = "weidian" | "taobao" | "1688";
 
 export type ProductSource = { platform: Platform; id: string };
@@ -11,12 +8,10 @@ export type Agent = {
   id: AgentId;
   name: string;
   logo: string;
-  /** Link rejestracyjny z kodem polecającym */
   signupUrl: string;
   productUrl: (source: ProductSource) => string;
 };
 
-/** Oryginalny link do produktu w sklepie */
 export const sourceUrl = ({ platform, id }: ProductSource) => {
   if (platform === "weidian") return `https://weidian.com/item.html?itemID=${id}`;
   if (platform === "taobao") return `https://item.taobao.com/item.htm?id=${id}`;
@@ -83,10 +78,6 @@ const PLATFORM_ALIASES: Record<string, Platform> = {
   "1": "1688",
 };
 
-/**
- * Rozpoznaje produkt z linku Weidiana, Taobao, 1688 albo z linku agenta
- * (USFans, Kakobuy, Litbuy, Oopbuy, ACbuy, Mulebuy).
- */
 export function parseSource(raw: string): ProductSource | null {
   const url = toUrl(raw.trim());
   if (!url) return null;
@@ -106,7 +97,6 @@ export function parseSource(raw: string): ProductSource | null {
     return m ? { platform: "1688", id: m[1] } : null;
   }
 
-  // Linki agentów
   if (host.endsWith("kakobuy.com")) {
     const inner = q.get("url");
     return inner ? parseSource(inner) : null;

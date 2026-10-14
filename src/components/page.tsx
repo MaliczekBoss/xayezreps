@@ -7,7 +7,6 @@ import { useFormat } from "@/lib/use-format";
 
 type Crumb = { label: string; href?: string };
 
-/** Okruszki nawigacji: Strona główna / … / bieżąca strona */
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   const { t } = useFormat();
   const all: Crumb[] = [{ label: t("page.home"), href: "/" }, ...items];
@@ -40,7 +39,6 @@ type PageHeaderProps = {
   children?: ReactNode;
 };
 
-/** Nagłówek podstrony: okruszki, duży tytuł z kursywą i opis */
 export function PageHeader({ crumbs, title, lead, children }: PageHeaderProps) {
   return (
     <header className="pb-8">

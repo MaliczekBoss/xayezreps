@@ -1,4 +1,3 @@
-/** Uproszczone flagi jako SVG – emoji flag nie działają na Windowsie */
 export function Flag({ code, className = "" }: { code: string; className?: string }) {
   return (
     <svg viewBox="0 0 24 16" className={`overflow-hidden rounded-[3px] ${className}`} aria-hidden="true" focusable="false">

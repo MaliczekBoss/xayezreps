@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools/photo" },
 };
 
-// Przykładowy odczyt pokazywany przed wrzuceniem zdjęcia: Jordan 4 Bred z katalogu
 const EXAMPLE_ID = "nenn8w2nve";
 const EXAMPLE_READ = { brand: "Jordan", model: "Jordan 4", type: "sneakers", color: "black" };
 

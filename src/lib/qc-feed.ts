@@ -13,11 +13,8 @@ export type QcEntry = {
   id: string;
   name: string;
   pricePln: number;
-  /** Liczba zdjęć QC w magazynie */
   photos: number;
-  /** Pierwsze zdjęcie QC jako okładka */
   cover: string;
-  /** Link do produktu w sklepie, otwierany w QC Finderze */
   url: string;
 };
 
@@ -25,12 +22,6 @@ const FEED_SIZE = 16;
 
 const sourceKey = (f: Pick<Find, "source">) => qcKey(f.source);
 
-/**
- * Liczba zdjęć QC i okładka dla każdej aukcji: migawka data/qc-index.json (npm run qc:snapshot)
- * uzupełniona o zdjęcia zapisane u nas (qc-store.ts) – większa liczba wygrywa, okładka jest najnowsza.
- * Nie pytamy źródeł QC przy ładowaniu strony: przy kilku tysiącach aukcji każda wolna odpowiedź
- * blokowała cały katalog. Nowe zdjęcia dopisują strona produktu i codzienny cron (/api/cron/qc).
- */
 export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   "use cache";
   cacheLife("hours");
@@ -52,13 +43,11 @@ export async function getQcIndex(): Promise<Record<string, QcInfo>> {
   return snapshot;
 }
 
-/** Aukcje z naszego katalogu (także ukryte części outfitów) – tylko dla nich zapisujemy QC */
 export async function isCatalogSource(source: ProductSource) {
   const finds = await getAllFinds();
   return finds.some((f) => qcKey(f.source) === qcKey(source));
 }
 
-/** Dokleja do findów liczbę zdjęć QC (qc) i pierwsze z nich (qcCover) */
 export function withQc(finds: Find[], index: Record<string, QcInfo>): Find[] {
   return finds.map((f) => {
     const info = index[sourceKey(f)];
@@ -66,7 +55,6 @@ export function withQc(finds: Find[], index: Record<string, QcInfo>): Find[] {
   });
 }
 
-/** Najnowsze findy, które mają prawdziwe zdjęcia QC – do rzędu na stronie głównej */
 export async function getQcFeed(): Promise<QcEntry[]> {
   const [finds, index] = await Promise.all([getFinds().then(live), getQcIndex()]);
   const seen = new Set<string>();

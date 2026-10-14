@@ -11,7 +11,6 @@ const NUMBER = /^[A-Z0-9-]{8,40}$/;
 
 type Carrier = { name: string; url: (n: string) => string };
 
-// Najczęstsi przewoźnicy paczek z Chin do Polski, rozpoznawani po formacie numeru
 const CARRIERS: { test: RegExp; carrier: Carrier }[] = [
   { test: /^[A-Z]{2}\d{9}PL$/, carrier: { name: "Poczta Polska", url: (n) => `https://emonitoring.poczta-polska.pl/?numer=${n}` } },
   { test: /^\d{24}$/, carrier: { name: "InPost", url: (n) => `https://inpost.pl/sledzenie-przesylek?number=${n}` } },
@@ -61,10 +60,6 @@ export function Tracker() {
   );
 }
 
-/**
- * Wynik dla numeru: rozpoznany przewoźnik i linki do śledzenia u niego, w 17TRACK i Parcelsapp.
- * Historii przesyłki nie pobieramy – dawało ją tylko API starej strony, które już nie działa.
- */
 function TrackResult({ number }: { number: string }) {
   const { t } = useFormat();
   const carrier = detectCarrier(number);
@@ -106,7 +101,6 @@ function TrackResult({ number }: { number: string }) {
   );
 }
 
-// Przykładowe formaty numerów, które rozpoznajemy (do tabeli pod polem)
 const FORMATS: [string, string][] = [
   ["China Post", "LP123456789CN"],
   ["Poczta Polska", "RR123456789PL"],
@@ -117,7 +111,6 @@ const FORMATS: [string, string][] = [
   ["YunExpress", "YT1234567890123456"],
 ];
 
-/** Pusty stan: jak wygląda droga paczki i jakie numery rozpoznajemy */
 function TrackingGuide() {
   const f = useFormat();
   const { t } = f;

@@ -8,9 +8,6 @@ import { live } from "./live";
 import { getSellers } from "./remote";
 import { sellerFindId, toSellerFind } from "./seller-find";
 
-// Katalog jest za duży, żeby wysyłać go w całości do przeglądarki: wyszukiwanie, filtry i sortowanie
-// liczymy tutaj, a strona dostaje tylko jedną porcję produktów.
-
 export const CATALOG_PAGE = 30;
 
 export const SORTS = ["random", "popular", "newest", "priceAsc", "priceDesc", "qc"] as const;
@@ -21,18 +18,14 @@ export type CatalogQuery = {
   category?: string;
   batch?: string;
   qcOnly?: boolean;
-  /** Bez sortowania: losowo, a przy wpisanym zapytaniu według trafności */
   sort?: CatalogSort | null;
-  /** Ziarno kolejności „Losowo”: to samo przez całą wizytę, więc kolejne porcje się nie powtarzają */
   seed?: string;
   offset?: number;
   limit?: number;
 };
 
-/** Losowe ziarno dla nowej wizyty w katalogu */
 export const newSeed = () => Math.random().toString(36).slice(2, 10);
 
-/** Kolejność „Losowo”: wymieszana według ziarna (skrót FNV-1a z id i ziarna, na koniec dokładnie wymieszany) */
 function shuffled(list: Find[], seed: string) {
   const rank = (id: string) => {
     let h = 2166136261;
@@ -50,14 +43,11 @@ function shuffled(list: Find[], seed: string) {
 export type CatalogPage = {
   items: Find[];
   total: number;
-  /** Zapytanie po poprawieniu literówek */
   corrected: string | null;
-  /** Nic nie pasowało do wszystkich słów, więc są najbliższe wyniki */
   relaxed: boolean;
 };
 
 export type CatalogFacets = {
-  /** Liczba produktów w każdej kategorii (w kolejności z finds.ts) */
   counts: [string, number][];
   all: number;
   hasQc: boolean;
@@ -65,9 +55,6 @@ export type CatalogFacets = {
 
 type Prepared = { finds: Find[]; index: SearchIndex; facets: CatalogFacets };
 
-// Indeks wyszukiwania budujemy raz na wersję katalogu, a nie przy każdym zapytaniu.
-// Przez 30 s nie sprawdzamy nawet, czy katalog się zmienił – zapytania idą prosto do gotowego indeksu.
-// Czas mierzy performance.now(): Date.now() Next blokuje przy prerenderze strony katalogu.
 const FRESH_MS = 30_000;
 let prepared: { key: string; at: number; value: Prepared } | null = null;
 
@@ -123,24 +110,20 @@ export async function queryCatalog(query: CatalogQuery): Promise<CatalogPage> {
   return { items: list.slice(offset, offset + limit), total: list.length, corrected: found.corrected, relaxed: found.relaxed };
 }
 
-/** Wyszukiwanie w katalogu, opcjonalnie w jednej kategorii (szukanie po zdjęciu) */
 export async function searchCatalog(q: string, category?: string | null) {
   const { finds, index } = await prepare();
   const base = category ? finds.filter((f) => f.category === category) : finds;
   return searchFinds(index, base, q);
 }
 
-/** Najpopularniejsze produkty z kategorii */
 export async function popularIn(category: string, limit: number, skip: Set<string>) {
   const { finds } = await prepare();
   return finds.filter((f) => f.category === category && !skip.has(f.id)).slice(0, limit);
 }
 
-/** Produkty po identyfikatorach (ulubione), w podanej kolejności */
 export async function findsByIds(ids: string[]): Promise<Find[]> {
   const { finds } = await prepare();
   const byId = new Map(finds.map((f) => [f.id, f]));
-  // Oferty sprzedawców (s-<numer aukcji>) – nie ma ich w katalogu, ale też da się je dodać do ulubionych
   if (ids.some((id) => id.startsWith("s-") && !byId.has(id))) {
     const offers: Find[] = [];
     for (const seller of await getSellers()) {
@@ -155,7 +138,6 @@ export async function findsByIds(ids: string[]): Promise<Find[]> {
   return ids.map((id) => byId.get(id)).filter((f): f is Find => Boolean(f));
 }
 
-/** Parametry zapytania z adresu (strona katalogu i API) */
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
   const sort = params.get("sort");
   const seed = params.get("seed") ?? "";

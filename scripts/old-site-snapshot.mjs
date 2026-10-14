@@ -1,10 +1,3 @@
-// Zapisuje u nas to, co strona brała na żywo ze starej strony (xayezreps.com), żeby po jej wyłączeniu nic się nie zmieniło:
-//   qc    – pełne galerie QC każdej aukcji → data/qc/<xx>.json (i liczniki w data/qc-index.json)
-//   items – szczegóły produktów (warianty, rozmiary, zdjęcia ze sklepu) → data/items/<xx>.json
-// Aukcje: katalog (data/finds.json) i produkty sprzedawców (data/sellers.json). Pliki są podzielone na 256 części
-// po skrócie aukcji (shardOf), więc strona czyta tylko jedną małą część naraz.
-// Przerwany skrypt zaczyna tam, gdzie skończył. Uruchom: npm run old-site:snapshot -- qc   (albo -- items)
-
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,7 +13,6 @@ if (mode !== "qc" && mode !== "items") {
 const root = process.cwd();
 const API = "https://xayezreps.com/api";
 const HEADERS = { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" };
-// API odpowiada 429 przy większej liczbie równoległych zapytań
 const CONCURRENCY = mode === "qc" ? 3 : 2;
 const CODE = { weidian: "WD", taobao: "TB", 1688: "AL" };
 
@@ -28,7 +20,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const shardOf = (key) => createHash("sha1").update(key).digest("hex").slice(0, 2);
 const isPhoto = (u) => typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) && u.length < 500;
 
-/** Odpowiedź API: dane, null (aukcji nie ma / brak danych) albo undefined (nie odpowiedziało – spróbujemy później) */
 async function ask(url, read) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -45,7 +36,6 @@ async function ask(url, read) {
   return undefined;
 }
 
-// Dla aukcji bez zdjęć API odpowiada 500 z pustą listą, więc patrzymy na treść, a nie na status
 const qcOf = (source) =>
   ask(`${API}/qc?url=${encodeURIComponent(sourceUrl(source))}`, (_status, d) => (Array.isArray(d?.photos) ? d.photos.filter(isPhoto) : null));
 
@@ -53,7 +43,6 @@ const itemOf = (source) =>
   ask(`${API}/item-details?platform=${CODE[source.platform]}&platformID=${encodeURIComponent(source.id)}`, (status, d) => {
     if (status >= 500) return undefined;
     if (!d || typeof d !== "object" || !d.title) return null;
-    // Tylko pola, z których korzysta strona (remote.ts → parseItemDetails)
     const strings = (list, re) => (Array.isArray(list) ? list.filter((x) => typeof x === "string" && re.test(x)) : []);
     return {
       title: String(d.title),
@@ -71,7 +60,6 @@ const itemOf = (source) =>
     };
   });
 
-// Aukcje do zapisania: katalog i produkty sprzedawców
 const finds = JSON.parse(await readFile(path.join(root, "data", "finds.json"), "utf-8"));
 const sellers = JSON.parse(await readFile(path.join(root, "data", "sellers.json"), "utf-8").catch(() => "null")) ?? (await (await fetch(`${API}/sellers`, { headers: HEADERS })).json());
 const sources = new Map();
@@ -113,7 +101,6 @@ await Promise.all(
 );
 await savePartial(partialFile, result);
 
-// Zapis w częściach; puste wyniki (aukcja bez zdjęć / bez danych) też, żeby strona wiedziała, że nie ma czego szukać
 const shards = new Map();
 for (const [key, value] of Object.entries(result).sort(([a], [b]) => a.localeCompare(b))) {
   const shard = shardOf(key);
@@ -129,7 +116,6 @@ for (const [shard, entries] of shards) {
 }
 
 if (mode === "qc") {
-  // Liczniki i okładki w katalogu z pełnych galerii (aukcje bez zdjęć zostawiamy, jak były)
   const indexFile = path.join(root, "data", "qc-index.json");
   const index = JSON.parse(await readFile(indexFile, "utf-8").catch(() => "{}"));
   for (const [key, photos] of Object.entries(result)) if (photos.length) index[key] = { count: photos.length, cover: photos[0] };

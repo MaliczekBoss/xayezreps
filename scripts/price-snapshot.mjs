@@ -1,8 +1,3 @@
-// Odświeża data/prices.json: aktualną cenę w juanach dla każdej aukcji z data/finds.json, prosto ze strony
-// agenta (USFans, api/goods/info – to samo, co widzi klient). Bierzemy najtańszy dostępny wariant.
-// Import katalogu przelicza tę cenę na złotówki kursem USFans. Uruchom: npm run prices:snapshot
-// (z --missing pobiera tylko aukcje, których jeszcze nie ma w pliku – np. po zmianie linków)
-
 import { readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { dropPartial, loadPartial, progress, savePartial } from "./lib/progress.mjs";
@@ -10,12 +5,10 @@ import { dropPartial, loadPartial, progress, savePartial } from "./lib/progress.
 const root = process.cwd();
 const CHANNEL = { 1688: 1, taobao: 2, weidian: 3 };
 const HEADERS = { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" };
-// Pytamy powoli, żeby nie obciążać agenta
 const CONCURRENCY = 3;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Najniższa cena wariantu (z promocją, jeśli jest) albo cena produktu, gdy wariantów nie ma */
 async function price({ platform, id }) {
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
@@ -29,7 +22,6 @@ async function price({ platform, id }) {
       }
       const d = await res.json().catch(() => null);
       if (d?.code !== 200 || !d.data) return null;
-      // Kwoty bywają tekstem („89.00”) – tak samo jak na stronie (remote.ts → skuPrices)
       const amount = (v) => (Number.isFinite(Number(v)) && Number(v) > 0 && v !== "" && v !== null ? Number(v) : 0);
       const skus = Array.isArray(d.data.skuList) ? d.data.skuList : [];
       const prices = skus.map((s) => amount(s.discountPrice) || amount(s.price)).filter((p) => p > 0);
@@ -46,7 +38,6 @@ const finds = JSON.parse(await readFile(path.join(root, "data", "finds.json"), "
 const file = path.join(root, "data", "prices.json");
 const previous = JSON.parse(await readFile(file, "utf-8").catch(() => "{}"));
 const onlyMissing = process.argv.includes("--missing");
-// Wynik przerwanego uruchomienia: sprawdzone aukcje pomijamy; przy --missing zostają też wszystkie dotychczasowe ceny
 const partialFile = `${file}.partial`;
 const prices = { ...(onlyMissing ? previous : {}), ...(await loadPartial(partialFile)) };
 const sources = [...new Map(finds.map((f) => [`${f.source.platform}:${f.source.id}`, f.source])).entries()].filter(([key]) => !prices[key]);

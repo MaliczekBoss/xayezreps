@@ -6,7 +6,6 @@ import { notify } from "./notify";
 import { pricing, type ShippingLineId } from "./site";
 import { formatNow } from "./use-format";
 
-/** Kopia danych produktu w paczce – paczka działa też po zmianach w katalogu */
 export type HaulFind = Pick<Find, "id" | "name" | "image" | "pricePln" | "weightGrams" | "category" | "source">;
 
 export type HaulItem = { qty: number; find: HaulFind };
@@ -58,7 +57,6 @@ function load() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) state = sanitize(JSON.parse(raw));
   } catch {
-    // Brak dostępu do localStorage (tryb prywatny itp.) – paczka działa tylko w tej karcie
   }
 }
 
@@ -111,7 +109,6 @@ const toHaulFind = (f: HaulFind): HaulFind => ({
   source: f.source,
 });
 
-/** Przycisk w wyspie: ile rzeczy i ile waży paczka */
 function haulAction() {
   const f = formatNow();
   const s = summarize(state);
@@ -175,7 +172,6 @@ export const haulActions = {
       },
     });
   },
-  /** Kilka rzeczy naraz (np. cały outfit) – jedno powiadomienie zamiast kilku */
   addMany(finds: HaulFind[], title: string) {
     if (finds.length === 0) return;
     const items = { ...state.items };
@@ -241,13 +237,11 @@ export type HaulSummary = {
   totalPln: number;
 };
 
-/** Waga z kartonem i wypełnieniem */
 export function withPackaging(itemsGrams: number) {
   if (itemsGrams === 0) return 0;
   return itemsGrams + Math.max(pricing.packagingMinGrams, Math.round(itemsGrams * pricing.packagingRatio));
 }
 
-/** Koszt wysyłki dla danej wagi i linii, w złotówkach */
 export function shippingCost(grams: number, lineId: ShippingLineId) {
   const line = pricing.lines.find((l) => l.id === lineId) ?? pricing.lines[0];
   const steps = Math.ceil(grams / pricing.stepGrams);

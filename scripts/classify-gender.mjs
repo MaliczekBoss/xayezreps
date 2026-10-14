@@ -1,9 +1,3 @@
-// Dla kogo jest produkt (filtr „Dla niego” / „Dla niej” w katalogu): model AI ocenia nazwę i kategorię
-// i zapisuje data/gender.json (id → men | women | unisex). „Dla niego” to wszystko oprócz rzeczy damskich,
-// „Dla niej” – tylko rzeczy damskie.
-// Korzysta z API zgodnego z OpenAI z .env.local (OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL).
-// Wznawia przerwaną pracę – produkty, które już mają ocenę, pomija. Uruchom: npm run gender:classify
-
 import { existsSync, readFileSync } from "node:fs";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";

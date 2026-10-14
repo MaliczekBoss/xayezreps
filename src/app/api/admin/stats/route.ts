@@ -3,7 +3,6 @@ import { isAdmin } from "@/lib/auth";
 
 const noStore = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" };
 
-/** Statystyki strony dla panelu admina: /api/admin/stats?range=today|yesterday|7d|30d */
 export async function GET(request: Request) {
   if (!(await isAdmin())) return Response.json({ error: "unauthorized" }, { status: 401, headers: noStore });
 

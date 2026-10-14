@@ -1,7 +1,3 @@
-// Zapisuje sprzedawców ze starej strony (xayezreps.com) u nas: dane do data/sellers.json, zdjęcia produktów
-// (max 720 px) do public/s/<id>.webp. Po tym podstrony sprzedawców nie potrzebują starej strony.
-// Pobrane zdjęcia są pomijane, więc można przerwać i puścić ponownie. Uruchom: npm run sellers:snapshot
-
 import { existsSync, mkdirSync } from "node:fs";
 import { rename, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -14,7 +10,6 @@ const HEADERS = { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept
 const CONCURRENCY = 8;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-// Id produktu u sprzedawcy to UUID – bezpieczna nazwa pliku; na wszelki wypadek tylko te znaki
 const fileOf = (id) => `${String(id).replace(/[^\w-]/g, "")}.webp`;
 
 async function getJson(url) {
@@ -31,7 +26,6 @@ async function getJson(url) {
   throw new Error(`Nie udało się pobrać ${url}`);
 }
 
-/** Zdjęcie produktu: max 720 px, WebP; true, gdy plik jest na dysku */
 async function saveImage(url, target) {
   if (existsSync(target)) return true;
   for (let attempt = 0; attempt < 4; attempt++) {

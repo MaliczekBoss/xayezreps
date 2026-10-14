@@ -64,7 +64,6 @@ function subscribe(listener: () => void) {
   };
 }
 
-/** Aktualne ustawienia poza Reactem, np. w powiadomieniach paczki */
 export function getSettings() {
   load();
   return state;

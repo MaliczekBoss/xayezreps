@@ -9,7 +9,6 @@ export const btnGhost =
 
 type SectionTitleProps = {
   id: string;
-  /** Pierwsza część zwykłym krojem, druga szeryfową kursywą */
   title: [string, string];
   count?: number;
   href?: string;
@@ -17,7 +16,6 @@ type SectionTitleProps = {
   children?: ReactNode;
 };
 
-/** Nagłówek rzędu: tytuł po lewej, „Zobacz wszystkie →” po prawej */
 export function SectionTitle({ id, title, count, href, linkLabel, children }: SectionTitleProps) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">

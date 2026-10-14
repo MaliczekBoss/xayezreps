@@ -42,7 +42,6 @@ const chip = (active: boolean) =>
 
 type Back = { href: string; label: string };
 
-/** back – dokąd prowadzi link „wróć” (domyślnie do katalogu; dla ofert sprzedawcy – do jego sklepu) */
 export function ProductDetail({ find, related, variants = [], back }: { find: Find; related: Find[]; variants?: Find[]; back?: Back }) {
   const f = useFormat();
   const { t } = f;
@@ -51,7 +50,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
   const link = sourceUrl(find.source);
 
   const [details, setDetails] = useState<ItemDetails | null>(null);
-  // Aktualna cena u agenta w juanach; dopóki nie przyjdzie, pokazujemy cenę z katalogu
   const [agentPriceCny, setAgentPriceCny] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(() => new Set());
   const [active, setActive] = useState(find.image);
@@ -72,7 +70,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
     return () => ctrl.abort();
   }, [link]);
 
-  // Zdjęcie z findu, zdjęcia sklepu i kilka z opisu (tabele rozmiarów); bez tych, które się nie wczytały
   const gallery = useMemo(() => {
     const all = [find.image, ...(details?.images ?? []), ...(details?.descriptionImages ?? []).slice(0, 4)];
     return [...new Set(all)].filter((src) => !failed.has(src)).slice(0, 12);
@@ -83,7 +80,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
     if (src === active) setActive(find.image);
   };
 
-  // Cena w złotówkach: aktualna u agenta przeliczona jego kursem (kursy na stronie są z USFans), a bez niej – z katalogu
   const pricePln = agentPriceCny ? cnyToPln(agentPriceCny, f.rates) : find.pricePln;
   const secondary =
     f.settings.currency === "PLN"
@@ -124,7 +120,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
       </Link>
 
       <div className="mt-5 grid items-start gap-8 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
-        {/* Galeria */}
         <div className="min-w-0">
           <button
             type="button"
@@ -155,7 +150,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
           )}
         </div>
 
-        {/* Informacje */}
         <div className="min-w-0">
           <p className="inline-flex items-center gap-1.5 text-[13px] text-muted">
             <Store aria-hidden size={14} />
@@ -320,7 +314,6 @@ export function ProductDetail({ find, related, variants = [], back }: { find: Fi
   );
 }
 
-/** Biały przycisk „Zobacz produkt” u wybranego agenta, ze strzałką do wyboru innego agenta */
 function AgentButton({ find }: { find: Find }) {
   const f = useFormat();
   const { t } = f;

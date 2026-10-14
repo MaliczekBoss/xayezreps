@@ -26,7 +26,6 @@ export type SellerSummary = SellerStats & {
   thumbs: string[];
 };
 
-/** Mozaika zdjęć dopasowana do liczby produktów: jedno duże, a obok mniejsze, gdy jest z czego */
 function Mosaic({ thumbs }: { thumbs: string[] }) {
   if (thumbs.length < 3) {
     return (
@@ -49,7 +48,6 @@ function Mosaic({ thumbs }: { thumbs: string[] }) {
   );
 }
 
-/** Karta sklepu: mozaika produktów, nazwa, liczba produktów i zakres cen (lista sprzedawców i rząd na stronie głównej) */
 export function SellerTile({ seller: s, description = true }: { seller: SellerSummary; description?: boolean }) {
   const f = useFormat();
   const { t } = f;
@@ -110,7 +108,6 @@ type SellerShopProps = {
   initial: SellerItem[];
 };
 
-/** Produkty sklepu: pierwsza porcja przychodzi z serwera, kolejne, wyszukiwanie i sortowanie z /api/sellers/{slug} */
 export function SellerShop({ seller, initial }: SellerShopProps) {
   const f = useFormat();
   const { t } = f;
@@ -145,7 +142,6 @@ export function SellerShop({ seller, initial }: SellerShopProps) {
       window.clearTimeout(timer);
       ctrl.abort();
     };
-    // load zależy tylko od sluga, który się nie zmienia
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deferred, sort]);
 

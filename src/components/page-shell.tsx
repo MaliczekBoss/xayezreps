@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
-/** Wspólny układ podstron: wyspa u góry, treść, stopka */
 export function PageShell({ children }: { children: ReactNode }) {
   return (
     <>

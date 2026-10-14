@@ -8,7 +8,6 @@ import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getAllFinds, getFinds } from "@/lib/store";
 import { live } from "@/lib/live";
 
-// Przy buildzie generujemy tylko najpopularniejsze produkty; reszta renderuje się przy pierwszym wejściu i trafia do cache
 const PRERENDER = 120;
 
 export async function generateStaticParams() {
@@ -22,7 +21,6 @@ export async function generateMetadata({ params }: PageProps<"/product/[id]">): 
   if (!find) return { title: "Nie znaleziono" };
   const price = find.pricePln > 0 ? ` za ${new Intl.NumberFormat("pl-PL").format(Math.round(find.pricePln))} zł` : "";
   const description = `Kup ${find.name}${price}. Zdjęcia QC z magazynu, link do agenta i kalkulator paczki.`;
-  // Grafika z produktem bez tła, ceną i kodem (src/app/api/og/[id])
   const image = { url: `/api/og/${encodeURIComponent(find.id)}`, width: 1200, height: 630, alt: find.name };
   return {
     title: find.name,
@@ -30,7 +28,6 @@ export async function generateMetadata({ params }: PageProps<"/product/[id]">): 
     alternates: { canonical: `/product/${find.id}` },
     openGraph: { title: find.name, description, url: `/product/${find.id}`, siteName: "xayezreps", images: [image] },
     twitter: { card: "summary_large_image", title: find.name, description, images: [image] },
-    // Produkty tylko z outfitów nie powinny konkurować w wyszukiwarkach z katalogiem
     robots: find.hidden ? { index: false } : undefined,
   };
 }
@@ -52,7 +49,6 @@ async function ProductContent({ params }: { params: PageProps<"/product/[id]">["
   if (!raw) notFound();
   const [find] = withQc([raw], qcIndex);
   const visible = all.filter((f) => !f.hidden && f.id !== find.id);
-  // Inne kolory i wersje z tej samej aukcji
   const variants = withQc(
     visible.filter((f) => f.source.platform === find.source.platform && f.source.id === find.source.id),
     qcIndex,

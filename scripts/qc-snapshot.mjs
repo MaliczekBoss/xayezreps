@@ -1,7 +1,3 @@
-// Odświeża data/qc-index.json: liczbę zdjęć QC i okładkę dla każdej aukcji z data/finds.json.
-// Strona czyta tę migawkę zamiast odpytywać kilkaset aukcji przy każdym buildzie.
-// Uruchom: npm run qc:snapshot
-
 import { readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { dropPartial, loadPartial, progress, savePartial } from "./lib/progress.mjs";
@@ -9,7 +5,6 @@ import { dropPartial, loadPartial, progress, savePartial } from "./lib/progress.
 const root = process.cwd();
 const USFANS = { 1688: 1, taobao: 2, weidian: 3 };
 const HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
-// API odpowiada 429 przy większej liczbie równoległych zapytań
 const CONCURRENCY = 3;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -23,7 +18,6 @@ async function qc({ platform, id }) {
         await sleep(2000 + attempt * 3000);
         continue;
       }
-      // Dla aukcji bez zdjęć API odpowiada 500 z pustą listą
       const d = await res.json().catch(() => null);
       if (!Array.isArray(d?.photos)) return null;
       const photos = d.photos.filter((p) => typeof p === "string" && p.startsWith("https://"));
@@ -39,7 +33,6 @@ const finds = JSON.parse(await readFile(path.join(root, "data", "finds.json"), "
 const sources = [...new Map(finds.map((f) => [`${f.source.platform}:${f.source.id}`, f.source])).entries()];
 const file = path.join(root, "data", "qc-index.json");
 const previous = JSON.parse(await readFile(file, "utf-8").catch(() => "{}"));
-// Wynik przerwanego uruchomienia: sprawdzone aukcje pomijamy
 const partialFile = `${file}.partial`;
 const index = await loadPartial(partialFile);
 const todo = sources.filter(([key]) => !(key in index));

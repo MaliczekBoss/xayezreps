@@ -17,10 +17,7 @@ import { summarizeOutfits } from "@/lib/outfits";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ROW = 16;
-// Kategorie z własnym rzędem na stronie głównej, jak na cadenreps
 const CATEGORY_ROWS = ["Buty", "Bluzy"] as const;
-// Pasek kategorii pod wyszukiwarką: kolejność i zdjęcie do każdej – wybrany ręcznie pojedynczy produkt,
-// który dobrze wygląda w małym rozmiarze (gdy zniknie z katalogu, bierzemy najpopularniejszy z kategorii)
 const HERO_CATEGORIES: [category: string, coverId: string][] = [
   ["Buty", "wzlwn7kxy7"],
   ["Koszulki", "u0olbicwl6"],
@@ -55,10 +52,8 @@ export default async function Home() {
   const newest = sortNewest(finds);
   const popular = sortPopular(finds);
 
-  // „Nowy” liczymy względem ostatnio dodanego produktu, żeby strona mogła zostać statyczna
   const latest = newest[0] ? Date.parse(newest[0].createdAt) : 0;
   const isNew = (f: (typeof finds)[number]) => latest - Date.parse(f.createdAt) <= NEW_FOR_DAYS * DAY_MS;
-  // Do rzędów idą tylko id z danego rzędu, a nie wszystkie nowe produkty z katalogu
   const newIn = (items: typeof finds) => items.filter(isNew).map((f) => f.id);
 
   const byId = new Map(finds.map((f) => [f.id, f]));
@@ -66,7 +61,6 @@ export default async function Home() {
     category,
     image: byId.get(id)?.image || popular.find((f) => f.category === category && f.image)?.image || "",
   })).filter((c) => c.image);
-  // Liczba pod wyszukiwarką: cały katalog, z miniaturami produktów bez tła
   const proof = {
     finds: finds.length,
     findThumbs: heroCategories.slice(0, 3).map((c) => c.image),

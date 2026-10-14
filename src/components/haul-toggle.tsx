@@ -4,10 +4,6 @@ import { Check, Plus } from "lucide-react";
 import { haulActions, useHaul, type HaulFind } from "@/lib/haul";
 import { useFormat } from "@/lib/use-format";
 
-/**
- * Dodaje find do paczki albo go z niej wyjmuje. Ilości zmienia się w kalkulatorze.
- * bare – bez własnej ramki i tła, do kapsuły na zdjęciu karty findu.
- */
 export function HaulToggle({ find, className = "", bare = false }: { find: HaulFind; className?: string; bare?: boolean }) {
   const { t } = useFormat();
   const haul = useHaul();

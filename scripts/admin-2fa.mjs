@@ -1,7 +1,3 @@
-// Włącza logowanie dwuetapowe (2FA) do panelu admina: losuje klucz i pokazuje, jak dodać go do aplikacji
-// (Google Authenticator, Authy, 1Password, Bitwarden…). Klucz zostaje tylko w twoim terminalu – nie wklejaj go nigdzie
-// poza aplikacją i ustawieniami Vercela. Uruchom: npm run admin:2fa
-
 import { randomBytes } from "node:crypto";
 
 const BASE32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";

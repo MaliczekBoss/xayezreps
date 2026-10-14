@@ -6,13 +6,8 @@ import { redisCall, run, storageKind } from "./analytics/store";
 import type { Find } from "./finds";
 import { getAllFinds } from "./store";
 
-// Wyświetlenia ofert do sortowania „najpopularniejsze”: stały licznik xs:views (id produktu → odsłony strony
-// produktu, najwyżej jedna na odwiedzającego dziennie – analytics/stats.ts → record). Za pierwszym razem doliczamy
-// odsłony z dziennych statystyk (trzymanych 100 dni). Do tego wyświetlenia z katalogu (pole views, np. ze starej strony).
-
 const HISTORY_DAYS = 100;
 
-/** Jednorazowo: odsłony produktów z dziennych statystyk do stałego licznika */
 async function backfill() {
   if ((await redisCall(["SET", `${VIEWS_KEY}:seeded`, "1", "NX"])) !== "OK") return;
   const now = Date.now();
@@ -29,7 +24,6 @@ async function backfill() {
   if (totals.size) await run([...totals].map(([id, n]) => ({ op: "HINCRBY", keys: [VIEWS_KEY], args: [id, n] })));
 }
 
-/** Nasze odsłony każdej oferty (id → liczba), odświeżane co godzinę */
 export async function getProductViews(): Promise<Record<string, number>> {
   "use cache";
   cacheLife("hours");
@@ -47,6 +41,5 @@ export async function getProductViews(): Promise<Record<string, number>> {
   }
 }
 
-/** Wyświetlenia z katalogu (np. ze starej strony) plus nasze odsłony */
 export const withViews = <T extends Find>(finds: T[], views: Record<string, number>): T[] =>
   finds.map((f) => (views[f.id] ? { ...f, views: (f.views ?? 0) + views[f.id] } : f));

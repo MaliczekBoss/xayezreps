@@ -10,23 +10,15 @@ import { clientIp, tooLarge } from "@/lib/rate-limit";
 
 export const maxDuration = 20;
 
-// Na raz: tyle ofert w zapytaniu, z czego najwyżej tyle odświeżamy u agenta (resztę przy następnych odsłonach)
 const MAX_IDS = 40;
 const MAX_FETCH = 10;
 const CONCURRENCY = 4;
 const BUDGET_MS = 8000;
-// Jedną aukcję pytamy agenta najwyżej co tyle sekund – także gdy nie odpowiada
 const RECHECK_S = 6 * 60 * 60;
-// Ile synchronizacji na godzinę może wywołać jedna osoba
 const PER_HOUR = 150;
 
 const ID = /^[a-z0-9-]{1,40}$/;
 
-/**
- * Ceny widocznych ofert: POST { ids } → { prices: { id: cena w juanach } }. Strona wysyła id kart, które właśnie
- * pokazała. Ceny dawno niesprawdzane pobieramy od agenta (USFans), zapisujemy w bazie (kolejne osoby od razu widzą
- * nową) i oddajemy, żeby karta zaktualizowała się bez przeładowania.
- */
 export async function POST(request: Request) {
   if (tooLarge(request, 16_000)) return Response.json({ error: "bad-request" }, { status: 413 });
   let ids: string[] = [];
@@ -41,7 +33,6 @@ export async function POST(request: Request) {
 
   const [all, stored, sellers] = await Promise.all([getAllFinds(), getAgentPrices(), ids.some((id) => id.startsWith("s-")) ? getSellers() : []]);
   const byId = new Map(all.map((f) => [f.id, f]));
-  // Oferty sprzedawców (s-<numer aukcji>) – nie ma ich w katalogu, ale ceny synchronizujemy tak samo
   for (const seller of sellers) {
     for (const item of seller.items) {
       if (!ids.includes(sellerFindId(item.id))) continue;
@@ -53,8 +44,6 @@ export async function POST(request: Request) {
   const keyOf = (f: (typeof finds)[number]) => `${f.source.platform}:${f.source.id}`;
   const fresh = new Map<string, number>();
 
-  // Które aukcje odświeżyć: zajmujemy „termin sprawdzenia” w bazie (SET NX), więc przy wielu odsłonach naraz
-  // każdą aukcję pyta tylko jedno zapytanie, a potem nikt przez RECHECK_S
   const sources = [...new Map(finds.map((f) => [keyOf(f), f.source])).entries()];
   let due: typeof sources = [];
   if (storageKind() === "redis") {

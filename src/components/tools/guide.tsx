@@ -14,7 +14,6 @@ import { CopyCode } from "../copy-code";
 import { PageHeader } from "../page";
 import { ProductImage } from "../product-image";
 
-/** Prawdziwy find z katalogu, na którym poradnik pokazuje każdy krok */
 export type GuideExample = {
   id: string;
   name: string;
@@ -26,12 +25,10 @@ export type GuideExample = {
   source: ProductSource;
 };
 
-// Ile dni zwykle jedzie rzecz od sprzedawcy do magazynu agenta
 const TO_WAREHOUSE = { from: 3, to: 7 };
 
 type Step = { title: DictKey; text: DictKey; tip?: DictKey; tool?: { href: string; label: DictKey } };
 
-// Kroki są kolejnością zamawiania, więc mają numery
 const STEPS: Step[] = [
   { title: "guide.s1t", text: "guide.s1" },
   { title: "guide.s2t", text: "guide.s2", tool: { href: site.routes.linkConverter, label: "tools.converter" } },
@@ -59,7 +56,6 @@ export function Guide({ example }: { example: GuideExample | null }) {
   const [active, setActive] = useState(0);
   const sections = useRef<(HTMLElement | null)[]>([]);
 
-  // Krok, który jest na środku ekranu, podświetla się w spisie z lewej
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -106,7 +102,6 @@ export function Guide({ example }: { example: GuideExample | null }) {
       </div>
 
       <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-x-16 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        {/* Spis kroków z linią postępu: przewija się razem ze stroną i pokazuje, gdzie jesteś */}
         <nav aria-label={t("guide.stepsNav")} className="hidden lg:block">
           <ol className="sticky top-28 space-y-1">
             {STEPS.map((s, i) => (
@@ -197,8 +192,6 @@ export function Guide({ example }: { example: GuideExample | null }) {
   );
 }
 
-/* ---------- Paragon: ile naprawdę kosztuje przykładowy find ---------- */
-
 function Receipt({ f, example }: { f: Format; example: GuideExample }) {
   const { t } = f;
   const line = pricing.lines[0];
@@ -242,8 +235,6 @@ function Receipt({ f, example }: { f: Format; example: GuideExample }) {
     </aside>
   );
 }
-
-/* ---------- Sceny kroków: małe podglądy tego, co zobaczysz u agenta ---------- */
 
 const scene = "rounded-2xl border border-line bg-card p-4";
 const fakeField = "flex h-10 items-center rounded-lg border border-line bg-bg px-3 text-sm";
@@ -323,7 +314,6 @@ function QcScene({ f, example }: { f: Format; example: GuideExample }) {
   const { t } = f;
   const [photos, setPhotos] = useState<string[]>([example.qcCover]);
 
-  // Prawdziwe zdjęcia QC tego findu z magazynu
   useEffect(() => {
     const ctrl = new AbortController();
     fetch(`/api/qc?url=${encodeURIComponent(sourceUrl(example.source))}`, { signal: ctrl.signal })

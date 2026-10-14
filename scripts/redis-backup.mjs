@@ -1,12 +1,3 @@
-// Kopia całej bazy Upstash Redis do pliku JSON: każdy klucz z typem, czasem wygaśnięcia i wartością,
-// a obok podsumowanie (co jest w bazie, ile kluczy i ile zajmuje każda część).
-// Tylko czyta – wystarczy token tylko do odczytu (Vercel → Storage → baza → .env.local: KV_REST_API_READ_ONLY_TOKEN).
-//
-//   KV_REST_API_URL=… KV_REST_API_READ_ONLY_TOKEN=… npm run db:backup -- <folder>
-//
-// Sesji admina (adm:) i liczników limitów zapytań ze skrótami adresów IP (rl:) nie kopiujemy – i tak szybko wygasają.
-// Pliki są tylko dla właściciela (na Linuksie/macOS); kopię trzymaj prywatnie, nie wrzucaj do repozytorium.
-
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -18,17 +9,14 @@ if (!url.startsWith("https://") || !token || !outDir) {
   process.exit(1);
 }
 
-// Wyniki w base64: wartości bywają binarne (np. zdjęcia), a JSON z REST psułby takie bajty
 const HEADERS = { Authorization: `Bearer ${token}`, "Upstash-Encoding": "base64", "Content-Type": "application/json" };
 const BATCH = 50;
-// Duże napisy (np. cały katalog) pobieramy pojedynczo
 const BIG_STRING = 512 * 1024;
 const SKIP = /^(adm|rl):/;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const b64 = (s) => Buffer.from(s, "base64");
 
-/** Kilka poleceń naraz (/pipeline); zwraca wyniki w tej samej kolejności */
 async function pipeline(commands) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -46,14 +34,12 @@ async function pipeline(commands) {
   }
 }
 
-/** Napis z bazy: tekst, a gdy to nie jest poprawny UTF-8 – { base64 } */
 function decode(value) {
   const buf = b64(value);
   const text = buf.toString("utf8");
   return Buffer.from(text, "utf8").equals(buf) ? text : { base64: value };
 }
 
-// 1. Wszystkie klucze (SCAN)
 const keys = [];
 let cursor = "0";
 do {
@@ -65,13 +51,11 @@ do {
 const unique = [...new Set(keys)].filter((k) => !SKIP.test(k)).sort();
 console.log(`\rKluczy w bazie: ${new Set(keys).size}, w kopii: ${unique.length} (bez sesji admina i limitów zapytań)`);
 
-// 2. Typ, czas wygaśnięcia i długość napisów, potem wartości według typu
 const dump = {};
 for (let i = 0; i < unique.length; i += BATCH) {
   const part = unique.slice(i, i + BATCH);
   const meta = await pipeline(part.flatMap((k) => [["TYPE", k], ["PTTL", k]]));
   const types = part.map((_, j) => b64(meta[j * 2]).toString("utf8"));
-  // Długość tylko dla napisów – STRLEN na innym typie to błąd
   const strings = part.filter((_, j) => types[j] === "string");
   const lengths = new Map((strings.length ? await pipeline(strings.map((k) => ["STRLEN", k])) : []).map((n, j) => [strings[j], Number(n)]));
   const small = [];
@@ -96,7 +80,6 @@ for (const [key, entry] of Object.entries(dump)) {
 }
 console.log();
 
-// 3. Z base64 na czytelne wartości
 for (const entry of Object.values(dump)) {
   const v = entry.value;
   if (v === null) continue;
@@ -106,7 +89,6 @@ for (const entry of Object.values(dump)) {
   else entry.value = v.map(decode);
 }
 
-// 4. Zapis i podsumowanie po przedrostkach kluczy
 const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
 await mkdir(outDir, { recursive: true, mode: 0o700 });
 const file = path.join(outDir, `redis-${stamp}.json`);

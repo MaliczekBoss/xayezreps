@@ -11,7 +11,6 @@ import { useFormat } from "@/lib/use-format";
 import { PageHeader } from "./page";
 import { ProductCard } from "./product-card";
 
-/** Lista ulubionych z tej przeglądarki; dane tylko tych produktów dociągamy z /api/finds */
 export function FavoritesList() {
   const { t } = useFormat();
   const favorites = useFavorites();
@@ -22,7 +21,6 @@ export function FavoritesList() {
         .map(([id]) => id),
     [favorites],
   );
-  // null = produktu nie ma już w katalogu
   const [known, setKnown] = useState<Record<string, Find | null>>({});
   const missing = ids.filter((id) => !(id in known)).join(",");
 

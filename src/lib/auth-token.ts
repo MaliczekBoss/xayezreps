@@ -1,26 +1,19 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
-// Kryptografia panelu admina: podpis tokenów sesji, porównanie hasła i kody 2FA (TOTP).
-// Same sesje (zapis, unieważnianie) są w admin-session.ts.
-
 export const SESSION_MAX_AGE_S = 60 * 60 * 12;
 
 const production = process.env.NODE_ENV === "production";
 
-// W produkcji przedrostek __Host-: przeglądarka przyjmie takie ciasteczko tylko po HTTPS, dla całej domeny
-// i bez atrybutu Domain, więc nie da się go podrzucić z subdomeny
 export const SESSION_COOKIE = production ? "__Host-xayez_admin" : "xayez_admin";
 
 export const sessionCookie = {
   httpOnly: true,
   secure: production,
-  // Strict: ciasteczko nie idzie z żadnym zapytaniem z innej strony (dodatkowa ochrona przed CSRF)
   sameSite: "strict" as const,
   path: "/",
   maxAge: SESSION_MAX_AGE_S,
 };
 
-/** Klucz do podpisów: ADMIN_SECRET (zalecany, osobny od hasła), w ostateczności hasło */
 function secret() {
   const s = process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD;
   return s && s.length >= 12 ? s : null;
@@ -30,13 +23,8 @@ const sign = (payload: string, key: string) => createHmac("sha256", key).update(
 
 export const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 
-/** Porównanie odporne na pomiar czasu (także dla napisów różnej długości) */
 export const safeEqual = (a: string, b: string) => timingSafeEqual(createHash("sha256").update(a).digest(), createHash("sha256").update(b).digest());
 
-/**
- * Nowy token sesji: "v2.<losowy identyfikator>.<wygaśnięcie w ms>.<podpis>". Podpis odrzuca podróbki bez pytania bazy,
- * a identyfikator musi jeszcze istnieć w bazie sesji – dzięki temu wylogowanie naprawdę unieważnia sesję.
- */
 export function createToken(now: number) {
   const key = secret();
   if (!key) throw new Error("Brak ADMIN_SECRET / ADMIN_PASSWORD");
@@ -45,7 +33,6 @@ export function createToken(now: number) {
   return { token: `${payload}.${sign(payload, key)}`, sid };
 }
 
-/** Identyfikator sesji z poprawnie podpisanego i ważnego tokenu (albo null) */
 export function readToken(token: string | undefined, now: number): string | null {
   const key = secret();
   if (!key || !token || token.length > 300) return null;
@@ -57,7 +44,6 @@ export function readToken(token: string | undefined, now: number): string | null
   return Number.isFinite(expires) && expires > now ? parts[1] : null;
 }
 
-/** Porównanie hasła odporne na pomiar czasu */
 export function checkPassword(input: string) {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected || expected.length < 8 || input.length > 200) return false;
@@ -65,8 +51,6 @@ export function checkPassword(input: string) {
 }
 
 export const adminConfigured = () => Boolean(process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 8);
-
-/* ---------- 2FA: kody z aplikacji (TOTP, RFC 6238) ---------- */
 
 const BASE32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
@@ -86,7 +70,6 @@ function base32Decode(input: string) {
   return Buffer.from(out);
 }
 
-/** Klucz 2FA z ADMIN_TOTP_SECRET (base32, jak w Google Authenticator); bez niego 2FA jest wyłączone */
 const totpKey = () => {
   const raw = process.env.ADMIN_TOTP_SECRET;
   const key = raw ? base32Decode(raw) : null;
@@ -104,10 +87,6 @@ function totpAt(key: Buffer, counter: number) {
   return String(code).padStart(6, "0");
 }
 
-/**
- * Krok czasu (30 s), dla którego kod się zgadza – sprawdzamy też sąsiednie kroki na wypadek przesuniętego zegara.
- * null, gdy kod jest zły. Jednorazowość kodu pilnuje admin-session.ts.
- */
 export function totpStep(code: string, now: number): number | null {
   const key = totpKey();
   if (!key || !/^\d{6}$/.test(code)) return null;

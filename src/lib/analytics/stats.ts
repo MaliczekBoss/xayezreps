@@ -3,11 +3,6 @@ import "server-only";
 import { isSource, sources, type SourceId } from "./shared";
 import { run, storageKind, toCounts, type Cmd } from "./store";
 
-// Klucze: xs:h:{rrrrmmddgg} i xs:d:{rrrrmmdd} – liczniki godzinowe i dzienne,
-// xs:uh / xs:ud – HyperLogLog unikalnych odwiedzających, xs:ref|geo|dev|pg|ag:{dzień} – rozbicia,
-// xs:seen:{dzień} – odwiedzający już policzeni w rozbiciach tego dnia,
-// xs:m:{minuta} – odsłony na minutę do wykresu „na żywo”, xs:live – sesje aktywne w ostatnich 30 minutach.
-
 const TZ = "Europe/Warsaw";
 const KEEP_S = 100 * 24 * 60 * 60;
 const MINUTE_KEEP_S = 2 * 60 * 60;
@@ -23,14 +18,12 @@ const parts = new Intl.DateTimeFormat("en-CA", {
   hourCycle: "h23",
 });
 
-/** Data w strefie Polski jako {day: "20261011", hour: "2026101123", minute: "202610112345"} */
 export function stamp(ms: number) {
   const p = Object.fromEntries(parts.formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
   const day = `${p.year}${p.month}${p.day}`;
   return { day, hour: `${day}${p.hour}`, minute: `${day}${p.hour}${p.minute}`, hourOfDay: Number(p.hour) };
 }
 
-/** Dzień kalendarzowy przesunięty o n dni (bez stref czasowych) */
 function shiftDay(day: string, n: number) {
   const d = new Date(Date.UTC(Number(day.slice(0, 4)), Number(day.slice(4, 6)) - 1, Number(day.slice(6, 8)) + n));
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
@@ -38,13 +31,9 @@ function shiftDay(day: string, n: number) {
 
 const hoursOf = (day: string) => Array.from({ length: 24 }, (_, h) => `${day}${String(h).padStart(2, "0")}`);
 
-/* ---------- Zapis ---------- */
-
-/** Stały licznik wyświetleń ofert (id produktu → odsłony) do sortowania „najpopularniejsze” – bez wygasania */
 export const VIEWS_KEY = "xs:views";
 
 export type TrackEvent =
-  /** product – id oferty z katalogu, gdy odsłona to strona produktu (sprawdzone w /api/track) */
   | { t: "pv"; path: string; sid: string; src: SourceId; isNew: boolean; n: number; dur: number; product?: string }
   | { t: "ping"; sid: string; src: SourceId; dur: number }
   | { t: "out"; sid: string; src: SourceId; agent: string };
@@ -66,7 +55,6 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
     incr(H, "pv");
     incr(D, "pv");
     incr(`xs:pg:${day}`, e.path);
-    // Wyświetlenie oferty: najwyżej jedno na odwiedzającego dziennie, żeby odświeżanie nie podbijało popularności
     if (e.product) {
       const first = cmds.push({ op: "SADD", keys: [`xs:vv:${day}`], args: [`${v.id}|${e.product}`] }) - 1;
       cmds.push({ op: "EXPIRE", keys: [`xs:vv:${day}`], args: [2 * 86400] });
@@ -76,7 +64,6 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
       incr(H, "s");
       incr(D, "s");
     }
-    // Źródło, kraj i urządzenie liczymy raz na odwiedzającego dziennie – przy jego pierwszej odsłonie tego dnia
     const seen = cmds.push({ op: "SADD", keys: [`xs:seen:${day}`], args: [v.id] }) - 1;
     cmds.push({ op: "EXPIRE", keys: [`xs:seen:${day}`], args: [2 * 86400] });
     for (const [kind, field] of [["ref", e.src], ["geo", v.country], ["dev", v.device]] as const) {
@@ -107,8 +94,6 @@ export async function record(e: TrackEvent, v: Visitor, now = Date.now()) {
   for (const key of touched) cmds.push({ op: "EXPIRE", keys: [key], args: [KEEP_S] });
   await run(cmds);
 }
-
-/* ---------- Odczyt ---------- */
 
 export type Range = "today" | "yesterday" | "7d" | "30d";
 export const ranges: Range[] = ["today", "yesterday", "7d", "30d"];
@@ -142,7 +127,6 @@ export async function readStats(range: Range, now = Date.now()): Promise<StatsRe
   const curKeys = byHour ? hoursOf(endDay) : curDays;
   const prevKeys = byHour ? hoursOf(shiftDay(endDay, -1)) : prevDays;
 
-  // Przy „dziś” porównujemy tylko do bieżącej godziny, żeby wczorajszy wieczór nie zaniżał wyniku
   const cutoff = range === "today" ? today.hourOfDay : curKeys.length - 1;
   const statKey = (k: string) => (byHour ? `xs:h:${k}` : `xs:d:${k}`);
   const uvKey = (k: string) => (byHour ? `xs:uh:${k}` : `xs:ud:${k}`);

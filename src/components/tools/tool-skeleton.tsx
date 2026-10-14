@@ -1,4 +1,3 @@
-/** Zastępczy widok podstrony narzędzia, zanim wczyta się jej treść */
 export function ToolSkeleton() {
   return (
     <div aria-hidden="true" className="animate-pulse">

@@ -9,7 +9,6 @@ const MAX_DUR_S = 30 * 60;
 
 const done = () => new Response(null, { status: 204 });
 
-/** Zdarzenia statystyk z przeglądarki (sendBeacon, text/plain): odsłona, czas aktywności, klik do agenta */
 export async function POST(request: Request) {
   if (tooLarge(request, 4096)) return done();
   if (await limitRequest(request, "track", 600, 600)) return done();
@@ -27,7 +26,6 @@ export async function POST(request: Request) {
 
   const sid = String(body.sid ?? "");
   if (!SESSION_ID.test(sid)) return done();
-  // Przeglądarki w aplikacjach TikTok, Instagram i Facebook zwykle nie podają, skąd przyszedł ruch – rozpoznajemy je po nazwie
   const inApp = /musical_ly|BytedanceWebview|TikTok/i.test(ua) ? "tiktok" : /Instagram/i.test(ua) ? "instagram" : /FBAN|FBAV|FB_IAB/i.test(ua) ? "facebook" : null;
   const claimed = isSource(body.src) ? body.src : "other";
   const src = claimed === "direct" && inApp ? inApp : claimed;
@@ -36,7 +34,6 @@ export async function POST(request: Request) {
   let event: TrackEvent | null = null;
   if (body.t === "pv") {
     const path = normalizePath(String(body.p ?? "/"));
-    // Wyświetlenia liczymy tylko ofertom z katalogu – inaczej dowolny adres dopisywałby się do licznika
     const id = path.match(/^\/product\/([a-z0-9-]+)$/)?.[1];
     const product = id && (await getAllFinds()).some((f) => f.id === id) ? id : undefined;
     event = { t: "pv", sid, src, dur, path, isNew: body.new === true, n: Math.max(1, Math.round(Number(body.n) || 1)), product };
@@ -48,7 +45,6 @@ export async function POST(request: Request) {
   }
   if (!event) return done();
 
-  // Odwiedzającego rozpoznajemy po dziennym hashu IP i przeglądarki – samego IP nigdzie nie zapisujemy
   const ip = clientIp(request);
   const salt = process.env.ADMIN_SECRET ?? "xayezreps";
   const visitor: Visitor = {
@@ -57,7 +53,6 @@ export async function POST(request: Request) {
     device: /iPad|Tablet/i.test(ua) ? "tablet" : /Mobi|Android|iPhone/i.test(ua) ? "mobile" : "desktop",
   };
 
-  // Tylko lokalnie: zdarzenie z podaną datą, żeby dało się przetestować porównanie z poprzednim okresem
   const at = process.env.NODE_ENV === "development" && typeof body.at === "number" ? body.at : Date.now();
 
   try {

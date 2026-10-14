@@ -3,16 +3,6 @@ import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { run, storageKind } from "./analytics/store";
 
-// Limity zapytań na adres IP: chronią API, które pyta zewnętrzne serwisy (QC, sklepy, śledzenie paczek),
-// żeby nikt nie zablokował nas u nich masą zapytań, i logowanie admina przed zgadywaniem hasła.
-
-/**
- * Adres klienta. Na Vercelu nagłówki x-real-ip i x-forwarded-for nadpisuje platforma, więc klient ich nie podmieni.
- * Na własnym serwerze za odwrotnym proxy TRUST_PROXY wskazuje jeden nagłówek, który ustawia proxy:
- * „1” albo „x-real-ip” (nginx: proxy_set_header X-Real-IP $remote_addr), „x-forwarded-for” (liczy się ostatni adres –
- * dopisany przez proxy) albo np. „cf-connecting-ip”. Innych nagłówków nie czytamy, bo te może wysłać sam klient.
- * Bez TRUST_PROXY (lokalnie) wszyscy dzielą jeden licznik.
- */
 export function clientIp(request: Request | Headers) {
   const headers = request instanceof Headers ? request : request.headers;
   if (process.env.VERCEL === "1") {
@@ -26,7 +16,6 @@ export function clientIp(request: Request | Headers) {
   return "local";
 }
 
-/** Skrót adresu IP do kluczy w bazie – samego adresu nigdzie nie zapisujemy */
 export const ipKey = (ip: string) =>
   createHash("sha256")
     .update(`${process.env.ADMIN_SECRET ?? "xayezreps"}|${ip}`)
@@ -37,10 +26,6 @@ type Hit = { ok: boolean; count: number; retryAfter: number };
 
 const mem = ((globalThis as { __xayezRate?: Map<string, { n: number; until: number }> }).__xayezRate ??= new Map());
 
-/**
- * Najwyżej `limit` zdarzeń w oknie `windowS` sekund dla klucza (np. rodzaj zapytania + IP).
- * Okno jest stałe (liczone od pełnych okresów), więc wystarczy jeden licznik z czasem wygaśnięcia.
- */
 export async function hit(name: string, id: string, limit: number, windowS: number, by = 1): Promise<Hit> {
   const now = Date.now();
   const windowMs = windowS * 1000;
@@ -62,10 +47,6 @@ export async function hit(name: string, id: string, limit: number, windowS: numb
 }
 
 
-/**
- * Limit dla publicznego API: rodzaj zapytania + IP. Gdy baza nie odpowiada, przepuszczamy –
- * lepiej, żeby strona działała, niż żeby awaria licznika zablokowała wszystkich.
- */
 export async function limitRequest(request: Request, name: string, limit: number, windowS: number): Promise<Response | null> {
   try {
     const result = await hit(name, ipKey(clientIp(request)), limit, windowS);
@@ -76,20 +57,17 @@ export async function limitRequest(request: Request, name: string, limit: number
   }
 }
 
-/** Zbyt duże ciało zapytania – sprawdzamy nagłówek, zanim cokolwiek wczytamy */
 export function tooLarge(request: Request, maxBytes: number) {
   const length = Number(request.headers.get("content-length"));
   return Number.isFinite(length) && length > maxBytes;
 }
 
-/** Porównanie sekretów odporne na pomiar czasu (np. CRON_SECRET) */
 export function sameSecret(a: string, b: string) {
   const ha = createHash("sha256").update(a).digest();
   const hb = createHash("sha256").update(b).digest();
   return timingSafeEqual(ha, hb);
 }
 
-/** Zapytanie od crona Vercela: nagłówek Authorization: Bearer <CRON_SECRET> */
 export function isCronRequest(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || secret.length < 16) return false;

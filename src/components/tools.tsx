@@ -23,7 +23,6 @@ export const tools: { id: ToolId; icon: LucideIcon; title: DictKey; text: DictKe
   { id: "guide", icon: BookOpen, title: "tools.guide", text: "tools.guideText", href: site.routes.tutorial },
 ];
 
-/** Prawdziwe dane do podglądów w kafelkach: zdjęcia findów, zdjęcia QC, sklepy */
 export type ToolPreviews = {
   products: { image: string; name: string }[];
   qc: string[];
@@ -43,7 +42,6 @@ export function Tools({ previews }: { previews: ToolPreviews }) {
   );
 }
 
-/** Siatka narzędzi: każdy kafelek pokazuje mały podgląd tego, co narzędzie robi, a po najechaniu – animację */
 export function ToolGrid({ previews, className = "" }: { previews: ToolPreviews; className?: string }) {
   return (
     <ul className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 ${className}`}>
@@ -63,7 +61,6 @@ function ToolTile({ tool, previews }: { tool: (typeof tools)[number]; previews: 
   const ref = useRef<HTMLAnchorElement>(null);
   const Icon = tool.icon;
 
-  // Na telefonie nie ma najechania – animacja rusza, gdy kafelek wjedzie na ekran
   useEffect(() => {
     const el = ref.current;
     if (!el || !window.matchMedia("(hover: none)").matches) return;
@@ -97,7 +94,6 @@ function ToolTile({ tool, previews }: { tool: (typeof tools)[number]; previews: 
   );
 }
 
-/** Postęp animacji 0–1 od chwili najechania; bez najechania (albo przy ograniczonym ruchu) zawsze 1 */
 function useProgress(playing: boolean, duration: number) {
   const reduce = useReducedMotion();
   const [progress, setProgress] = useState(1);
@@ -135,7 +131,6 @@ function Preview({ id, previews, playing }: { id: ToolId; previews: ToolPreviews
   return views[id];
 }
 
-/** Skaner przesuwa się po zdjęciu, AI rozpoznaje produkt, wyniki pojawiają się po kolei */
 function PhotoPreview({ previews, playing }: { previews: ToolPreviews; playing: boolean }) {
   const { products } = previews;
   const p = useProgress(playing, 2200);
@@ -170,7 +165,6 @@ function PhotoPreview({ previews, playing }: { previews: ToolPreviews; playing: 
   );
 }
 
-/** Link USFans „wpisuje się” znak po znaku, na końcu „Skopiowano” */
 function ConverterPreview({ playing }: { playing: boolean }) {
   const p = useProgress(playing, 1500);
   const out = "usfans.com/product/3/7665059571?ref=xayez";
@@ -193,7 +187,6 @@ function ConverterPreview({ playing }: { playing: boolean }) {
   );
 }
 
-/** Ciężarówka jedzie z Chin przez Europę do Ciebie */
 function TrackingPreview({ playing }: { playing: boolean }) {
   const p = useProgress(playing, 2000);
   const at = playing ? easeOut(p) * 100 : 62;
@@ -222,7 +215,6 @@ function TrackingPreview({ playing }: { playing: boolean }) {
   );
 }
 
-/** Zdjęcia z magazynu wjeżdżają jedno po drugim */
 function QcPreview({ previews, playing }: { previews: ToolPreviews; playing: boolean }) {
   const p = useProgress(playing, 1100);
   return (
@@ -241,7 +233,6 @@ function QcPreview({ previews, playing }: { previews: ToolPreviews; playing: boo
   );
 }
 
-/** Liczba produktów odlicza się w górę, sklepy rozsuwają się */
 function SellersPreview({ previews, playing }: { previews: ToolPreviews; playing: boolean }) {
   const f = useFormat();
   const p = useProgress(playing, 1300);
@@ -260,7 +251,6 @@ function SellersPreview({ previews, playing }: { previews: ToolPreviews; playing
   );
 }
 
-/** Waga i cena odliczają się, pasek wagi się wypełnia */
 function CalcPreview({ playing }: { playing: boolean }) {
   const f = useFormat();
   const p = easeOut(useProgress(playing, 1400));
@@ -278,7 +268,6 @@ function CalcPreview({ playing }: { playing: boolean }) {
   );
 }
 
-/** Kroki zapalają się po kolei */
 function GuidePreview({ playing }: { playing: boolean }) {
   const p = useProgress(playing, 1500);
   const lit = playing ? Math.ceil(p * 6) : 2;

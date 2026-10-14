@@ -10,7 +10,6 @@ type ModalProps = {
   children: ReactNode;
 };
 
-/** Natywny <dialog>: pułapka fokusu, Esc i kliknięcie w tło zamykają okno */
 export function Modal({ open, onClose, labelledBy, className = "", children }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 

@@ -3,7 +3,6 @@ import { ArrowUpRight, LogOut, ShieldOff } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { logout, logoutEverywhere } from "./actions";
 
-/** Nagłówek panelu admina (same statystyki): podgląd strony, wylogowanie i wylogowanie ze wszystkich urządzeń */
 export function AdminHeader() {
   return (
     <header className="sticky top-0 z-30 -mx-4 mb-8 flex items-center gap-3 border-b border-line bg-bg/85 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:gap-4 sm:px-6">

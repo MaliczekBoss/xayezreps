@@ -9,7 +9,6 @@ import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { getAllFinds, getOutfits } from "@/lib/store";
 import { live } from "@/lib/live";
 
-// Przy buildzie tylko najnowsze outfity; reszta renderuje się przy pierwszym wejściu i trafia do cache
 const PRERENDER = 48;
 
 export async function generateStaticParams() {
@@ -46,7 +45,6 @@ async function OutfitContent({ params }: { params: PageProps<"/outfits/[id]">["p
   const own = outfits.find((o) => o.id === id);
   const [outfit] = own ? resolveOutfits([own], finds) : [];
   if (!outfit) notFound();
-  // Więcej outfitów tego samego rodzaju (dla niej / dla niego)
   const more = summarizeOutfits(
     outfits.filter((o) => o.id !== id && (o.gender ?? "boy") === (own?.gender ?? "boy")),
     finds,

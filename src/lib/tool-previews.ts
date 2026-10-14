@@ -6,7 +6,6 @@ import { getQcFeed } from "./qc-feed";
 import { getSellers } from "./remote";
 import { getFinds } from "./store";
 
-/** Prawdziwe dane do podglądów w kafelkach narzędzi */
 export async function getToolPreviews(): Promise<ToolPreviews> {
   const [finds, qcFeed, sellers] = await Promise.all([getFinds(), getQcFeed(), getSellers()]);
   return {

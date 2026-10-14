@@ -6,15 +6,9 @@ import { isCronRequest } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
-// Ile czasu jedno uruchomienie może sprawdzać aukcje (z zapasem do limitu funkcji)
 const BUDGET_MS = 45_000;
 const CONCURRENCY = 4;
 
-/**
- * Codzienne sprawdzanie QC (vercel.json → crons): kolejne aukcje z katalogu po kolei, ile się zmieści
- * w czasie, i zapis nowych zdjęć. Następne uruchomienie zaczyna tam, gdzie skończyło poprzednie,
- * więc cały katalog przechodzi się w kółko. Vercel wysyła nagłówek z CRON_SECRET.
- */
 export async function GET(request: Request) {
   if (!isCronRequest(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });

@@ -39,7 +39,6 @@ function shownThisVisit() {
   }
 }
 
-/** Co jakiś czas rozwija wyspę z ofertą partnera (USFans) – jak pasek reklamowy, ale w naszym stylu */
 export function IslandPromos() {
   useEffect(() => {
     const show = () => {
@@ -47,7 +46,6 @@ export function IslandPromos() {
       const saved = read();
       if (Date.now() < saved.hiddenUntil || document.visibilityState !== "visible") return;
       if (shownThisVisit() >= MAX_PER_VISIT) return;
-      // Nie przerywamy okna z ofertą ani innych okien
       if (document.querySelector("dialog[open]")) return;
 
       const promo = islandPromos[saved.next % islandPromos.length];
@@ -80,7 +78,6 @@ export function IslandPromos() {
       window.clearTimeout(first);
       window.clearInterval(every);
     };
-    // Komponent siedzi w głównym layoutcie, więc odliczanie trwa przez całą wizytę, także przy zmianie podstron
   }, []);
 
   return null;

@@ -27,7 +27,6 @@ export function LinkConverter({ example }: { example?: ConverterExample }) {
   const url = params.get("url") ?? "";
   const source = url ? parseSource(url) : null;
 
-  // Wybrany agent na górze listy
   const ordered = [...agents].sort((a, b) => Number(b.id === agent.id) - Number(a.id === agent.id));
 
   const copy = (link: string, name: string) => copyWithNotice(link, { title: t("conv.copied", { agent: name }), text: t("conv.copiedText") });

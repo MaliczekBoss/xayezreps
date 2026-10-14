@@ -5,14 +5,8 @@ import { fetchQcFromSources } from "@/lib/qc-sources";
 import { byNewest, photoUrl, syncQc } from "@/lib/qc-store";
 import { limitRequest } from "@/lib/rate-limit";
 
-// Źródła QC potrafią odpowiadać kilkanaście sekund
 export const maxDuration = 30;
 
-/**
- * Zdjęcia QC dla linku produktu: /api/qc?url=…
- * Pyta wszystkie źródła naraz. Dla aukcji z naszego katalogu nowe zdjęcia zapisuje i oddaje całą
- * zapisaną historię, więc zdjęcia z dawnych zamówień nie znikają, gdy źródło pokazuje już tylko nowsze.
- */
 export async function GET(request: Request) {
   const limited = await limitRequest(request, "qc", 60, 600);
   if (limited) return limited;
@@ -27,7 +21,6 @@ export async function GET(request: Request) {
     try {
       const saved = await syncQc(source, fresh.photos);
       photos = saved.photos;
-      // Nowe zdjęcia zmieniają liczbę QC w katalogu
       if (saved.added > 0) revalidateTag("qc-index", "max");
     } catch (e) {
       console.error("[qc] zapis:", (e as Error).message);

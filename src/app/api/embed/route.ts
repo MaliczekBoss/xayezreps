@@ -4,17 +4,9 @@ import { trustedOrigin } from "@/lib/site-url";
 import { getAllFinds, getOutfits } from "@/lib/store";
 import { live } from "@/lib/live";
 
-// Podgląd linku dla Discorda (proxy.ts kieruje tu Discordbota). Oprócz zwykłych tagów Open Graph strona daje
-// Discordowi gotowy układ (component embed): logo i „xayezreps”, tytuł z linkiem, opis, grafikę, biały pasek
-// i przyciski z linkami. Działa przy każdym wklejeniu linku, także w prywatnych wiadomościach, bez bota.
-// Specyfikacja: https://docs.discord.com/developers/link-previews/component-embeds
-
-// Tylko zwykłe ścieżki tej strony (bez „//”, „\” i „@”), żeby link w podglądzie nie prowadził nigdzie indziej
 const SAFE_PATH = /^\/(?!\/)[\w\-./%]*$/;
-// Emoji z logo XR obok „xayezreps” (własne emoji z Discorda: <:nazwa:id>)
 const LOGO = process.env.DISCORD_LOGO_EMOJI || "<:logo:1553803460170748095>";
 const WHITE = 0xffffff;
-// Discord odrzuca cały układ, gdy ma więcej niż 3000 bajtów
 const MAX_BYTES = 3000;
 
 const decode = (s: string) => {
@@ -26,7 +18,6 @@ const decode = (s: string) => {
 };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-/** Nazwy produktów jako zwykły tekst w markdownie Discorda */
 const md = (s: string) => s.replace(/([\\`*_~|[\]()<>#])/g, "\\$1");
 
 type Button = { label: string; url: string };
@@ -85,7 +76,6 @@ async function embedFor(pathname: string, origin: string): Promise<Embed> {
   };
 }
 
-/** Układ dla Discorda jako JSON bezpieczny w <script> (<, >, & i separatory wierszy jako \\uXXXX) */
 function componentEmbed(e: Embed) {
   const build = (description: string) =>
     JSON.stringify({
@@ -102,7 +92,6 @@ function componentEmbed(e: Embed) {
     }).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
   let json = build(e.description);
-  // Za długi opis skracamy, a gdyby i to nie wystarczyło – Discord pokaże zwykły podgląd z Open Graph
   if (Buffer.byteLength(json) > MAX_BYTES) json = build(`${e.description.slice(0, 120)}…`);
   return Buffer.byteLength(json) <= MAX_BYTES ? json : null;
 }
@@ -110,7 +99,6 @@ function componentEmbed(e: Embed) {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const origin = trustedOrigin(request);
-  // Po przekierowaniu z proxy adres bywa oryginalnym adresem strony, a nie /api/embed?path=…
   const wanted = url.searchParams.get("path") || (url.pathname.startsWith("/api/embed") ? "/" : url.pathname);
   const pathname = SAFE_PATH.test(wanted) ? wanted : "/";
   const e = await embedFor(pathname, origin);

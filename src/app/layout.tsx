@@ -62,7 +62,6 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [rates, finds] = await Promise.all([getRates(), getFinds()]);
-  // Podgląd w oknie powitalnym: najpopularniejszy find ze zdjęciem
   const top = sortPopular(finds).find((f) => f.image);
   const sample = top ? { name: top.name, image: top.image, pricePln: top.pricePln, source: top.source } : null;
   return (

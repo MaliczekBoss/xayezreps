@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default async function SellersPage() {
-  // Do przeglądarki idą tylko podsumowania; pełne listy produktów są w /api/sellers/{slug}
   const sellers = (await getSellers()).map(({ slug, name, description, items }) => ({
     slug,
     name,

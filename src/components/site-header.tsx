@@ -45,11 +45,6 @@ const toneText: Record<NonNullable<IslandNotice["tone"]>, string> = {
   warning: "text-amber-300",
 };
 
-/**
- * Dynamiczna wyspa: na górze strony szeroki pasek z pełnym menu,
- * po przewinięciu kurczy się do zwartej pigułki. Każde powiadomienie
- * strony (paczka, kopiowanie, ustawienia) rozwija ją na chwilę.
- */
 export function SiteHeader() {
   const f = useFormat();
   const { t } = f;
@@ -74,7 +69,6 @@ export function SiteHeader() {
     { href: site.routes.tools, label: t("nav.tools") },
     { href: site.routes.sellers, label: t("nav.sellers") },
   ];
-  // Na telefonie menu mieści więcej pozycji niż pasek na komputerze
   const mobileLinks = [...links, { href: site.routes.favorites, label: t("nav.favorites") }, { href: site.routes.tutorial, label: t("nav.guide") }];
 
   useEffect(() => {
@@ -143,7 +137,7 @@ export function SiteHeader() {
           onMouseLeave={() => notice && schedule(1600)}
           className={`pointer-events-auto w-full overflow-hidden rounded-[28px] border backdrop-blur-xl transition-[max-width,background-color,border-color,box-shadow] duration-500 ease-[var(--ease-out-soft)] ${
             compact
-              ? // Na komputerze zwarta wyspa musi zmieścić logo, 4 linki, ustawienia i paczkę – także z powiadomieniem
+              ?
                 `${notice ? "max-w-[36rem] lg:max-w-[60rem] xl:max-w-[63.5rem]" : "max-w-[22rem] md:max-w-[27.5rem] lg:max-w-[60rem] xl:max-w-[63.5rem]"} border-line-strong bg-[#141416]/92 shadow-[0_16px_40px_-14px_rgb(0_0_0/0.9)]`
               : "max-w-[76rem] border-line bg-card/80"
           }`}
@@ -170,7 +164,6 @@ export function SiteHeader() {
               </ul>
             </nav>
 
-            {/* Szukajka chowa się, gdy wyspa jest zwarta */}
             <form
               role="search"
               onSubmit={onSearch}
@@ -196,7 +189,6 @@ export function SiteHeader() {
             </form>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
-              {/* Między lg a xl nie ma miejsca na pole wyszukiwania, więc zostaje ikona */}
               <Link
                 href={site.routes.finds}
                 className={`size-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/[0.06] hover:text-fg ${compact ? "hidden" : "hidden lg:grid xl:hidden"}`}
@@ -276,7 +268,6 @@ export function SiteHeader() {
             </div>
           </div>
 
-          {/* Rozwinięcie wyspy: powiadomienie */}
           <AnimatePresence initial={false} mode="wait">
             {notice && !open && (
               <motion.div
@@ -343,7 +334,6 @@ export function SiteHeader() {
             )}
           </AnimatePresence>
 
-          {/* Rozwinięcie wyspy: menu na telefonie */}
           <AnimatePresence initial={false}>
             {open && (
               <motion.nav
@@ -377,7 +367,6 @@ export function SiteHeader() {
           </AnimatePresence>
         </div>
 
-        {/* Czytniki ekranu słyszą każde powiadomienie */}
         <p className="sr-only" aria-live="polite">
           {notice ? `${notice.title}. ${notice.text ?? ""}` : ""}
         </p>

@@ -8,12 +8,6 @@ import { redisCall, storageKind } from "./analytics/store";
 import type { Find } from "./finds";
 import type { Rates } from "./money";
 
-// Ceny ofert zsynchronizowane z agentem (USFans): cena w juanach dla aukcji, przeliczana na złotówki tym samym
-// kursem co strona produktu, więc katalog i produkt pokazują to samo. Źródła, od najświeższego:
-// - zapis w Redis (px:v1) – za każdym razem, gdy strona produktu pobierze cenę od agenta (/api/item), i z crona,
-// - data/prices.json – migawka ze skryptu (npm run prices:snapshot),
-// - cena z importu katalogu (pricePln), gdy agent nie podał żadnej.
-
 export const PRICES_TAG = "prices";
 const KEY = "px:v1";
 
@@ -22,7 +16,6 @@ type AgentPrice = { cny: number; at: string };
 const keyOf = (s: ProductSource) => `${s.platform}:${s.id}`;
 const mem = ((globalThis as { __xayezPrices?: Map<string, AgentPrice> }).__xayezPrices ??= new Map());
 
-/** Zapisuje cenę od agenta; zwraca true, gdy się zmieniła (wtedy trzeba odświeżyć katalog) */
 export async function saveAgentPrice(source: ProductSource, cny: number): Promise<boolean> {
   if (!(cny > 0)) return false;
   const key = keyOf(source);
@@ -41,7 +34,6 @@ export async function saveAgentPrice(source: ProductSource, cny: number): Promis
   }
 }
 
-/** Ceny od agenta dla wszystkich aukcji: migawka z pliku nadpisana zapisami z Redis */
 export async function getAgentPrices(): Promise<Record<string, AgentPrice>> {
   "use cache";
   cacheLife("hours");
@@ -67,10 +59,6 @@ export async function getAgentPrices(): Promise<Record<string, AgentPrice>> {
   return prices;
 }
 
-/**
- * Cena w złotówkach z ceny w juanach – od agenta, a bez niej z katalogu (priceCny) – tym samym kursem co strona
- * produktu (rates.CNY = juanów za 1 zł), więc katalog i produkt pokazują to samo
- */
 export const withAgentPrices = <T extends Find>(finds: T[], prices: Record<string, AgentPrice>, rates: Rates): T[] =>
   finds.map((f) => {
     const cny = prices[keyOf(f.source)]?.cny ?? f.priceCny ?? 0;

@@ -1,14 +1,8 @@
 @import "tailwindcss";
 
-/*
-  Prosty, płaski styl jak cadenreps: grafitowe tło, karty z cienką ramką,
-  białe przyciski i szeryfowa kursywa w dużych nagłówkach.
-*/
-/* Niskie okna (laptopy z małym ekranem, telefon w poziomie) */
 @custom-variant short (@media (max-height: 40rem));
 
 @theme {
-  /* Płaski grafit jak na cadenreps, niebieski xayez tylko w drobnych akcentach */
   --color-bg: #111112;
   --color-card: #18181b;
   --color-card-hover: #1d1d21;
@@ -30,7 +24,6 @@
   --ease-out-soft: cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
-/* Szeryfowa kursywa do wybranych napisów */
 @utility fancy {
   font-family: var(--font-serif);
   font-style: italic;
@@ -38,13 +31,11 @@
   letter-spacing: -0.01em;
 }
 
-/* Siatka kropek w tle strony */
 @utility dot-grid {
   background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1.2px);
   background-size: 22px 22px;
 }
 
-/* Siatka linii w tle stopki */
 @utility line-grid {
   background-image:
     linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
@@ -56,7 +47,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Mała etykieta na zdjęciu produktu */
 @utility tag {
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -103,7 +93,6 @@
   }
 }
 
-/* Okna dialogowe (ustawienia, oferta): zawsze na środku ekranu, z przyciemnionym tłem */
 @layer components {
   dialog.modal {
     position: fixed;
@@ -113,7 +102,6 @@
     overflow-y: auto;
     background: transparent;
     color: inherit;
-    /* miejsce na cień karty, żeby nie był ucięty */
     padding: 2.5rem 0;
     border: 0;
     scrollbar-width: none;
@@ -125,14 +113,10 @@
     }
   }
 
-  /* Produkty bez tła leżą prosto na grafitowej stronie. Cienka jasna poświata na krawędzi oddziela
-     czarne rzeczy od ciemnego tła, a cień pod spodem sprawia, że nie wiszą w powietrzu. */
   .cutout {
     filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.32)) drop-shadow(0 12px 12px rgb(0 0 0 / 0.5));
   }
 
-  /* Karta findu: po najechaniu produkt „podnosi się” – rośnie, unosi się i lekko przechyla, a cień pod nim się wydłuża.
-     Tylko przy myszce, żeby na telefonie efekt nie zostawał po dotknięciu. */
   .lift,
   .lift .cutout {
     transition:
@@ -149,7 +133,6 @@
       transform: translateY(-10px) rotate(-2.5deg) scale(1.12);
     }
   }
-  /* To samo przy przechodzeniu klawiaturą (Tab) */
   @media (prefers-reduced-motion: no-preference) {
     .group:has(a:focus-visible) .lift {
       transform: translateY(-10px) rotate(-2.5deg) scale(1.12);
@@ -171,7 +154,6 @@
     .float {
       animation: float 6s ease-in-out infinite;
     }
-    /* Ściana zdjęć QC: taśma przesuwa się o połowę (druga połowa to kopia), stoi po najechaniu */
     .marquee {
       animation: marquee 90s linear infinite;
     }
@@ -182,7 +164,6 @@
   }
 }
 
-/* Wejście na stronę główną: elementy w .intro grają raz, każdy z opóźnieniem --d */
 @media (prefers-reduced-motion: no-preference) {
   .intro .intro-rise {
     animation: intro-rise 0.75s var(--ease-out-soft) var(--d, 0ms) both;
@@ -201,7 +182,6 @@
   }
 }
 
-/* Kursywa ma wystające ogonki, więc maska jest szersza od tekstu */
 @keyframes intro-write {
   from {
     clip-path: inset(-20% 100% -30% -10%);
@@ -218,7 +198,6 @@
   }
 }
 
-/* Szukanie po zdjęciu: linia skanu nad zdjęciem i odczyt AI „dopisywany” od lewej */
 .scan-line {
   display: none;
 }
@@ -241,7 +220,6 @@
   }
 }
 
-/* Kursor w podpowiedzi szukajki na stronie głównej */
 @media (prefers-reduced-motion: no-preference) {
   .caret {
     animation: caret 1.05s steps(1) infinite;
@@ -254,7 +232,6 @@
   }
 }
 
-/* Strzałka w przycisku wyszukiwarki: wylatuje w prawo i wraca z lewej */
 @media (prefers-reduced-motion: no-preference) {
   .arrow-zip {
     animation: arrow-zip 0.5s cubic-bezier(0.5, 0, 0.2, 1);

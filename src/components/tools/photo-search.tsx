@@ -22,12 +22,10 @@ type State =
   | { status: "done"; preview: string; result: Result }
   | { status: "error"; preview: string | null; code: ErrorCode; image: string | null };
 
-/** Przykładowy odczyt pokazywany, zanim ktoś wrzuci własne zdjęcie */
 export type PhotoExample = { id: string; image: string; name: string; category: string; read: Read; count: number };
 
 const MAX_SIDE = 1024;
 
-/** Zmniejsza zdjęcie do 1024 px i zapisuje jako JPEG, żeby wysyłka była szybka */
 async function prepare(file: Blob): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
@@ -39,7 +37,6 @@ async function prepare(file: Blob): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-// AI podaje kolor po angielsku; po polsku pokazujemy nazwę i próbkę koloru
 const COLORS: Record<string, [pl: string, swatch: string]> = {
   black: ["czarny", "#0a0a0a"],
   white: ["biały", "#f5f5f4"],
@@ -93,7 +90,6 @@ export function PhotoSearch({ total, example }: { total: number; example: PhotoE
     [search],
   );
 
-  // Wklejanie zdjęcia ze schowka (Ctrl+V) w dowolnym miejscu strony
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const item = [...(e.clipboardData?.items ?? [])].find((i) => i.type.startsWith("image/"));
@@ -130,7 +126,6 @@ export function PhotoSearch({ total, example }: { total: number; example: PhotoE
       <input ref={input} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => handleFile(e.target.files?.[0])} />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-5">
-        {/* Wizjer: tu upuszcza się zdjęcie, a potem leży w nim podgląd */}
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -147,7 +142,6 @@ export function PhotoSearch({ total, example }: { total: number; example: PhotoE
         >
           {!preview && (
             <>
-              {/* Siatka trójpodziału jak w aparacie */}
               <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-1/3 w-px bg-white/[0.035]" />
               <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-2/3 w-px bg-white/[0.035]" />
               <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/3 h-px bg-white/[0.035]" />
@@ -158,7 +152,7 @@ export function PhotoSearch({ total, example }: { total: number; example: PhotoE
 
           {preview ? (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element -- podgląd zdjęcia z urządzenia */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview}
                 alt={t("photo.yourPhoto")}
@@ -249,7 +243,6 @@ export function PhotoSearch({ total, example }: { total: number; example: PhotoE
   );
 }
 
-/** Narożniki kadru; przy przeciąganiu zdjęcia i szukaniu zaciskają się i robią zielone */
 function Corners({ active }: { active: boolean }) {
   const base = `pointer-events-none absolute size-8 transition-all duration-300 ease-out ${active ? "border-gl" : "border-fg/40"}`;
   return (
@@ -266,7 +259,6 @@ function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="inline-grid h-6 min-w-6 place-items-center rounded-md border border-line-strong bg-bg px-1.5 font-sans text-xs font-medium text-fg">{children}</kbd>;
 }
 
-/** Panel obok wizjera: przykład, odczyt w trakcie, wynik albo błąd */
 function Readout({
   f,
   state,
@@ -373,7 +365,6 @@ function Readout({
     );
   }
 
-  // Zanim ktoś wrzuci zdjęcie: tak wygląda odczyt dla prawdziwego findu z katalogu
   return (
     <aside className={panel}>
       <div className="flex items-center justify-between gap-3">

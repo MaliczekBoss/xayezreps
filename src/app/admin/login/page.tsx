@@ -32,7 +32,6 @@ export default function LoginPage() {
   );
 }
 
-/** Formularz sprawdza przy każdym wejściu, czy włączone jest 2FA (zmienna może dojść bez przebudowy strony) */
 async function Form() {
   await connection();
   return <LoginForm twoFactor={totpEnabled()} />;

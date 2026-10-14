@@ -2,10 +2,6 @@ import { parseSource } from "./agents";
 import type { Category, Find } from "./finds";
 import type { SellerItem } from "./remote";
 
-// Produkt sprzedawcy jako oferta w tym samym kształcie co find: ta sama karta, ta sama strona oferty
-// (pod /sellers/<sklep>/<id>), ulubione i paczka. Do katalogu findów nie trafia.
-
-// Kategoria z nazwy – sprzedawcy jej nie podają, a od niej zależy szacowana waga do kalkulatora paczki
 const RULES: [Category, RegExp][] = [
   ["Buty", /\bshoes?\b|sneakers?|\bslides?\b|slippers?|\bboots?\b|trainers?|air force|\bjordan\b|\bdunks?\b|yeezy|new ?balance|air max|\bshox\b|loafers?|\bclogs?\b|\bugg\b/i],
   ["Bluzy", /hoodie|\bzip\b|crewneck|sweatshirt|\bfleece\b/i],
@@ -44,7 +40,6 @@ const WEIGHT: Partial<Record<Category, number>> = {
 
 const categoryOf = (title: string): Category => RULES.find(([, re]) => re.test(title))?.[0] ?? "Akcesoria";
 
-/** Id oferty sprzedawcy – z przedrostkiem, żeby nie myliło się z findami */
 export const sellerFindId = (itemId: string) => `s-${itemId}`;
 
 export const sellerOfferHref = (slug: string, itemId: string) => `/sellers/${slug}/${itemId}`;

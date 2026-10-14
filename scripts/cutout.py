@@ -24,8 +24,8 @@ import onnxruntime as ort
 from PIL import Image
 
 MODEL_DIR = Path.home() / ".rembg" / "models" / "birefnet-general"
-MARGIN = 0.07  # wolne miejsce wokół produktu, jako część boku kwadratu
-MIN_SPECK = 0.004  # osobne plamki mniejsze niż ta część produktu wylatują
+MARGIN = 0.07
+MIN_SPECK = 0.004
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
@@ -108,7 +108,6 @@ def load(path: Path) -> Image.Image:
     img = Image.open(path)
     img.load()
     if img.mode in ("RGBA", "LA", "P"):
-        # Zdjęcia z przezroczystością nakładamy na biel, żeby model widział produkt jak na zwykłym zdjęciu
         img = img.convert("RGBA")
         img = Image.alpha_composite(Image.new("RGBA", img.size, (255, 255, 255, 255)), img)
     img = img.convert("RGB")
@@ -160,10 +159,9 @@ def main():
         def record(stem, future):
             try:
                 log.writerow([stem, f"{future.result():.4f}", ""])
-            except Exception as e:  # jedno uszkodzone zdjęcie nie zatrzymuje całości
+            except Exception as e:
                 log.writerow([stem, "", repr(e)[:200]])
 
-        # Karta liczy maskę, a wczytywanie następnego zdjęcia, czyszczenie krawędzi i zapis idą w wątkach obok
         loading = {0: pool.submit(load, todo[0])}
         finishing = []
         for i, path in enumerate(todo):
@@ -175,7 +173,6 @@ def main():
                 finishing.append((path.stem, pool.submit(finish, img, alpha, dst / f"{path.stem}.webp", args.size)))
             except Exception as e:
                 log.writerow([path.stem, "", repr(e)[:200]])
-            # Nie trzymamy w pamięci więcej niż kilkunastu zdjęć czekających na zapis
             while len(finishing) > 12:
                 record(*finishing.pop(0))
             if (i + 1) % 200 == 0:

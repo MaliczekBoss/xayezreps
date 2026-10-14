@@ -5,7 +5,6 @@ import { copyWithNotice } from "@/lib/clipboard";
 import { site } from "@/lib/site";
 import { useFormat } from "@/lib/use-format";
 
-/** Kod promocyjny z przyciskiem kopiowania. Potwierdzenie pokazuje wyspa. */
 export function CopyCode({ code, label }: { code: string; label: string }) {
   const { t } = useFormat();
 

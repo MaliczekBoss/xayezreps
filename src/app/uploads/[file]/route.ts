@@ -9,7 +9,6 @@ const TYPES: Record<string, string> = {
   gif: "image/gif",
 };
 
-/** Zdjęcia wgrane w panelu admina (z Upstash Redis albo z folderu data/uploads) */
 export async function GET(_request: Request, ctx: RouteContext<"/uploads/[file]">) {
   const { file } = await ctx.params;
   const name = path.basename(file);

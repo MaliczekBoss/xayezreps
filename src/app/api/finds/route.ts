@@ -3,10 +3,6 @@ import { limitRequest } from "@/lib/rate-limit";
 
 const HEADERS = { "Cache-Control": "public, max-age=120, s-maxage=600, stale-while-revalidate=86400" };
 
-/**
- * Porcja katalogu: /api/finds?q=…&category=…&batch=…&qc=1&sort=…&offset=…
- * albo konkretne produkty (ulubione): /api/finds?ids=a,b,c
- */
 export async function GET(request: Request) {
   const limited = await limitRequest(request, "finds", 900, 600);
   if (limited) return limited;

@@ -3,8 +3,6 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-// Wspólne elementy grafik do podglądu linków (Discord, Messenger, X): kroje strony i znak XR
-
 type OgFont = { name: string; data: ArrayBuffer; weight: 400 | 500 | 700; style: "normal" | "italic" };
 
 let fonts: Promise<OgFont[]> | null = null;
@@ -14,7 +12,6 @@ const load = async (file: string) => {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
 };
 
-/** Geist (tekst) i kursywa Instrument Serif (logo), wczytywane raz na instancję */
 export function ogFonts() {
   fonts ??= Promise.all([load("Geist-Medium.ttf"), load("Geist-Bold.ttf"), load("InstrumentSerif-Italic.ttf")]).then(([medium, bold, serif]) => [
     { name: "Geist", data: medium, weight: 500, style: "normal" },
@@ -24,7 +21,6 @@ export function ogFonts() {
   return fonts;
 }
 
-/** Znak XR jak w logo strony */
 export function OgMark({ size, color = "#ececee" }: { size: number; color?: string }) {
   return (
     <svg width={size} height={(size * 24) / 32} viewBox="0 0 32 24" fill={color}>
@@ -35,7 +31,6 @@ export function OgMark({ size, color = "#ececee" }: { size: number; color?: stri
   );
 }
 
-/** Logo „xayezreps”: kursywa i pogrubienie jak w nagłówku strony */
 export function OgLogo({ size = 30 }: { size?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: size * 0.4 }}>

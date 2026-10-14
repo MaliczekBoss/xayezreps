@@ -9,8 +9,6 @@ import { live } from "@/lib/live";
 import { getSellers } from "@/lib/remote";
 import { toSellerFind } from "@/lib/seller-find";
 
-// Oferta sprzedawcy: ta sama strona co produkt z katalogu (galeria, agenci, cena u agenta, zdjęcia QC),
-// a niżej więcej produktów z tego sklepu. Przy buildzie generujemy tylko pierwsze oferty każdego sklepu.
 const PRERENDER_PER_SELLER = 3;
 
 async function offer(slug: string, id: string) {
@@ -53,7 +51,6 @@ async function OfferContent({ params }: { params: PageProps<"/sellers/[slug]/[id
   const found = await offer(slug, id);
   if (!found?.find) notFound();
   const { seller, find } = found;
-  // Więcej z tego sklepu: najpierw z tej samej kategorii, potem reszta
   const others = seller.items
     .filter((i) => i.id !== id)
     .map((i) => toSellerFind(seller.slug, i))

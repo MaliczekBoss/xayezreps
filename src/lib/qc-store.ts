@@ -3,22 +3,13 @@ import "server-only";
 import type { ProductSource } from "./agents";
 import { redisCall, run, storageKind } from "./analytics/store";
 
-// Historia zdjęć QC zapisana u nas: każde zdjęcie, które raz zobaczyliśmy w którymś źródle, zostaje.
-// Redis: zbiór posortowany na aukcję (wynik = data zdjęcia) i jeden hash z liczbą zdjęć i okładką
-// dla katalogu. Bez Upstash (lokalnie) – pamięć procesu.
-
 export type QcInfo = { count: number; cover: string | null };
 
 const KEY = (s: ProductSource) => `qc:v1:${s.platform}:${s.id}`;
 const INDEX = "qc:v1:index";
 export const qcKey = (s: ProductSource) => `${s.platform}:${s.id}`;
-// Starsze zdjęcia ponad ten limit wypadają, żeby popularne aukcje nie rosły bez końca
 const MAX_PER_ITEM = 600;
 
-/**
- * Kiedy zrobiono zdjęcie – magazyny trzymają pliki w folderach z datą
- * (Kakobuy: /whg/202606/13/…, USFans: /2026/09/08/112838/…). Bez daty w adresie – teraz.
- */
 export function shotTime(url: string, fallback: number) {
   const m = url.match(/\/(20\d{2})\/?(\d{2})\/(\d{2})\/(?:(\d{2})(\d{2})(\d{2})\/)?/);
   if (!m) return fallback;
@@ -27,23 +18,14 @@ export function shotTime(url: string, fallback: number) {
   return Number.isFinite(t) ? t : fallback;
 }
 
-/**
- * Adres zdjęcia do pokazania. kako-alosshk-pic.kakobuy.com wskazuje wprost na magazyn Aliyun, ale ma certyfikat
- * Aliyun, więc przeglądarka i optymalizator zdjęć go odrzucają – ten sam plik bierzemy z adresu Aliyun.
- */
 export const photoUrl = (url: string) =>
   url.replace(/^https?:\/\/kako-alosshk-pic\.kakobuy\.com\//, "https://kako-alosshk-pic.oss-cn-hongkong.aliyuncs.com/");
 
-/** Od najnowszych */
 export const byNewest = (photos: string[], now = Date.now()) => [...photos].sort((a, b) => shotTime(b, now) - shotTime(a, now));
 
 type Mem = { items: Map<string, Map<string, number>>; index: Map<string, QcInfo> };
 const mem: Mem = ((globalThis as { __xayezQc?: Mem }).__xayezQc ??= { items: new Map(), index: new Map() });
 
-/**
- * Dopisuje nowe zdjęcia aukcji i zwraca całą zapisaną historię (od najnowszych).
- * added – ile zdjęć było nowych; wtedy aktualizujemy też licznik w katalogu.
- */
 export async function syncQc(source: ProductSource, photos: string[]): Promise<{ photos: string[]; added: number }> {
   const now = Date.now();
   const key = KEY(source);
@@ -74,7 +56,6 @@ export async function syncQc(source: ProductSource, photos: string[]): Promise<{
   return { photos: list, added: fresh };
 }
 
-/** Liczba zapisanych zdjęć i okładka dla każdej aukcji, którą już widzieliśmy */
 export async function storedQcIndex(): Promise<Record<string, QcInfo>> {
   if (storageKind() === "memory") return Object.fromEntries(mem.index);
   const flat = (await redisCall(["HGETALL", INDEX])) as string[] | null;
@@ -88,7 +69,6 @@ export async function storedQcIndex(): Promise<Record<string, QcInfo>> {
   return out;
 }
 
-/** Miejsce, w którym codzienne sprawdzanie katalogu skończyło poprzednio */
 export async function qcCursor(next?: number): Promise<number> {
   if (storageKind() === "memory") {
     const g = globalThis as { __xayezQcCursor?: number };

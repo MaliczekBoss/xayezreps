@@ -15,7 +15,6 @@ type LightboxProps = {
 const arrow =
   "absolute top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/80";
 
-/** Podgląd zdjęcia na pełnym ekranie ze strzałkami (także z klawiatury) */
 export function Lightbox({ id, photos, index, onIndex, onClose }: LightboxProps) {
   const { t } = useFormat();
   const go = (dir: 1 | -1) => index !== null && onIndex((index + dir + photos.length) % photos.length);
@@ -40,7 +39,7 @@ export function Lightbox({ id, photos, index, onIndex, onClose }: LightboxProps)
             </button>
           </div>
           <div className="relative overflow-hidden rounded-2xl bg-black">
-            {/* eslint-disable-next-line @next/next/no-img-element -- zdjęcia z różnych hostów, w pełnej rozdzielczości */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photos[index]} alt="" referrerPolicy="no-referrer" className="mx-auto max-h-[78dvh] w-auto object-contain" />
             {photos.length > 1 && (
               <>

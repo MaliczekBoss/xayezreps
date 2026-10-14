@@ -9,11 +9,9 @@ type FavoriteButtonProps = {
   find: Pick<Find, "id" | "name" | "image">;
   className?: string;
   withLabel?: boolean;
-  /** Bez własnej ramki i tła, do kapsuły na zdjęciu karty findu */
   bare?: boolean;
 };
 
-/** Serduszko: dodaje find do ulubionych albo go z nich usuwa */
 export function FavoriteButton({ find, className = "", withLabel = false, bare = false }: FavoriteButtonProps) {
   const { t } = useFormat();
   const favorites = useFavorites();

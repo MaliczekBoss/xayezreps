@@ -96,7 +96,7 @@ def classify(key, batch):
             wait = 30 if e.code == 429 else 5
             print(f"    {model}: HTTP {e.code}, ponawiam za {wait} s ({msg[:90]})", flush=True)
             time.sleep(wait)
-        except Exception as e:  # zła odpowiedź albo przerwane połączenie
+        except Exception as e:
             print(f"    {model}: {e!r}, ponawiam", flush=True)
             time.sleep(5)
     return {}
@@ -115,7 +115,6 @@ def main():
     checked_path = ROOT.parent / ".import" / f"classified-{args.category}.json"
     checked = json.loads(checked_path.read_text(encoding="utf-8")) if checked_path.exists() else {}
 
-    # Pomijamy już sprawdzone; te bez odpowiedzi (limit, przeciążenie) próbujemy ponownie
     todo = [f for f in finds if f["category"] == args.category and not f.get("hidden") and f.get("image") and not checked.get(f["id"])]
     print(f"Do sprawdzenia: {len(todo)} produktów z kategorii {args.category}", flush=True)
     key = api_key()
