@@ -6,7 +6,7 @@ import { fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
 import { limitRequest } from "@/lib/rate-limit";
 
 /**
- * Szczegóły produktu ze sklepu dla linku: /api/item?url=…
+ * Szczegóły produktu dla linku: /api/item?url=… – na żywo z USFans (zdjęcia, warianty, dostępność), CDN trzyma je 15 min.
  * agentPriceCny – aktualna cena u agenta (USFans) w juanach; strona przelicza ją kursem agenta na każdą walutę.
  * Cenę oferty z katalogu zapisujemy, żeby katalog, strona główna i ulubione pokazywały tę samą (prices.ts).
  */
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       console.error("[item] zapis ceny:", (e as Error).message);
     }
   }
-  return Response.json({ source, item, agentPriceCny }, { headers: { "Cache-Control": "public, max-age=3600" } });
+  return Response.json({ source, item, agentPriceCny }, { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600" } });
 }
 
 /** Aukcja z katalogu albo od jednego z naszych sprzedawców – tylko takim zapisujemy ceny */

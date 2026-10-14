@@ -7,10 +7,10 @@ import type { ProductSource } from "./agents";
 import { FALLBACK_RATES, type Rates } from "./money";
 import { snapshotItem } from "./snapshot";
 
-// Dane z zewnątrz: kursy walut (USFans, NBP), ceny u agenta (USFans), sprzedawcy i szczegóły produktów.
+// Dane z zewnątrz: kursy walut (USFans, NBP), ceny i szczegóły produktów u agenta (USFans, na żywo), sprzedawcy.
 // Sprzedawców, galerie QC i szczegóły produktów ze starej strony (xayezreps.com) mamy zapisane u siebie
-// (data/sellers.json, data/qc, data/items) – jej API pytamy już tylko o to, czego nie ma w zapisie,
-// z krótkim limitem czasu, więc jej wyłączenie niczego u nas nie psuje.
+// (data/sellers.json, data/qc, data/items) – to zapas, gdy USFans nie odpowie. Starą stronę pytamy już tylko
+// o to, czego nie ma w zapisie, z krótkim limitem czasu, więc jej wyłączenie niczego u nas nie psuje.
 const OLD_API = "https://xayezreps.com/api";
 const OLD_HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
 const OLD_TIMEOUT_MS = 5000;
@@ -140,21 +140,76 @@ export type ItemDetails = {
 };
 
 /**
- * Szczegóły produktu ze sklepu (tytuł, warianty, cena w juanach): z zapisu u nas, a gdy aukcji tam nie ma
- * (np. dowolny link wklejony w narzędziu QC) – ze starej strony, dopóki odpowiada.
+ * Szczegóły produktu (tytuł, zdjęcia, warianty, dostępność, cena w juanach) – na żywo z USFans, więc zmiany
+ * u agenta od razu widać u nas. Gdy USFans nie odpowie: zapis ze starej strony, a dla aukcji spoza zapisu
+ * (np. link wklejony w narzędziu QC) – stara strona, dopóki odpowiada.
  */
 export async function fetchItemDetails(source: ProductSource): Promise<ItemDetails | null> {
+  const goods = await fetchUsfansGoods(source);
+  const live = goods && parseUsfansGoods(goods);
+  if (live) return live;
   const saved = await snapshotItem(source);
   if (saved !== undefined) return saved && parseItemDetails(saved);
   const res = await fromOldSite(`/item-details?platform=${PLATFORM_CODE[source.platform]}&platformID=${encodeURIComponent(source.id)}`);
   return res?.ok && res.body && typeof res.body === "object" ? parseItemDetails(res.body as Record<string, unknown>) : null;
 }
 
-/** Pola z API starej strony (i z zapisu – scripts/old-site-snapshot.mjs) → szczegóły na stronie produktu */
+const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+const amount = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+/** Adres zdjęcia ze sklepu: „//host/…” i http → https, inne odrzucamy */
+const httpsUrl = (v: unknown) => {
+  const url = text(v).replace(/^\/\//, "https://").replace(/^http:\/\//, "https://");
+  return /^https:\/\/[^\s"'<>]+$/.test(url) ? url : null;
+};
+
+/**
+ * Odpowiedź USFans (api/goods/info) → szczegóły na stronie produktu. Pola jak na ich stronie produktu:
+ * properties [{ propNameEn, valuesList [{ valueNameEn, valueName, picUrl }] }], skuList [{ price, discountPrice, stock }],
+ * images, description (HTML), deliveryPrice, shopName, stock.
+ */
+function parseUsfansGoods(d: Record<string, unknown>): ItemDetails | null {
+  const title = text(d.titleEn) || text(d.title);
+  if (!title) return null;
+  type Value = { valueName?: unknown; valueNameEn?: unknown; picUrl?: unknown };
+  type Prop = { propName?: unknown; propNameEn?: unknown; valuesList?: unknown };
+  type Sku = { price?: unknown; discountPrice?: unknown; stock?: unknown };
+
+  const props = list(d.properties) as Prop[];
+  const values = (re: RegExp) => list(props.find((p) => re.test(`${text(p.propNameEn)} ${text(p.propName)}`))?.valuesList) as Value[];
+  const nameOf = (v: Value) => text(v.valueNameEn) || text(v.valueName);
+  const colors = values(/colou?r|颜色|顏色/i)
+    .map((v) => ({ name: nameOf(v), image: httpsUrl(v.picUrl) ?? undefined }))
+    .filter((c) => c.name);
+  const sizes = values(/size|尺码|尺寸/i).map(nameOf).filter(Boolean);
+
+  const skus = list(d.skuList) as Sku[];
+  const prices = skus.map((s) => (amount(s.discountPrice) > 0 ? amount(s.discountPrice) : amount(s.price))).filter((p) => p > 0);
+  const base = prices.length ? Math.min(...prices) : amount(d.price);
+  const all = prices.length ? prices : [base];
+  // Stan magazynu: suma wariantów, a bez niej – całej aukcji; brak danych = dostępny
+  const stocks = skus.map((s) => s.stock).filter((n): n is number => typeof n === "number");
+  const stock = stocks.length ? stocks.reduce((sum, n) => sum + Math.max(0, n), 0) : typeof d.stock === "number" ? d.stock : null;
+  const descriptionImages = [...text(d.description).matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map((m) => httpsUrl(m[1])).filter((u): u is string => Boolean(u));
+
+  return {
+    title,
+    priceCny: base,
+    domesticShipCny: amount(d.deliveryPrice),
+    images: list(d.images).map(httpsUrl).filter((u): u is string => Boolean(u)).slice(0, 8),
+    descriptionImages: [...new Set(descriptionImages)].slice(0, 8),
+    available: stock === null || stock > 0,
+    seller: text(d.shopNameEn) || text(d.shopName) || null,
+    colors: colors.slice(0, 30),
+    sizes: [...new Set(sizes)].slice(0, 30),
+    priceRangeCny: [Math.min(...all), Math.max(...all)],
+    qcCount: 0,
+  };
+}
+
 function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
   if (!d.title) return null;
   type Attr = { tag?: string; name?: string; values?: { name?: string; image?: string }[] };
-  const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
   const attrs = list(d.attributes) as Attr[];
   const findAttr = (re: RegExp) => attrs.find((a) => re.test(`${a.tag ?? ""} ${a.name ?? ""}`));
   const colors = (findAttr(/colou?r|颜色/i)?.values ?? []).filter((v) => v.name).map((v) => ({ name: v.name!, image: v.image }));
@@ -183,22 +238,41 @@ function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
 
 const USFANS_CHANNEL: Record<ProductSource["platform"], number> = { "1688": 1, taobao: 2, weidian: 3 };
 
+// Cena i szczegóły biorą tę samą odpowiedź USFans: zapytania o tę samą aukcję w tej samej chwili idą raz
+const goodsInFlight = new Map<string, Promise<Record<string, unknown> | null>>();
+
+/** Dane aukcji z USFans (api/goods/info) albo null, gdy nie odpowiedział */
+function fetchUsfansGoods(source: ProductSource): Promise<Record<string, unknown> | null> {
+  const key = `${source.platform}:${source.id}`;
+  let pending = goodsInFlight.get(key);
+  if (!pending) {
+    pending = (async () => {
+      const url = `https://www.usfans.com/api/goods/info?channel=${USFANS_CHANNEL[source.platform]}&goodsId=${encodeURIComponent(source.id)}&refresh=false&queryDelivery=false&activityId=`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const d = await res.json().catch(() => null);
+      return d?.code === 200 && d.data && typeof d.data === "object" ? (d.data as Record<string, unknown>) : null;
+    })()
+      .catch(() => null)
+      .finally(() => setTimeout(() => goodsInFlight.delete(key), 5000));
+    goodsInFlight.set(key, pending);
+  }
+  return pending;
+}
+
 /** Aktualna cena u agenta (USFans) w juanach: najtańszy wariant, z promocją, jeśli jest */
 export async function fetchAgentPriceCny(source: ProductSource): Promise<number | null> {
-  const url = `https://www.usfans.com/api/goods/info?channel=${USFANS_CHANNEL[source.platform]}&goodsId=${encodeURIComponent(source.id)}&refresh=false&queryDelivery=false&activityId=`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
-    signal: AbortSignal.timeout(10000),
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const d = await res.json().catch(() => null);
-  if (d?.code !== 200 || !d.data) return null;
+  const d = await fetchUsfansGoods(source);
+  if (!d) return null;
   type Sku = { price?: number; discountPrice?: number | null };
-  const skus: Sku[] = Array.isArray(d.data.skuList) ? d.data.skuList : [];
+  const skus = list(d.skuList) as Sku[];
   const prices = skus.map((s) => (s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price)).filter((p): p is number => typeof p === "number" && p > 0);
   if (prices.length) return Math.min(...prices);
-  return typeof d.data.price === "number" && d.data.price > 0 ? d.data.price : null;
+  return typeof d.price === "number" && d.price > 0 ? d.price : null;
 }
 
 /**
