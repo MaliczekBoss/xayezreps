@@ -2,7 +2,7 @@ import { revalidateTag } from "next/cache";
 import { parseSource, type ProductSource } from "@/lib/agents";
 import { PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { isCatalogSource } from "@/lib/qc-feed";
-import { fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
+import { agentStatus, fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
 import { limitRequest } from "@/lib/rate-limit";
 
 /**
@@ -30,7 +30,11 @@ export async function GET(request: Request) {
       console.error("[item] zapis ceny:", (e as Error).message);
     }
   }
-  return Response.json({ source, item, agentPriceCny }, { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600" } });
+  // X-Agent-Status: kod odpowiedzi USFans (200 = dane na żywo) – widać, czy szczegóły są od agenta, czy z zapisu
+  return Response.json(
+    { source, item, agentPriceCny },
+    { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600", "X-Agent-Status": agentStatus(source) } },
+  );
 }
 
 /** Aukcja z katalogu albo od jednego z naszych sprzedawców – tylko takim zapisujemy ceny */

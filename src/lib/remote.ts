@@ -250,6 +250,11 @@ const USFANS_CHANNEL: Record<ProductSource["platform"], number> = { "1688": 1, t
 
 // Cena i szczegóły biorą tę samą odpowiedź USFans: zapytania o tę samą aukcję w tej samej chwili idą raz
 const goodsInFlight = new Map<string, Promise<Record<string, unknown> | null>>();
+// Ostatnia odpowiedź USFans dla aukcji (kod z ich API, „http 503”, „błąd”) – do nagłówka X-Agent-Status w /api/item
+const goodsStatus = new Map<string, string>();
+
+/** Jak USFans odpowiedział ostatnio na pytanie o tę aukcję (na tej instancji serwera) */
+export const agentStatus = (source: ProductSource) => goodsStatus.get(`${source.platform}:${source.id}`) ?? "";
 
 /** Dane aukcji z USFans (api/goods/info) albo null, gdy nie odpowiedział */
 function fetchUsfansGoods(source: ProductSource): Promise<Record<string, unknown> | null> {
@@ -263,11 +268,18 @@ function fetchUsfansGoods(source: ProductSource): Promise<Record<string, unknown
         signal: AbortSignal.timeout(10000),
         cache: "no-store",
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        goodsStatus.set(key, `http ${res.status}`);
+        return null;
+      }
       const d = await res.json().catch(() => null);
+      goodsStatus.set(key, String(d?.code ?? "brak kodu"));
       return d?.code === 200 && d.data && typeof d.data === "object" ? (d.data as Record<string, unknown>) : null;
     })()
-      .catch(() => null)
+      .catch(() => {
+        goodsStatus.set(key, "błąd");
+        return null;
+      })
       .finally(() => setTimeout(() => goodsInFlight.delete(key), 5000));
     goodsInFlight.set(key, pending);
   }
