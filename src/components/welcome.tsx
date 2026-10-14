@@ -105,8 +105,6 @@ export function Welcome({ sample }: { sample: WelcomeSample | null }) {
   const remember = () => {
     try {
       window.localStorage.setItem(WELCOME_KEY, String(Date.now()));
-      // Kod USFans był już w pierwszym kroku, więc okno z ofertą wraca dopiero za kilka dni
-      window.localStorage.setItem("xayez-promo-seen", String(Date.now()));
     } catch {}
   };
 
