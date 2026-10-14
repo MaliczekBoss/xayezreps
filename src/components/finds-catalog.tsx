@@ -17,24 +17,26 @@ import { ProductImage } from "./product-image";
 import { Select } from "./select";
 import { btnPrimary } from "./ui";
 
-type Sort = "popular" | "newest" | "priceAsc" | "priceDesc" | "qc";
-const SORTS: Sort[] = ["popular", "newest", "priceAsc", "priceDesc", "qc"];
+type Sort = "random" | "popular" | "newest" | "priceAsc" | "priceDesc" | "qc";
+const SORTS: Sort[] = ["random", "popular", "newest", "priceAsc", "priceDesc", "qc"];
 
 const field =
   "h-11 rounded-xl border border-line bg-card px-4 text-sm text-fg transition-colors hover:border-line-strong focus:border-line-strong focus:outline-none";
 
-type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean };
+/** seed – ziarno kolejności „Losowo” (puste przy innym sortowaniu) */
+type Filters = { q: string; category: string; batch: string; sort: string; qcOnly: boolean; seed: string };
 
 /** Klucz zestawu filtrów: te same filtry = ta sama porcja katalogu */
-const keyOf = ({ q, category, batch, sort, qcOnly }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly]);
+const keyOf = ({ q, category, batch, sort, qcOnly, seed }: Filters) => JSON.stringify([q, category, batch, sort, qcOnly, seed]);
 
-const urlOf = ({ q, category, batch, sort, qcOnly }: Filters, offset = 0) => {
+const urlOf = ({ q, category, batch, sort, qcOnly, seed }: Filters, offset = 0) => {
   const next = new URLSearchParams();
   if (q) next.set("q", q);
   if (category) next.set("category", category);
   if (batch) next.set("batch", batch);
   if (sort) next.set("sort", sort);
   if (qcOnly) next.set("qc", "1");
+  if (seed) next.set("seed", seed);
   if (offset) next.set("offset", String(offset));
   return `/api/finds?${next}`;
 };
@@ -46,7 +48,7 @@ const PRELOAD_IMAGES = 10;
  * Katalog: pierwszą porcję renderuje serwer dla filtrów z adresu, a każdą zmianę (wpisywanie, kategoria,
  * batch, sortowanie, „Pokaż więcej”) dociąga z /api/finds. Filtry zmieniają adres bez przeładowania strony.
  */
-export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initial: CatalogPage }) {
+export function FindsCatalog({ facets, initial, seed }: { facets: CatalogFacets; initial: CatalogPage; seed: string }) {
   const f = useFormat();
   const { t } = f;
   const pathname = usePathname();
@@ -58,11 +60,13 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
   const batch = params.get("batch") ?? "";
   const sortParam = params.get("sort") as Sort | null;
   const validSort = sortParam && SORTS.includes(sortParam) ? sortParam : null;
-  const sort: Sort = validSort ?? "popular";
+  const sort: Sort = validSort ?? "random";
   const qcOnly = params.get("qc") === "1";
   const sheet = params.get("view") === "sheet";
+  // Bez wybranego sortowania jest losowo, chyba że ktoś coś wpisał – wtedy liczy się trafność
+  const randomOrder = validSort === "random" || (!validSort && !deferredQuery);
 
-  const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly };
+  const filters: Filters = { q: deferredQuery, category, batch, sort: validSort ?? "", qcOnly, seed: randomOrder ? seed : "" };
   const filterKey = keyOf(filters);
   const [data, setData] = useState(() => ({ key: filterKey, page: initial }));
   const [loading, setLoading] = useState(false);
@@ -225,7 +229,7 @@ export function FindsCatalog({ facets, initial }: { facets: CatalogFacets; initi
           <Select
             label={t("finds.sort")}
             value={sort}
-            onChange={(v) => setParam("sort", v === "popular" ? "" : v)}
+            onChange={(v) => setParam("sort", v === "random" ? "" : v)}
             options={SORTS.map((s) => ({ value: s, label: t(`sort.${s}` as DictKey) }))}
             className="flex-1 lg:w-52 lg:flex-none"
           />

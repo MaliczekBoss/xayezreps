@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { FindsCatalog } from "@/components/finds-catalog";
 import { PageShell } from "@/components/page-shell";
-import { getCatalogFacets, parseCatalogQuery, queryCatalog } from "@/lib/catalog";
+import { getCatalogFacets, newSeed, parseCatalogQuery, queryCatalog } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Findy",
@@ -22,11 +23,14 @@ export default function FindsPage({ searchParams }: PageProps<"/finds">) {
 
 async function Catalog({ searchParams }: { searchParams: PageProps<"/finds">["searchParams"] }) {
   const raw = await searchParams;
+  // Kolejność „Losowo” jest inna przy każdym wejściu, więc ziarno losujemy przy zapytaniu, nie przy budowie strony
+  await connection();
+  const seed = newSeed();
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) if (typeof value === "string") params.set(key, value);
-  const [facets, initial] = await Promise.all([getCatalogFacets(), queryCatalog({ ...parseCatalogQuery(params), offset: 0 })]);
+  const [facets, initial] = await Promise.all([getCatalogFacets(), queryCatalog({ ...parseCatalogQuery(params), seed, offset: 0 })]);
   // Nowy adres z zewnątrz (np. wyszukiwarka w nagłówku) to nowy katalog z własnym stanem
-  return <FindsCatalog key={params.toString()} facets={facets} initial={initial} />;
+  return <FindsCatalog key={params.toString()} facets={facets} initial={initial} seed={seed} />;
 }
 
 function CatalogSkeleton() {

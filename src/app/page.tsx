@@ -81,7 +81,7 @@ export default async function Home() {
       <main>
         <Hero categories={heroCategories} proof={proof} previews={toolPreviews} />
         <ProductRow id="findy" title="rows.newest" href={`${site.routes.finds}?sort=newest`} items={newestRow} newIds={newIn(newestRow)} />
-        <ProductRow id="popularne" title="rows.popular" href={site.routes.finds} items={popularRow} newIds={newIn(popularRow)} />
+        <ProductRow id="popularne" title="rows.popular" href={`${site.routes.finds}?sort=popular`} items={popularRow} newIds={newIn(popularRow)} />
         <QcFeed entries={qcFeed} />
         <OutfitsRow outfits={summarizeOutfits(outfits, all).slice(0, 12)} />
         <HaulSection />

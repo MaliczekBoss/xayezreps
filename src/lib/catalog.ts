@@ -13,7 +13,7 @@ import { sellerFindId, toSellerFind } from "./seller-find";
 
 export const CATALOG_PAGE = 30;
 
-export const SORTS = ["popular", "newest", "priceAsc", "priceDesc", "qc"] as const;
+export const SORTS = ["random", "popular", "newest", "priceAsc", "priceDesc", "qc"] as const;
 export type CatalogSort = (typeof SORTS)[number];
 
 export type CatalogQuery = {
@@ -21,11 +21,31 @@ export type CatalogQuery = {
   category?: string;
   batch?: string;
   qcOnly?: boolean;
-  /** Bez sortowania przy wpisanym zapytaniu liczy się trafność */
+  /** Bez sortowania: losowo, a przy wpisanym zapytaniu według trafności */
   sort?: CatalogSort | null;
+  /** Ziarno kolejności „Losowo”: to samo przez całą wizytę, więc kolejne porcje się nie powtarzają */
+  seed?: string;
   offset?: number;
   limit?: number;
 };
+
+/** Losowe ziarno dla nowej wizyty w katalogu */
+export const newSeed = () => Math.random().toString(36).slice(2, 10);
+
+/** Kolejność „Losowo”: wymieszana według ziarna (skrót FNV-1a z id i ziarna, na koniec dokładnie wymieszany) */
+function shuffled(list: Find[], seed: string) {
+  const rank = (id: string) => {
+    let h = 2166136261;
+    for (const ch of `${seed}|${id}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+    h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+    h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+    return (h ^ (h >>> 16)) >>> 0;
+  };
+  return list
+    .map((f) => ({ f, r: rank(f.id) }))
+    .sort((a, b) => a.r - b.r)
+    .map(({ f }) => f);
+}
 
 export type CatalogPage = {
   items: Find[];
@@ -91,7 +111,8 @@ export async function queryCatalog(query: CatalogQuery): Promise<CatalogPage> {
   const found = searchFinds(index, base, q);
 
   let list = found.items;
-  const sort = query.sort ?? (q ? null : "popular");
+  const sort = query.sort ?? (q ? null : "random");
+  if (sort === "random") list = shuffled(list, query.seed || "0");
   if (sort === "newest") list = sortNewest(list);
   if (sort === "priceAsc") list = [...list].sort((a, b) => (a.pricePln || Infinity) - (b.pricePln || Infinity));
   if (sort === "priceDesc") list = [...list].sort((a, b) => b.pricePln - a.pricePln);
@@ -137,12 +158,14 @@ export async function findsByIds(ids: string[]): Promise<Find[]> {
 /** Parametry zapytania z adresu (strona katalogu i API) */
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
   const sort = params.get("sort");
+  const seed = params.get("seed") ?? "";
   return {
     q: params.get("q") ?? "",
     category: params.get("category") ?? "",
     batch: params.get("batch") ?? "",
     qcOnly: params.get("qc") === "1",
     sort: SORTS.includes(sort as CatalogSort) ? (sort as CatalogSort) : null,
+    seed: /^[a-z0-9]{1,16}$/i.test(seed) ? seed : "",
     offset: Number(params.get("offset")) || 0,
   };
 }
