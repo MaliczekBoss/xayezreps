@@ -1,8 +1,12 @@
 # xayezreps.pl
 
-Strona xayezreps.pl w Next.js 16 (App Router, React 19, Tailwind 4, Motion).
+Strona xayezreps.pl w Next.js 16 (App Router, React 19, Tailwind 4, Motion). Wymaga Node.js 20.9 lub nowszego.
+
+**Wdrożenie na serwer, zmienne środowiskowe, baza, crony i domena: [HOSTING.md](HOSTING.md).**
 
 ## Start
+
+Skopiuj `.env.example` do `.env.local` i uzupełnij (bez bazy Redis strona działa lokalnie na pamięci).
 
 ```bash
 npm install
@@ -21,8 +25,10 @@ npm run build && npm start
 | --- | --- |
 | `src/lib/site.ts` | linki (Discord, USFans z kodem polecającym), kod promocyjny, liczba kupujących, ścieżki podstron, cennik kalkulatora paczki |
 | `data/finds.json` | katalog produktów (na Vercelu lista żyje w Upstash Redis, plik to źródło nowych pozycji) |
-| `data/outfits.json` | outfity |
-| `data/qc-index.json` | liczba zdjęć QC i okładka dla każdej aukcji (`npm run qc:snapshot`) |
+| `data/outfits.json` | outfity (okładki w `public/o/`) |
+| `data/sellers.json` | sprzedawcy i ich produkty (zdjęcia w `public/s/`) |
+| `data/qc/`, `data/qc-index.json` | zapisane galerie zdjęć QC oraz ich liczba i okładka dla każdej aukcji |
+| `data/items/` | zapisane szczegóły produktów – zapas, gdy USFans nie odpowie (na żywo idą z USFans) |
 | `public/i/` | zdjęcia produktów bez tła, `<id>.webp` |
 | `src/app/globals.css` | kolory, czcionki, animacje |
 
@@ -49,8 +55,8 @@ npm run qc:snapshot
 Przy wymianie całego katalogu zmień znacznik `RESET.finds` w `src/lib/docstore.ts`: przy pierwszym wejściu
 po wdrożeniu lista w Redis zostanie zastąpiona plikiem, a stara trafi do kopii `xd:finds:backup:<znacznik>`.
 
-Produkty dodane w panelu admina mają zdjęcie takie, jakie się wgra. Żeby było bez tła, przepuść je
-przez `scripts/cutout.py` i wgraj gotowy plik WEBP.
+Panel admina (`/admin`) pokazuje tylko statystyki – produkty i outfity zmienia się w plikach w `data/`
+i wdraża jak resztę kodu.
 
 ## Wyszukiwarka
 

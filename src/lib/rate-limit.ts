@@ -8,12 +8,19 @@ import { run, storageKind } from "./analytics/store";
 
 /**
  * Adres klienta. Na Vercelu nagłówki x-real-ip i x-forwarded-for nadpisuje platforma, więc klient ich nie podmieni.
- * Poza Vercelem (lokalnie) nagłówki może wysłać każdy – wtedy wszyscy dzielą jeden licznik.
+ * Na własnym serwerze za odwrotnym proxy (nginx, Caddy) ustaw TRUST_PROXY=1 – wtedy liczy się x-real-ip ustawiany
+ * przez proxy albo ostatni adres z x-forwarded-for (dopisany przez proxy, a nie przez klienta).
+ * Bez tego (lokalnie) nagłówki może wysłać każdy, więc wszyscy dzielą jeden licznik.
  */
 export function clientIp(request: Request | Headers) {
-  if (process.env.VERCEL !== "1") return "local";
   const headers = request instanceof Headers ? request : request.headers;
-  return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",")[0] ?? "").trim() || "unknown";
+  if (process.env.VERCEL === "1") {
+    return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",")[0] ?? "").trim() || "unknown";
+  }
+  if (process.env.TRUST_PROXY === "1") {
+    return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",").at(-1) ?? "").trim() || "unknown";
+  }
+  return "local";
 }
 
 /** Skrót adresu IP do kluczy w bazie – samego adresu nigdzie nie zapisujemy */
