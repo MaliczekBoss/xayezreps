@@ -35,7 +35,8 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const password = String(formData.get("password") ?? "");
   const code = String(formData.get("code") ?? "").replace(/\s/g, "");
   // Kod 2FA sprawdzamy dopiero przy dobrym haśle, żeby nie zużyć go na próbach z cudzym hasłem
-  const ok = checkPassword(password) && (!totpEnabled() || (await consumeTotp(code)));
+  // Awaria bazy przy sprawdzaniu kodu = odmowa
+  const ok = checkPassword(password) && (!totpEnabled() || (await consumeTotp(code).catch(() => false)));
   if (!ok) {
     console.warn(`[admin] nieudane logowanie (${ip.slice(0, 8)})`);
     // Spowolnienie z losowym rozrzutem utrudnia zgadywanie i pomiar czasu odpowiedzi

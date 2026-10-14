@@ -76,14 +76,17 @@ const WINDOW_S = 15 * 60;
 const PER_IP = 5;
 // Ze wszystkich adresów razem (zgadywanie z wielu IP naraz): tyle prób na 15 minut
 const GLOBAL = 40;
+// Z 2FA: tyle złych kodów po dobrym haśle na dobę, ze wszystkich adresów razem
+const TOTP_FAILS_PER_DAY = 10;
+const DAY_S = 24 * 60 * 60;
 
 /**
  * Rezerwuje próbę logowania, zanim sprawdzimy hasło: licznik rośnie atomowo, więc równoległe zapytania
  * nie przejdą ponad limit. Licznik wspólny rośnie dopiero, gdy adres mieści się w swoim limicie – jeden
  * adres nie zablokuje logowania wszystkim. Błąd bazy leci dalej: logowanie wtedy odmawia.
  *
- * Wspólny limit działa tylko bez 2FA: z kodem z aplikacji zgadywanie z wielu adresów i tak nie ma szans,
- * a ktoś obcy nie powinien móc zablokować logowania prawdziwemu adminowi.
+ * Wspólny limit działa tylko bez 2FA, bo przez niego obcy może zablokować logowanie prawdziwemu adminowi.
+ * Z 2FA zastępuje go dobowy limit złych kodów po dobrym haśle (consumeTotp).
  */
 export async function reserveLoginAttempt(ip: string): Promise<{ ok: boolean; retryAfter: number }> {
   const own = await hit("adm-login", ip, PER_IP, WINDOW_S);
@@ -108,6 +111,19 @@ export async function releaseLoginAttempt(ip: string) {
  * podejrzany kod nie wpuści drugi raz.
  */
 export async function consumeTotp(code: string): Promise<boolean> {
+  // Złe kody po dobrym haśle, ze wszystkich adresów razem: najwyżej tyle na dobę. Zgadywać kod może tylko
+  // ktoś, kto zna hasło, więc obcy tym limitem nie zablokuje logowania adminowi.
+  const reserved = await hit("adm-totp", "all", TOTP_FAILS_PER_DAY, DAY_S);
+  if (!reserved.ok) {
+    console.warn("[admin] dobowy limit złych kodów 2FA wyczerpany – ktoś zna hasło, zmień je");
+    return false;
+  }
+  const ok = await checkTotpOnce(code);
+  if (ok) await hit("adm-totp", "all", TOTP_FAILS_PER_DAY, DAY_S, -1);
+  return ok;
+}
+
+async function checkTotpOnce(code: string) {
   const step = totpStep(code, Date.now());
   if (step === null) return false;
   const key = `adm:totp:${step}`;
