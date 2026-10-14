@@ -18,6 +18,16 @@ przekaże je osobno, bezpiecznym kanałem (np. Bitwarden Send, 1Password), nie m
 Zalecany hosting to **Vercel** – strona jest do niego przygotowana (crony w `vercel.json`, nagłówki IP,
 dołączanie plików danych do funkcji). Własny serwer też zadziała – opis niżej.
 
+### Dwie wersje paczki
+
+| Wersja | Pliki | Kiedy |
+| --- | --- | --- |
+| 1 – zdjęcia w paczce | `xayezreps.zip` | najprościej: zdjęcia wdrażają się razem ze stroną (jak teraz na Vercelu) |
+| 2 – zdjęcia osobno | `xayezreps-bez-zdjec.zip` + `zdjecia.zip` | zdjęcia na osobnym serwerze, jak `cdn.xayezreps.com` na starej stronie; paczka strony jest lekka (ok. 40 MB) |
+
+Kod jest w obu ten sam – różni się tylko tym, gdzie leżą zdjęcia (`i/` – produkty bez tła, `s/` – produkty
+sprzedawców, `o/` – okładki outfitów). Wersja 2 wymaga zmiennej `NEXT_PUBLIC_IMAGES_URL` (sekcja niżej).
+
 ## Zmienne środowiskowe
 
 Wzór z opisami: `.env.example`. Losowy sekret wygenerujesz tak:
@@ -38,6 +48,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 | `ANTHROPIC_API_KEY` | jedna z trzech opcji AI | zamiennie: Claude (opcjonalnie `CLAUDE_MODEL`) |
 | `NEXT_PUBLIC_SITE_URL` | na własnym serwerze | adres strony, np. `https://xayezreps.pl` (na Vercelu brany z domeny produkcyjnej) |
 | `TRUST_PROXY` | na własnym serwerze | nagłówek z adresem klienta ustawiany przez proxy: `1` (= `X-Real-IP`), `x-forwarded-for` (liczy się ostatni adres) albo `cf-connecting-ip`. Bez tego wszyscy odwiedzający dzielą jeden limit zapytań |
+| `NEXT_PUBLIC_IMAGES_URL` | tylko wersja 2 | adres serwera zdjęć, np. `https://cdn.xayezreps.pl` (bez `/` na końcu). Wpisywany w kod przy budowaniu – po zmianie zbuduj stronę od nowa |
 | `IMAGE_SEARCH_HOURLY_LIMIT`, `IMAGE_SEARCH_DAILY_LIMIT` | nie | limity wyszukiwań po zdjęciu (domyślnie 20 na osobę na godzinę i 800 na dzień, z Gemini 500) |
 | `DISCORD_LOGO_EMOJI` | nie | emoji obok nazwy w podglądzie linku na Discordzie, format `<:nazwa:id>` |
 
@@ -87,6 +98,36 @@ npm start -- -p 3000      # uruchamiaj pod pm2 albo systemd, z katalogu projektu
   (bez trybu `output: "standalone"`).
 - Na jednym serwerze bez Redis da się wystartować do testów, ale produkcja powinna mieć Upstash
   (dane w pamięci giną przy restarcie).
+
+## Wersja 2: zdjęcia na osobnym serwerze
+
+1. Rozpakuj `zdjecia.zip` – są w nim foldery `i/`, `s/` i `o/` (ok. 14,5 tys. plików WebP, ok. 380 MB).
+2. Wrzuć je **do głównego katalogu** serwera zdjęć tak, żeby zdjęcie było pod adresem
+   `https://cdn.xayezreps.pl/i/<plik>.webp` (nazwy plików bez zmian). Do wyboru:
+   - **Cloudflare R2** (jak na starej stronie): utwórz bucket (do 10 GB za darmo), w *Settings → Custom Domains* podepnij
+     `cdn.xayezreps.pl`, a pliki wgraj np. programem `rclone` (dostawca „Cloudflare R2”, klucze z *R2 → Manage API tokens*):
+
+     ```bash
+     rclone copy ./zdjecia r2:NAZWA-BUCKETU --transfers 32 --header-upload "Cache-Control: public, max-age=31536000, immutable"
+     ```
+
+   - **Własny serwer**: rozpakuj do np. `/var/www/xayezreps-zdjecia` i wystaw przez nginx:
+
+     ```nginx
+     server {
+       server_name cdn.xayezreps.pl;
+       root /var/www/xayezreps-zdjecia;
+       location / {
+         add_header Cache-Control "public, max-age=31536000, immutable";
+         try_files $uri =404;
+       }
+     }
+     ```
+
+3. Ustaw `NEXT_PUBLIC_IMAGES_URL=https://cdn.xayezreps.pl` (na Vercelu w zmiennych środowiskowych) i zbuduj/wdróż stronę.
+4. Sprawdź, czy na stronie głównej zdjęcia produktów się wyświetlają i idą z `cdn.xayezreps.pl` (narzędzia przeglądarki → Sieć).
+
+Nowe zdjęcia (np. po imporcie katalogu albo `npm run sellers:snapshot`) trzeba potem wgrać też na serwer zdjęć.
 
 ## Co jest gdzie
 
