@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const dev = process.env.NODE_ENV === "development";
 
+// Serwer naszych zdjęć (i/, s/, o/), gdy nie są w paczce ze stroną – src/lib/images.ts, HOSTING.md
+const imagesUrl = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_IMAGES_URL ? new URL(process.env.NEXT_PUBLIC_IMAGES_URL) : null;
+  } catch {
+    return null;
+  }
+})();
+
 // Content Security Policy: skąd strona może ładować skrypty, style, zdjęcia i z kim się łączyć.
 // Skrypty tylko z naszej domeny (inline zostaje, bo Next wstawia własne skrypty startowe, a nonce wyłączyłby
 // statyczne strony), zdjęcia z dowolnego HTTPS (sklepy i magazyny agentów), żadnych ramek, obcych formularzy
@@ -52,6 +61,9 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      ...(imagesUrl
+        ? [{ protocol: imagesUrl.protocol === "http:" ? ("http" as const) : ("https" as const), hostname: imagesUrl.hostname, port: imagesUrl.port, pathname: "/**" }]
+        : []),
       // Miniatury z Weidiana i 1688 w sekcji QC
       { protocol: "https", hostname: "si.geilicdn.com", pathname: "/**" },
       { protocol: "https", hostname: "img.alicdn.com", pathname: "/**" },

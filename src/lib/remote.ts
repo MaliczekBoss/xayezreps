@@ -5,6 +5,7 @@ import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 import type { ProductSource } from "./agents";
 import { FALLBACK_RATES, type Rates } from "./money";
+import { imageUrl } from "./images";
 import { snapshotItem } from "./snapshot";
 
 // Dane z zewnątrz: kursy walut (USFans, NBP), ceny i szczegóły produktów u agenta (USFans, na żywo), sprzedawcy.
@@ -117,7 +118,7 @@ export async function getSellers(): Promise<Seller[]> {
       tags: s.tags ?? [],
       profileImg: "",
       itemCount: s.items?.length ?? 0,
-      items: (s.items ?? []).filter((i) => i.title && i.image && i.link),
+      items: (s.items ?? []).filter((i) => i.title && i.image && i.link).map((i) => ({ ...i, image: imageUrl(i.image) })),
     }))
     .sort((a, b) => b.itemCount - a.itemCount);
 }

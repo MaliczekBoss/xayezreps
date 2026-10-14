@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { IMAGES_URL, isCutoutImage } from "@/lib/images";
 
 // Hosty skonfigurowane w next.config.ts – inne zdjęcia pokazujemy bez optymalizacji
 const OPTIMIZED_HOSTS = [
@@ -13,10 +14,14 @@ const OPTIMIZED_HOSTS = [
   "img.customizeify.com",
 ];
 
+// Serwer naszych zdjęć (jeśli są poza paczką) – dopisany też w next.config.ts
+const IMAGES_HOST = IMAGES_URL ? new URL(IMAGES_URL).hostname : "";
+
 function canOptimize(src: string) {
   if (src.startsWith("/")) return true;
   try {
-    return OPTIMIZED_HOSTS.includes(new URL(src).hostname);
+    const host = new URL(src).hostname;
+    return OPTIMIZED_HOSTS.includes(host) || host === IMAGES_HOST;
   } catch {
     return false;
   }
@@ -31,8 +36,8 @@ type ProductImageProps = {
   onError?: () => void;
 };
 
-/** Zdjęcia produktów bez tła z public/i – już zmniejszone, więc idą prosto z CDN, bez przeliczania */
-export const isCutout = (src: string) => src.startsWith("/i/");
+/** Zdjęcia produktów bez tła z public/i (albo z serwera zdjęć) – już zmniejszone, więc idą prosto, bez przeliczania */
+export const isCutout = isCutoutImage;
 
 /** Zdjęcie produktu wypełniające rodzica. Działa też z linkami spoza listy hostów. */
 export function ProductImage({ src, alt = "", sizes, preload, className = "", onError }: ProductImageProps) {

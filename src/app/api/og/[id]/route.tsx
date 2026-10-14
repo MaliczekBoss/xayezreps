@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { OgLogo, ogFonts } from "@/lib/og";
+import { IMAGES_URL } from "@/lib/images";
 import { getQcIndex, withQc } from "@/lib/qc-feed";
 import { site } from "@/lib/site";
 import { trustedOrigin } from "@/lib/site-url";
@@ -19,7 +20,7 @@ const qcLabel = (n: number) => {
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
 // Zdjęcia spoza naszej strony pobieramy tylko z tych serwerów
-const IMAGE_HOSTS = new Set(["si.geilicdn.com", "img.alicdn.com"]);
+const IMAGE_HOSTS = new Set(["si.geilicdn.com", "img.alicdn.com", ...(IMAGES_URL ? [new URL(IMAGES_URL).hostname] : [])]);
 
 /** Zdjęcie produktu jako PNG (Satori nie czyta WEBP), przycięte do samego produktu, żeby cień trafił pod spód */
 async function productPng(image: string, origin: string) {
