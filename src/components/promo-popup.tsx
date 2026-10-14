@@ -11,11 +11,9 @@ import { LogoMark } from "./logo";
 import { Modal } from "./modal";
 import { WELCOME_KEY } from "./welcome";
 
-// Oferta pokazuje się przy każdej wizycie na stronie głównej – raz na wizytę (do zamknięcia karty)
-const SESSION_KEY = "xayez-promo-session";
 const DELAY_MS = 1200;
 
-/** Okno z ofertą USFans na stronie głównej: rejestracja z naszego linku, kod i kupon */
+/** Okno z ofertą USFans: przy każdym wejściu na stronę główną i każdym jej odświeżeniu */
 export function PromoPopup() {
   const { t } = useFormat();
   const [open, setOpen] = useState(false);
@@ -24,14 +22,8 @@ export function PromoPopup() {
     try {
       // Przy pierwszym wejściu jest powitanie (z kodem w pierwszym kroku) – dwa okna naraz to za dużo
       if (!window.localStorage.getItem(WELCOME_KEY)) return;
-      if (window.sessionStorage.getItem(SESSION_KEY)) return;
     } catch {}
-    const timer = window.setTimeout(() => {
-      setOpen(true);
-      try {
-        window.sessionStorage.setItem(SESSION_KEY, "1");
-      } catch {}
-    }, DELAY_MS);
+    const timer = window.setTimeout(() => setOpen(true), DELAY_MS);
     return () => window.clearTimeout(timer);
   }, []);
 
