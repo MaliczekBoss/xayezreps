@@ -6,8 +6,12 @@ import { run, storageKind } from "./analytics/store";
 // Limity zapytań na adres IP: chronią API, które pyta zewnętrzne serwisy (QC, sklepy, śledzenie paczek),
 // żeby nikt nie zablokował nas u nich masą zapytań, i logowanie admina przed zgadywaniem hasła.
 
-/** Adres klienta – na Vercelu nagłówki x-real-ip i x-forwarded-for ustawia platforma, klient ich nie podmieni */
+/**
+ * Adres klienta. Na Vercelu nagłówki x-real-ip i x-forwarded-for nadpisuje platforma, więc klient ich nie podmieni.
+ * Poza Vercelem (lokalnie) nagłówki może wysłać każdy – wtedy wszyscy dzielą jeden licznik.
+ */
 export function clientIp(request: Request | Headers) {
+  if (process.env.VERCEL !== "1") return "local";
   const headers = request instanceof Headers ? request : request.headers;
   return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",")[0] ?? "").trim() || "unknown";
 }
@@ -47,14 +51,6 @@ export async function hit(name: string, id: string, limit: number, windowS: numb
   return { ok: Number(count) <= limit, count: Number(count), retryAfter };
 }
 
-/** Bieżąca wartość licznika bez podbijania (np. „czy to IP jest już zablokowane”) */
-export async function peek(name: string, id: string, windowS: number): Promise<number> {
-  const slot = Math.floor(Date.now() / (windowS * 1000));
-  const key = `rl:${name}:${id}:${slot}`;
-  if (storageKind() !== "redis") return mem.get(key)?.n ?? 0;
-  const [count] = (await run([{ op: "GET", keys: [key] }])) as (string | null)[];
-  return Number(count) || 0;
-}
 
 /**
  * Limit dla publicznego API: rodzaj zapytania + IP. Gdy baza nie odpowiada, przepuszczamy –

@@ -1,6 +1,6 @@
 import { ImageSearchError, searchByImage } from "@/lib/image-search";
 import { trustedOrigin } from "@/lib/site-url";
-import { tooLarge } from "@/lib/rate-limit";
+import { clientIp, tooLarge } from "@/lib/rate-limit";
 
 // Odpowiedź modelu AI może potrwać kilkanaście sekund
 export const maxDuration = 60;
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "bad-image" }, { status: 400 });
   }
 
-  const ip = (request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "").split(",")[0].trim();
+  const ip = clientIp(request);
   try {
     return Response.json(await searchByImage(image, ip, trustedOrigin(request)), { headers: { "Cache-Control": "no-store" } });
   } catch (e) {

@@ -6,7 +6,7 @@ import { getAgentPrices, PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { fetchAgentPriceCny, getSellers } from "@/lib/remote";
 import { sellerFindId, toSellerFind } from "@/lib/seller-find";
 import { getAllFinds } from "@/lib/store";
-import { tooLarge } from "@/lib/rate-limit";
+import { clientIp, tooLarge } from "@/lib/rate-limit";
 
 export const maxDuration = 20;
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   const sources = [...new Map(finds.map((f) => [keyOf(f), f.source])).entries()];
   let due: typeof sources = [];
   if (storageKind() === "redis") {
-    const ip = (request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "").split(",")[0].trim();
+    const ip = clientIp(request);
     const who = createHash("sha256").update(`${process.env.ADMIN_SECRET ?? "xayez"}|${ip}`).digest("hex").slice(0, 16);
     const { hour } = stamp(Date.now());
     const [calls, , ...claims] = await run([

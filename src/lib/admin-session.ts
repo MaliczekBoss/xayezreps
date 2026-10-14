@@ -1,8 +1,8 @@
 import "server-only";
 
 import { redisCall, run, storageKind } from "./analytics/store";
-import { createToken, readToken, SESSION_MAX_AGE_S, sha256, totpStep } from "./auth-token";
-import { hit, peek } from "./rate-limit";
+import { createToken, readToken, SESSION_MAX_AGE_S, sha256, totpEnabled, totpStep } from "./auth-token";
+import { hit } from "./rate-limit";
 
 // Sesje admina zapisane w bazie: token w ciasteczku musi mieć poprawny podpis I istnieć w bazie,
 // więc wylogowanie (także „wyloguj wszędzie”) od razu unieważnia skradzione ciasteczko.
@@ -72,20 +72,35 @@ export async function destroyAllSessions() {
 /* ---------- Blokada zgadywania hasła ---------- */
 
 const WINDOW_S = 15 * 60;
-// Z jednego adresu: tyle nieudanych prób na 15 minut
+// Z jednego adresu: tyle prób na 15 minut
 const PER_IP = 5;
-// Ze wszystkich adresów razem (zgadywanie z wielu IP naraz): tyle nieudanych prób na 15 minut
+// Ze wszystkich adresów razem (zgadywanie z wielu IP naraz): tyle prób na 15 minut
 const GLOBAL = 40;
 
-/** Czy z tego adresu można jeszcze próbować; retryAfter – ile sekund czekać */
-export async function loginAllowed(ip: string): Promise<{ ok: boolean; retryAfter: number }> {
-  const [own, all] = await Promise.all([peek("adm-login", ip, WINDOW_S), peek("adm-login", "all", WINDOW_S)]);
-  const retryAfter = WINDOW_S - (Math.floor(Date.now() / 1000) % WINDOW_S);
-  return { ok: own < PER_IP && all < GLOBAL, retryAfter };
+/**
+ * Rezerwuje próbę logowania, zanim sprawdzimy hasło: licznik rośnie atomowo, więc równoległe zapytania
+ * nie przejdą ponad limit. Licznik wspólny rośnie dopiero, gdy adres mieści się w swoim limicie – jeden
+ * adres nie zablokuje logowania wszystkim. Błąd bazy leci dalej: logowanie wtedy odmawia.
+ *
+ * Wspólny limit działa tylko bez 2FA: z kodem z aplikacji zgadywanie z wielu adresów i tak nie ma szans,
+ * a ktoś obcy nie powinien móc zablokować logowania prawdziwemu adminowi.
+ */
+export async function reserveLoginAttempt(ip: string): Promise<{ ok: boolean; retryAfter: number }> {
+  const own = await hit("adm-login", ip, PER_IP, WINDOW_S);
+  if (!own.ok) return { ok: false, retryAfter: own.retryAfter };
+  if (totpEnabled()) return { ok: true, retryAfter: 0 };
+  const all = await hit("adm-login", "all", GLOBAL, WINDOW_S);
+  if (!all.ok) {
+    await hit("adm-login", ip, PER_IP, WINDOW_S, -1);
+    return { ok: false, retryAfter: all.retryAfter };
+  }
+  return { ok: true, retryAfter: 0 };
 }
 
-export async function loginFailed(ip: string) {
-  await Promise.all([hit("adm-login", ip, PER_IP, WINDOW_S), hit("adm-login", "all", GLOBAL, WINDOW_S)]);
+/** Udane logowanie oddaje zarezerwowaną próbę – liczą się tylko nieudane */
+export async function releaseLoginAttempt(ip: string) {
+  await hit("adm-login", ip, PER_IP, WINDOW_S, -1);
+  if (!totpEnabled()) await hit("adm-login", "all", GLOBAL, WINDOW_S, -1);
 }
 
 /**

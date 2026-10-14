@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { AGENT_HOSTS, isSource, normalizePath, SESSION_ID } from "@/lib/analytics/shared";
 import { record, stamp, type TrackEvent, type Visitor } from "@/lib/analytics/stats";
 import { getAllFinds } from "@/lib/store";
-import { limitRequest, tooLarge } from "@/lib/rate-limit";
+import { clientIp, limitRequest, tooLarge } from "@/lib/rate-limit";
 
 const BOT = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|embedly|whatsapp|curl|wget|python|axios/i;
 const MAX_DUR_S = 30 * 60;
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   if (!event) return done();
 
   // Odwiedzającego rozpoznajemy po dziennym hashu IP i przeglądarki – samego IP nigdzie nie zapisujemy
-  const ip = (request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "").split(",")[0].trim();
+  const ip = clientIp(request);
   const salt = process.env.ADMIN_SECRET ?? "xayezreps";
   const visitor: Visitor = {
     id: createHash("sha256").update(`${salt}|${stamp(Date.now()).day}|${ip}|${ua}`).digest("hex").slice(0, 16),
