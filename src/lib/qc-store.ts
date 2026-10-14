@@ -27,6 +27,13 @@ export function shotTime(url: string, fallback: number) {
   return Number.isFinite(t) ? t : fallback;
 }
 
+/**
+ * Adres zdjęcia do pokazania. kako-alosshk-pic.kakobuy.com wskazuje wprost na magazyn Aliyun, ale ma certyfikat
+ * Aliyun, więc przeglądarka i optymalizator zdjęć go odrzucają – ten sam plik bierzemy z adresu Aliyun.
+ */
+export const photoUrl = (url: string) =>
+  url.replace(/^https?:\/\/kako-alosshk-pic\.kakobuy\.com\//, "https://kako-alosshk-pic.oss-cn-hongkong.aliyuncs.com/");
+
 /** Od najnowszych */
 export const byNewest = (photos: string[], now = Date.now()) => [...photos].sort((a, b) => shotTime(b, now) - shotTime(a, now));
 

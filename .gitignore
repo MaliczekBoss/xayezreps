@@ -47,3 +47,6 @@ __pycache__/
 # Częściowe wyniki przerwanych skryptów (scripts/lib/progress.mjs)
 *.partial
 *.partial.tmp
+
+# częściowe wyniki skryptów pobierających (scripts/old-site-snapshot.mjs)
+data/.old-site-*.partial.json

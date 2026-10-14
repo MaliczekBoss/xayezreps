@@ -1,12 +1,14 @@
 import "server-only";
 
 import { sourceUrl, type ProductSource } from "./agents";
-import { fetchQcPhotos } from "./remote";
+import { fetchOldSiteQc } from "./remote";
+import { snapshotQc } from "./snapshot";
 
 // Skąd bierzemy zdjęcia QC dla aukcji ze sklepu. Każde źródło zwraca adresy zdjęć z magazynu agenta
 // albo null, gdy nie odpowiedziało. Zdjęcia zapisujemy u siebie (qc-store.ts), więc historia rośnie
 // także wtedy, gdy źródło pokazuje tylko ostatnie zamówienie.
-// - stara strona (xayezreps.com/api/qc): pełna historia z magazynów Kakobuy i USFans
+// - stara strona (xayezreps.com/api/qc): pełna historia z magazynów Kakobuy i USFans. Jej galerie mamy zapisane
+//   u siebie (data/qc), a na żywo pytamy ją tylko, dopóki działa – po wyłączeniu zostaje sam zapis
 // - USFans (api/goods/estimate-info): zdjęcia z ostatniego zamówienia w ich magazynie, bez logowania
 // Kolejne źródło wystarczy dopisać do listy SOURCES
 
@@ -27,8 +29,15 @@ async function usfans(source: ProductSource): Promise<string[] | null> {
   return Array.isArray(d.data?.qcImages) ? d.data.qcImages.filter(isPhoto) : [];
 }
 
+/** Galeria ze starej strony: zapis u nas razem z tym, co dorzuciła od tamtej pory (dopóki odpowiada) */
+async function oldSite(source: ProductSource): Promise<string[] | null> {
+  const [saved, live] = await Promise.all([snapshotQc(source), fetchOldSiteQc(sourceUrl(source)).catch(() => null)]);
+  if (saved === undefined && live === null) return null;
+  return [...new Set([...(saved ?? []), ...(live ?? [])])];
+}
+
 const SOURCES: QcSource[] = [
-  { name: "xayezreps.com", fetch: (s) => fetchQcPhotos(sourceUrl(s), 20_000) },
+  { name: "xayezreps.com", fetch: oldSite },
   { name: "usfans", fetch: usfans },
 ];
 

@@ -19,7 +19,7 @@ const qcLabel = (n: number) => {
 const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
 // Zdjęcia spoza naszej strony pobieramy tylko z tych serwerów
-const IMAGE_HOSTS = new Set(["cdn.xayezreps.com", "xayezreps.com", "si.geilicdn.com", "img.alicdn.com"]);
+const IMAGE_HOSTS = new Set(["si.geilicdn.com", "img.alicdn.com"]);
 
 /** Zdjęcie produktu jako PNG (Satori nie czyta WEBP), przycięte do samego produktu, żeby cień trafił pod spód */
 async function productPng(image: string, origin: string) {

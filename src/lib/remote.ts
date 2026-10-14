@@ -1,12 +1,41 @@
 import "server-only";
 
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 import type { ProductSource } from "./agents";
 import { FALLBACK_RATES, type Rates } from "./money";
+import { snapshotItem } from "./snapshot";
 
-// Dane z API obecnej strony xayezreps.com (sprzedawcy, QC, szczegóły produktów); kursy walut z NBP
-const API = "https://xayezreps.com/api";
-const HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
+// Dane z zewnątrz: kursy walut (USFans, NBP), ceny u agenta (USFans), sprzedawcy i szczegóły produktów.
+// Sprzedawców, galerie QC i szczegóły produktów ze starej strony (xayezreps.com) mamy zapisane u siebie
+// (data/sellers.json, data/qc, data/items) – jej API pytamy już tylko o to, czego nie ma w zapisie,
+// z krótkim limitem czasu, więc jej wyłączenie niczego u nas nie psuje.
+const OLD_API = "https://xayezreps.com/api";
+const OLD_HEADERS = { "User-Agent": "xayezreps.pl (+https://xayezreps.pl)", Accept: "application/json" };
+const OLD_TIMEOUT_MS = 5000;
+
+// Bezpiecznik: gdy stara strona leży, po 3 błędach z rzędu nie pytamy jej przez 30 min (na tej instancji serwera),
+// żeby nic u nas nie czekało na jej odpowiedź
+let oldSiteFailures = 0;
+let oldSitePausedUntil = 0;
+
+async function fromOldSite(pathAndQuery: string): Promise<{ ok: boolean; body: unknown } | null> {
+  if (performance.now() < oldSitePausedUntil) return null;
+  try {
+    const res = await fetch(`${OLD_API}${pathAndQuery}`, { headers: OLD_HEADERS, signal: AbortSignal.timeout(OLD_TIMEOUT_MS), cache: "no-store" });
+    if (res.status >= 502) throw new Error(`HTTP ${res.status}`);
+    const body: unknown = await res.json().catch(() => null);
+    oldSiteFailures = 0;
+    return { ok: res.ok, body };
+  } catch {
+    if (++oldSiteFailures >= 3) {
+      oldSiteFailures = 0;
+      oldSitePausedUntil = performance.now() + 30 * 60_000;
+    }
+    return null;
+  }
+}
 
 /**
  * Kursy walut (ile jednostek za 1 zł) – te, po których USFans przelicza ceny klientom, więc ceny na stronie
@@ -73,40 +102,24 @@ export type Seller = {
   items: SellerItem[];
 };
 
-type RawSeller = {
-  slug: string;
-  name: string;
-  description?: string;
-  tags?: string[];
-  profileImg?: string;
-  items?: { id: string; title: string; price: number; image: string; link: string; createdAt?: string }[];
-};
-
-/** Sprzedawcy razem z produktami, odświeżani co godzinę */
+/** Sprzedawcy razem z produktami – zapisani u nas ze starej strony (npm run sellers:snapshot), zdjęcia w public/s */
 export async function getSellers(): Promise<Seller[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("max");
   cacheTag("sellers");
-  try {
-    const res = await fetch(`${API}/sellers`, { headers: HEADERS, signal: AbortSignal.timeout(20000) });
-    if (!res.ok) return [];
-    const raw = (await res.json()) as RawSeller[];
-    return raw
-      .map((s) => ({
-        slug: s.slug,
-        name: s.name.replace(/\s+/g, " ").trim(),
-        description: (s.description ?? "").trim(),
-        tags: s.tags ?? [],
-        profileImg: s.profileImg ?? "",
-        itemCount: s.items?.length ?? 0,
-        items: (s.items ?? [])
-          .filter((i) => i.title && i.image && i.link)
-          .map((i) => ({ id: String(i.id), title: i.title, price: i.price, image: i.image, link: i.link, createdAt: i.createdAt })),
-      }))
-      .sort((a, b) => b.itemCount - a.itemCount);
-  } catch {
-    return [];
-  }
+  type Saved = { slug: string; name: string; description?: string; tags?: string[]; items?: SellerItem[] };
+  const raw = JSON.parse(await readFile(path.join(process.cwd(), "data", "sellers.json"), "utf-8").catch(() => "[]")) as Saved[];
+  return raw
+    .map((s) => ({
+      slug: s.slug,
+      name: s.name.replace(/\s+/g, " ").trim(),
+      description: (s.description ?? "").trim(),
+      tags: s.tags ?? [],
+      profileImg: "",
+      itemCount: s.items?.length ?? 0,
+      items: (s.items ?? []).filter((i) => i.title && i.image && i.link),
+    }))
+    .sort((a, b) => b.itemCount - a.itemCount);
 }
 
 const PLATFORM_CODE: Record<ProductSource["platform"], string> = { weidian: "WD", taobao: "TB", "1688": "AL" };
@@ -126,33 +139,41 @@ export type ItemDetails = {
   qcCount: number;
 };
 
-/** Szczegóły produktu ze sklepu (tytuł, warianty, cena w juanach) */
+/**
+ * Szczegóły produktu ze sklepu (tytuł, warianty, cena w juanach): z zapisu u nas, a gdy aukcji tam nie ma
+ * (np. dowolny link wklejony w narzędziu QC) – ze starej strony, dopóki odpowiada.
+ */
 export async function fetchItemDetails(source: ProductSource): Promise<ItemDetails | null> {
-  const url = `${API}/item-details?platform=${PLATFORM_CODE[source.platform]}&platformID=${encodeURIComponent(source.id)}`;
-  const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000), cache: "no-store" });
-  if (!res.ok) return null;
-  const d = await res.json();
-  if (!d || typeof d !== "object" || !d.title) return null;
+  const saved = await snapshotItem(source);
+  if (saved !== undefined) return saved && parseItemDetails(saved);
+  const res = await fromOldSite(`/item-details?platform=${PLATFORM_CODE[source.platform]}&platformID=${encodeURIComponent(source.id)}`);
+  return res?.ok && res.body && typeof res.body === "object" ? parseItemDetails(res.body as Record<string, unknown>) : null;
+}
 
+/** Pola z API starej strony (i z zapisu – scripts/old-site-snapshot.mjs) → szczegóły na stronie produktu */
+function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
+  if (!d.title) return null;
   type Attr = { tag?: string; name?: string; values?: { name?: string; image?: string }[] };
-  const attrs: Attr[] = Array.isArray(d.attributes) ? d.attributes : [];
+  const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+  const attrs = list(d.attributes) as Attr[];
   const findAttr = (re: RegExp) => attrs.find((a) => re.test(`${a.tag ?? ""} ${a.name ?? ""}`));
   const colors = (findAttr(/colou?r|颜色/i)?.values ?? []).filter((v) => v.name).map((v) => ({ name: v.name!, image: v.image }));
   const sizes = (findAttr(/size|尺码|尺寸/i)?.values ?? []).filter((v) => v.name).map((v) => v.name!);
-  const skuPrices: number[] = Array.isArray(d.skus) ? d.skus.map((s: { price?: number }) => s.price).filter((p: unknown) => typeof p === "number") : [];
+  const skuPrices = list(d.skus)
+    .map((s) => (s as { price?: unknown }).price)
+    .filter((p): p is number => typeof p === "number");
   const base = typeof d.price === "number" ? d.price : 0;
   const all = skuPrices.length ? skuPrices : [base];
+  const seller = (d.seller as { name?: unknown } | null | undefined)?.name;
 
   return {
     title: String(d.title),
     priceCny: base,
     domesticShipCny: typeof d.domesticShip === "number" ? d.domesticShip : 0,
-    images: Array.isArray(d.images) ? d.images.filter((i: unknown) => typeof i === "string").slice(0, 8) : [],
-    descriptionImages: Array.isArray(d.description)
-      ? d.description.filter((i: unknown) => typeof i === "string" && /^https:\/\//.test(i)).slice(0, 8)
-      : [],
+    images: list(d.images).filter((i): i is string => typeof i === "string").slice(0, 8),
+    descriptionImages: list(d.description).filter((i): i is string => typeof i === "string" && /^https:\/\//.test(i)).slice(0, 8),
     available: d.isAvailable !== false,
-    seller: d.seller?.name ?? null,
+    seller: typeof seller === "string" ? seller : null,
     colors: colors.slice(0, 30),
     sizes: sizes.slice(0, 30),
     priceRangeCny: [Math.min(...all), Math.max(...all)],
@@ -180,30 +201,14 @@ export async function fetchAgentPriceCny(source: ProductSource): Promise<number 
   return typeof d.data.price === "number" && d.data.price > 0 ? d.data.price : null;
 }
 
-/** Zdjęcia QC z magazynów agentów */
-export async function fetchQcPhotos(productUrl: string, timeoutMs = 20000): Promise<string[] | null> {
-  const res = await fetch(`${API}/qc?url=${encodeURIComponent(productUrl)}`, {
-    headers: HEADERS,
-    signal: AbortSignal.timeout(timeoutMs),
-    cache: "no-store",
-  });
-  // Dla produktów bez zdjęć API odpowiada 500 z pustą listą, więc patrzymy na treść, a nie na status
-  const d = await res.json().catch(() => null);
-  if (!Array.isArray(d?.photos)) return res.ok ? [] : null;
-  return d.photos.filter((p: unknown) => typeof p === "string" && /^https:\/\//.test(p));
-}
-
-/** Status przesyłki; zwraca surowe dane albo null, gdy usługa nie odpowiada */
-export async function fetchTracking(number: string): Promise<unknown | null> {
-  try {
-    const res = await fetch(`${API}/tracking?number=${encodeURIComponent(number)}`, {
-      headers: HEADERS,
-      signal: AbortSignal.timeout(20000),
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+/**
+ * Zdjęcia QC ze starej strony na żywo – dopóki odpowiada (zapis jej galerii mamy w data/qc).
+ * Dla produktów bez zdjęć API odpowiada 500 z pustą listą, więc patrzymy na treść, a nie na status.
+ */
+export async function fetchOldSiteQc(productUrl: string): Promise<string[] | null> {
+  const res = await fromOldSite(`/qc?url=${encodeURIComponent(productUrl)}`);
+  if (!res) return null;
+  const photos = (res.body as { photos?: unknown } | null)?.photos;
+  if (!Array.isArray(photos)) return res.ok ? [] : null;
+  return photos.filter((p): p is string => typeof p === "string" && /^https:\/\//.test(p));
 }

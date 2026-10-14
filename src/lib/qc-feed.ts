@@ -5,7 +5,7 @@ import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 import { sourceUrl, type ProductSource } from "./agents";
 import { sortNewest, type Find } from "./finds";
-import { qcKey, storedQcIndex, type QcInfo } from "./qc-store";
+import { photoUrl, qcKey, storedQcIndex, type QcInfo } from "./qc-store";
 import { live } from "./live";
 import { getAllFinds, getFinds } from "./store";
 
@@ -48,6 +48,7 @@ export async function getQcIndex(): Promise<Record<string, QcInfo>> {
     const prev = snapshot[key];
     snapshot[key] = { count: Math.max(info.count, prev?.count ?? 0), cover: info.cover ?? prev?.cover ?? null };
   }
+  for (const info of Object.values(snapshot)) if (info.cover) info.cover = photoUrl(info.cover);
   return snapshot;
 }
 

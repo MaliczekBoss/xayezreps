@@ -17,7 +17,8 @@ type WithId = { id: string };
 // (stara trafia do kopii xd:{nazwa}:backup:{znacznik}). Zmień znacznik tylko przy imporcie całego katalogu.
 const RESET: Record<DocName, string> = {
   finds: "2026-10-14-gender-live-prices",
-  outfits: "",
+  // Zdjęcia outfitów przeniesione ze starej strony do public/o – lista w bazie musi dostać nowe adresy
+  outfits: "2026-10-14-outfits-local-images",
 };
 
 // Przykładowe outfity z pierwszej wersji strony – zastąpione outfitami z xayezreps.com

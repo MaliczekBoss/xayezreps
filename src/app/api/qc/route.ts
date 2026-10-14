@@ -2,7 +2,7 @@ import { revalidateTag } from "next/cache";
 import { parseSource } from "@/lib/agents";
 import { isCatalogSource } from "@/lib/qc-feed";
 import { fetchQcFromSources } from "@/lib/qc-sources";
-import { byNewest, syncQc } from "@/lib/qc-store";
+import { byNewest, photoUrl, syncQc } from "@/lib/qc-store";
 import { limitRequest } from "@/lib/rate-limit";
 
 // Źródła QC potrafią odpowiadać kilkanaście sekund
@@ -35,5 +35,6 @@ export async function GET(request: Request) {
   }
 
   if (photos.length === 0 && !fresh.ok) return Response.json({ error: "upstream" }, { status: 502 });
+  photos = [...new Set(photos.map(photoUrl))];
   return Response.json({ source, photos }, { headers: { "Cache-Control": "public, max-age=900" } });
 }

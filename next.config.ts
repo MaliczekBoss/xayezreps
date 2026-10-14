@@ -43,28 +43,31 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Bez nagłówka X-Powered-By: Next.js – nie zdradzamy, na czym działa strona
   poweredByHeader: false,
+  // Zapis danych ze starej strony (scripts/old-site-snapshot.mjs, sellers-snapshot.mjs) czytany z dysku w tych trasach
+  outputFileTracingIncludes: {
+    "/api/qc": ["./data/qc/**"],
+    "/api/cron/qc": ["./data/qc/**"],
+    "/api/item": ["./data/items/**"],
+    "/**": ["./data/sellers.json"],
+  },
   images: {
     remotePatterns: [
-      // Zdjęcia produktów xayezreps
-      { protocol: "https", hostname: "cdn.xayezreps.com", pathname: "/**" },
-      { protocol: "https", hostname: "xayezreps.pl", pathname: "/**" },
       // Miniatury z Weidiana i 1688 w sekcji QC
       { protocol: "https", hostname: "si.geilicdn.com", pathname: "/**" },
       { protocol: "https", hostname: "img.alicdn.com", pathname: "/**" },
-      // Zdjęcia outfitów z xayezreps.com
-      { protocol: "https", hostname: "xayezreps.com", pathname: "/api/img/**" },
       // Zdjęcia QC z magazynu Kakobuy (oryginały mają po 2–3 MB, więc je zmniejszamy)
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobuy.com", pathname: "/**" },
       { protocol: "https", hostname: "kk-oss-wh-hk.kakobyy.com", pathname: "/**" },
-      { protocol: "https", hostname: "kako-alosshk-pic.kakobuy.com", pathname: "/**" },
+      // kako-alosshk-pic.kakobuy.com ma zły certyfikat – te zdjęcia bierzemy z magazynu Aliyun (qc-store.ts → photoUrl)
+      { protocol: "https", hostname: "kako-alosshk-pic.oss-cn-hongkong.aliyuncs.com", pathname: "/**" },
       { protocol: "https", hostname: "media.usfans.com", pathname: "/**" },
       { protocol: "https", hostname: "a-wh.loongbuy.com", pathname: "/**" },
       { protocol: "https", hostname: "img.customizeify.com", pathname: "/**" },
     ],
     formats: ["image/avif", "image/webp"],
   },
-  // Nagłówki bezpieczeństwa dla całej strony, panel admina bez cache; zdjęcia produktów bez tła (public/i)
-  // zmieniają się rzadko: przeglądarka trzyma je tydzień, CDN rok
+  // Nagłówki bezpieczeństwa dla całej strony, panel admina bez cache; zdjęcia produktów bez tła (public/i),
+  // produktów sprzedawców (public/s) i outfitów (public/o) zmieniają się rzadko: przeglądarka trzyma je tydzień, CDN rok
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
@@ -78,7 +81,7 @@ const nextConfig: NextConfig = {
       },
       { source: "/api/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       {
-        source: "/i/:file*",
+        source: "/:dir(i|s|o)/:file*",
         headers: [{ key: "Cache-Control", value: "public, max-age=604800, s-maxage=31536000, stale-while-revalidate=86400" }],
       },
     ];
