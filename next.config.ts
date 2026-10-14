@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  deploymentId: process.env.XAYEZ_DEPLOYMENT_ID || undefined,
   outputFileTracingIncludes: {
     "/api/qc": ["./data/qc/**"],
     "/api/cron/qc": ["./data/qc/**"],

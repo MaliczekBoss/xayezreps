@@ -2,7 +2,7 @@
 
 Strona xayezreps.pl w Next.js 16 (App Router, React 19, Tailwind 4, Motion). Wymaga Node.js 20.9 lub nowszego.
 
-**Wdrożenie na serwer, zmienne środowiskowe, baza, crony i domena: [HOSTING.md](HOSTING.md).**
+**Wdrożenie na serwer, zmienne środowiskowe, baza, crony i domena: [HOSTING.md](HOSTING.md); Pterodactyl z MongoDB: [PTERODACTYL.md](PTERODACTYL.md).**
 
 ## Start
 

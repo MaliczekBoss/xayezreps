@@ -27,10 +27,15 @@ async function seedData(db, root, log) {
   const file = path.join(root, "seed", "baza.json");
   if (!existsSync(file)) return;
   const meta = db.collection("meta");
-  if (await meta.findOne({ _id: "seed-baza" })) return;
+  try {
+    await meta.insertOne({ _id: "seed-baza", started: new Date(), host: process.env.HOSTNAME ?? "" });
+  } catch (error) {
+    if (error?.code === 11000) return;
+    throw error;
+  }
   if ((await db.collection("kv").estimatedDocumentCount()) > 0) {
     log("Baza MongoDB ma już dane – nie wgrywam seed/baza.json.");
-    await meta.insertOne({ _id: "seed-baza", at: new Date(), skipped: true });
+    await meta.updateOne({ _id: "seed-baza" }, { $set: { skipped: true } });
     return;
   }
   log("Wgrywam dane z seed/baza.json do MongoDB…");
@@ -56,7 +61,7 @@ async function seedData(db, root, log) {
     } else skipped++;
   }
   const counts = [await insertAll(db.collection("kv"), kv, 50), await insertAll(db.collection("kv_members"), members), await insertAll(db.collection("kv_scores"), scores)];
-  await meta.insertOne({ _id: "seed-baza", at: new Date(), keys: counts });
+  await meta.updateOne({ _id: "seed-baza" }, { $set: { done: new Date(), keys: counts } });
   log(`Dane wgrane: ${counts[0]} kluczy, ${counts[1]} elementów zbiorów, ${counts[2]} wpisów historii; pominięte: ${skipped}.`);
 }
 

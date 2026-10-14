@@ -1,5 +1,7 @@
 # Hosting xayezreps.pl – instrukcja wdrożenia
 
+**Pterodactyl / Docker z MongoDB (także HA): [PTERODACTYL.md](PTERODACTYL.md)** – tam wszystko dzieje się samo przy starcie.
+
 Wszystko, czego potrzeba, żeby postawić stronę i utrzymać ją na produkcji. Kod i dane są w tej paczce
 (albo w repozytorium GitHub `MaliczekBoss/xayezreps`). **Haseł i kluczy w paczce nie ma** – właściciel
 przekaże je osobno, bezpiecznym kanałem (np. Bitwarden Send, 1Password), nie mailem ani na czacie.
