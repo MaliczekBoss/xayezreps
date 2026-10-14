@@ -2,7 +2,7 @@ import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 import { stamp, VIEWS_KEY } from "./analytics/stats";
-import { redisCall, run, storageKind } from "./analytics/store";
+import { persistent, redisCall, run } from "./analytics/store";
 import type { Find } from "./finds";
 import { getAllFinds } from "./store";
 
@@ -28,7 +28,7 @@ export async function getProductViews(): Promise<Record<string, number>> {
   "use cache";
   cacheLife("hours");
   cacheTag("views");
-  if (storageKind() !== "redis") return {};
+  if (!persistent()) return {};
   try {
     await backfill();
     const flat = (await redisCall(["HGETALL", VIEWS_KEY])) as string[] | null;

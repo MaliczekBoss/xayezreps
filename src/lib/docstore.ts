@@ -3,7 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { redisCall, storageKind } from "./analytics/store";
+import { persistent, redisCall } from "./analytics/store";
 
 export type DocName = "finds" | "outfits";
 
@@ -41,7 +41,7 @@ export async function readDoc<T extends WithId>(name: DocName): Promise<T[]> {
 
 async function loadDoc<T extends WithId>(name: DocName): Promise<T[]> {
   const fileRaw = await readFileRaw(name);
-  if (storageKind() !== "redis") return JSON.parse(fileRaw) as T[];
+  if (!persistent()) return JSON.parse(fileRaw) as T[];
 
   const version = createHash("sha1").update(fileRaw).digest("hex").slice(0, 16);
   const [raw, seeded, reset] = await Promise.all([redisCall(["GET", `xd:${name}`]), redisCall(["GET", `xd:${name}:seed`]), redisCall(["GET", `xd:${name}:reset`])]);
@@ -71,7 +71,7 @@ const UPLOAD_NAME = /^[\w-]+\.webp$/;
 const uploadPath = (name: string) => path.join(process.cwd(), "data", "uploads", path.basename(name));
 
 export async function readImage(name: string): Promise<Buffer | null> {
-  if (storageKind() === "redis") {
+  if (persistent()) {
     const raw = await redisCall(["GET", `xi:${name}`]);
     if (typeof raw === "string") return Buffer.from(raw, "base64");
   }

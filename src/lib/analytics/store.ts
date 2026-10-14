@@ -1,5 +1,7 @@
 import "server-only";
 
+import { mongoCommand, mongoConfigured } from "./mongo";
+
 export type Cmd = { op: string; keys: string[]; args?: (string | number)[]; when?: number };
 
 function findRedisEnv() {
@@ -19,10 +21,13 @@ function findRedisEnv() {
 
 const { url: URL_ENV, token: TOKEN_ENV } = findRedisEnv();
 
-export const storageKind = (): "redis" | "memory" => (URL_ENV && TOKEN_ENV ? "redis" : "memory");
+export const storageKind = (): "mongo" | "redis" | "memory" => (mongoConfigured() ? "mongo" : URL_ENV && TOKEN_ENV ? "redis" : "memory");
+
+export const persistent = () => storageKind() !== "memory";
 
 export async function redisCall(args: (string | number)[]): Promise<unknown> {
-  if (storageKind() !== "redis") throw new Error("Upstash Redis nie jest skonfigurowany");
+  if (storageKind() === "mongo") return mongoCommand(String(args[0]), [String(args[1])], args.slice(2));
+  if (storageKind() !== "redis") throw new Error("Baza danych nie jest skonfigurowana");
   const reply = (await rest("", args.map(String))) as { result?: unknown; error?: string };
   if (reply.error) throw new Error(`Redis: ${reply.error}`);
   return reply.result ?? null;
@@ -30,7 +35,16 @@ export async function redisCall(args: (string | number)[]): Promise<unknown> {
 
 export async function run(cmds: Cmd[]): Promise<unknown[]> {
   if (cmds.length === 0) return [];
-  return storageKind() === "redis" ? runRedis(cmds) : runMemory(cmds);
+  const kind = storageKind();
+  return kind === "mongo" ? runMongo(cmds) : kind === "redis" ? runRedis(cmds) : runMemory(cmds);
+}
+
+async function runMongo(cmds: Cmd[]): Promise<unknown[]> {
+  const out: unknown[] = [];
+  for (const { op, keys, args = [], when } of cmds) {
+    out.push(when !== undefined && out[when] !== 1 ? null : await mongoCommand(op, keys, args));
+  }
+  return out;
 }
 
 const SCRIPT = `

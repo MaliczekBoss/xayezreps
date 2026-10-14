@@ -103,7 +103,7 @@ export type Bucket = Totals & { key: string; future: boolean };
 
 export type StatsReport = {
   range: Range;
-  storage: "redis" | "memory";
+  storage: "mongo" | "redis" | "memory";
   granularity: "hour" | "day";
   current: Bucket[];
   previous: Bucket[];

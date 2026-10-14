@@ -50,3 +50,6 @@ __pycache__/
 
 # częściowe wyniki skryptów pobierających (scripts/old-site-snapshot.mjs)
 data/.old-site-*.partial.json
+
+/.xayezreps/
+/seed/

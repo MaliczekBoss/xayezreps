@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { stamp } from "@/lib/analytics/stats";
-import { run, storageKind } from "@/lib/analytics/store";
+import { persistent, run } from "@/lib/analytics/store";
 import { getAgentPrices, PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { fetchAgentPriceCny, getSellers } from "@/lib/remote";
 import { sellerFindId, toSellerFind } from "@/lib/seller-find";
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
   const sources = [...new Map(finds.map((f) => [keyOf(f), f.source])).entries()];
   let due: typeof sources = [];
-  if (storageKind() === "redis") {
+  if (persistent()) {
     const ip = clientIp(request);
     const who = createHash("sha256").update(`${process.env.ADMIN_SECRET ?? "xayez"}|${ip}`).digest("hex").slice(0, 16);
     const { hour } = stamp(Date.now());

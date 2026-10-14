@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache";
-import { redisCall, storageKind } from "@/lib/analytics/store";
+import { persistent, redisCall } from "@/lib/analytics/store";
 import { PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { fetchAgentPriceCny } from "@/lib/remote";
 import { getAllFinds } from "@/lib/store";
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   if (!isCronRequest(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
-  if (storageKind() !== "redis") return Response.json({ error: "no-storage" }, { status: 503 });
+  if (!persistent()) return Response.json({ error: "no-storage" }, { status: 503 });
 
   const finds = await getAllFinds();
   const sources = [...new Map(finds.map((f) => [`${f.source.platform}:${f.source.id}`, f.source])).entries()]

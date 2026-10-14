@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import { run, storageKind } from "./analytics/store";
+import { persistent, run } from "./analytics/store";
 
 export function clientIp(request: Request | Headers) {
   const headers = request instanceof Headers ? request : request.headers;
@@ -33,7 +33,7 @@ export async function hit(name: string, id: string, limit: number, windowS: numb
   const retryAfter = Math.max(1, Math.ceil(((slot + 1) * windowMs - now) / 1000));
   const key = `rl:${name}:${id}:${slot}`;
 
-  if (storageKind() !== "redis") {
+  if (!persistent()) {
     let entry = mem.get(key);
     if (!entry || entry.until <= now) mem.set(key, (entry = { n: 0, until: (slot + 1) * windowMs }));
     entry.n += by;

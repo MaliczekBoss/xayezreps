@@ -1,6 +1,6 @@
 import "server-only";
 
-import { redisCall, run, storageKind } from "./analytics/store";
+import { persistent, redisCall, run } from "./analytics/store";
 import { createToken, readToken, SESSION_MAX_AGE_S, sha256, totpEnabled, totpStep } from "./auth-token";
 import { hit } from "./rate-limit";
 
@@ -14,7 +14,7 @@ export async function createSession(meta: { ip: string; ua: string }) {
   const now = Date.now();
   const { token, sid } = createToken(now);
   const key = sessionKey(sid);
-  if (storageKind() === "redis") {
+  if (persistent()) {
     await run([
       { op: "SET", keys: [key], args: [JSON.stringify({ at: now, ip: meta.ip, ua: meta.ua.slice(0, 160) }), "EX", SESSION_MAX_AGE_S] },
       { op: "SADD", keys: [SESSIONS], args: [key] },
@@ -29,7 +29,7 @@ export async function verifySession(token: string | undefined): Promise<boolean>
   const sid = readToken(token, Date.now());
   if (!sid) return false;
   const key = sessionKey(sid);
-  if (storageKind() !== "redis") return (mem.sessions.get(key) ?? 0) > Date.now();
+  if (!persistent()) return (mem.sessions.get(key) ?? 0) > Date.now();
   try {
     return (await redisCall(["EXISTS", key])) === 1;
   } catch {
@@ -41,7 +41,7 @@ export async function destroySession(token: string | undefined) {
   const sid = readToken(token, Date.now());
   if (!sid) return;
   const key = sessionKey(sid);
-  if (storageKind() !== "redis") {
+  if (!persistent()) {
     mem.sessions.delete(key);
     return;
   }
@@ -52,7 +52,7 @@ export async function destroySession(token: string | undefined) {
 }
 
 export async function destroyAllSessions() {
-  if (storageKind() !== "redis") {
+  if (!persistent()) {
     mem.sessions.clear();
     return;
   }
@@ -98,7 +98,7 @@ async function checkTotpOnce(code: string) {
   const step = totpStep(code, Date.now());
   if (step === null) return false;
   const key = `adm:totp:${step}`;
-  if (storageKind() !== "redis") {
+  if (!persistent()) {
     if (mem.used.has(key)) return false;
     mem.used.set(key, Date.now());
     return true;
