@@ -51,7 +51,8 @@ Bez żadnego klucza reszta strony działa, a samo wyszukiwanie po zdjęciu pokaz
    Ustawienia domyślne dla Next.js: build `npm run build`, katalog główny repozytorium, Node 22 lub 24.
 2. **Baza.** *Storage / Marketplace → Upstash for Redis → Connect* do projektu – integracja sama doda
    `KV_REST_API_URL` i `KV_REST_API_TOKEN`. Przy przenosinach na nowe konto: podłącz tę samą bazę
-   (te same zmienne), żeby nie stracić statystyk, historii QC i cen – albo zacznij od pustej.
+   (te same zmienne), żeby nie stracić statystyk, historii QC i cen – albo przenieś dane do nowej bazy
+   (`npm run db:backup`, potem `npm run db:restore`).
 3. **Zmienne.** *Settings → Environment Variables* → wpisz zmienne z tabeli (środowisko *Production*). Zmiana zmiennych
    działa dopiero po ponownym wdrożeniu (*Deployments → Redeploy*).
 4. **Crony.** Działają same z `vercel.json`, jeśli jest `CRON_SECRET` (Vercel dokleja go do zapytania crona).
@@ -124,6 +125,8 @@ sesje na wszystkich urządzeniach. Zmiana `ADMIN_SECRET` też wylogowuje wszystk
 | Komenda | Co robi |
 | --- | --- |
 | `npm run admin:2fa` | generuje klucz do logowania dwuetapowego |
+| `npm run db:backup -- <folder>` | kopia całej bazy Redis do pliku JSON (wystarczy token tylko do odczytu) |
+| `npm run db:restore -- <plik.json>` | wgranie kopii do nowej, pustej bazy – np. przy przenosinach na inne konto |
 | `npm run old-site:snapshot -- qc` / `-- items` | ponownie zapisuje galerie QC / szczegóły produktów ze starej strony (dopóki działa) |
 | `npm run sellers:snapshot`, `npm run outfits:images` | zapis sprzedawców i zdjęć outfitów ze starej strony |
 | `npm run qc:snapshot`, `npm run prices:snapshot` | odświeżenie liczników QC i cen w plikach katalogu |

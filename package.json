@@ -13,7 +13,9 @@
     "admin:2fa": "node scripts/admin-2fa.mjs",
     "sellers:snapshot": "node scripts/sellers-snapshot.mjs",
     "outfits:images": "node scripts/outfit-images.mjs",
-    "old-site:snapshot": "node scripts/old-site-snapshot.mjs"
+    "old-site:snapshot": "node scripts/old-site-snapshot.mjs",
+    "db:backup": "node scripts/redis-backup.mjs",
+    "db:restore": "node scripts/redis-restore.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.55.0",
