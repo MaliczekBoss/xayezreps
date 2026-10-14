@@ -3,6 +3,7 @@ import { parseSource } from "@/lib/agents";
 import { isCatalogSource } from "@/lib/qc-feed";
 import { fetchQcFromSources } from "@/lib/qc-sources";
 import { byNewest, syncQc } from "@/lib/qc-store";
+import { limitRequest } from "@/lib/rate-limit";
 
 // Źródła QC potrafią odpowiadać kilkanaście sekund
 export const maxDuration = 30;
@@ -13,6 +14,8 @@ export const maxDuration = 30;
  * zapisaną historię, więc zdjęcia z dawnych zamówień nie znikają, gdy źródło pokazuje już tylko nowsze.
  */
 export async function GET(request: Request) {
+  const limited = await limitRequest(request, "qc", 60, 600);
+  if (limited) return limited;
   const url = new URL(request.url).searchParams.get("url") ?? "";
   const source = parseSource(url);
   if (!source) return Response.json({ error: "invalid-url" }, { status: 400 });

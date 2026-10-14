@@ -9,7 +9,8 @@
     "lint": "eslint",
     "qc:snapshot": "node scripts/qc-snapshot.mjs",
     "prices:snapshot": "node scripts/price-snapshot.mjs",
-    "gender:classify": "node scripts/classify-gender.mjs"
+    "gender:classify": "node scripts/classify-gender.mjs",
+    "admin:2fa": "node scripts/admin-2fa.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.55.0",

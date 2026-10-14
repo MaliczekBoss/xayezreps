@@ -4,7 +4,8 @@ import { useActionState, useState } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { login, type FormState } from "../actions";
 
-export function LoginForm() {
+/** twoFactor – gdy włączone 2FA (ADMIN_TOTP_SECRET), formularz pyta też o kod z aplikacji */
+export function LoginForm({ twoFactor = false }: { twoFactor?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(login, {});
   const [show, setShow] = useState(false);
 
@@ -33,6 +34,24 @@ export function LoginForm() {
           </button>
         </div>
       </div>
+
+      {twoFactor && (
+        <div>
+          <label htmlFor="code" className="text-sm font-medium">
+            Kod z aplikacji (2FA)
+          </label>
+          <input
+            id="code"
+            name="code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9 ]{6,7}"
+            maxLength={7}
+            required
+            className="mt-2 h-12 w-full rounded-xl border border-line bg-bg px-4 font-mono tracking-[0.3em] text-fg focus:border-line-strong focus:outline-none"
+          />
+        </div>
+      )}
 
       {state.error && (
         <p id="login-error" role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-300">

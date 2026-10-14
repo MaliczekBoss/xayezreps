@@ -3,6 +3,7 @@ import { parseSource, type ProductSource } from "@/lib/agents";
 import { PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { isCatalogSource } from "@/lib/qc-feed";
 import { fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
+import { limitRequest } from "@/lib/rate-limit";
 
 /**
  * Szczegóły produktu ze sklepu dla linku: /api/item?url=…
@@ -10,6 +11,8 @@ import { fetchAgentPriceCny, fetchItemDetails, getSellers } from "@/lib/remote";
  * Cenę oferty z katalogu zapisujemy, żeby katalog, strona główna i ulubione pokazywały tę samą (prices.ts).
  */
 export async function GET(request: Request) {
+  const limited = await limitRequest(request, "item", 120, 600);
+  if (limited) return limited;
   const url = new URL(request.url).searchParams.get("url") ?? "";
   const source = parseSource(url);
   if (!source) return Response.json({ error: "invalid-url" }, { status: 400 });

@@ -1,7 +1,10 @@
 import { fetchTracking } from "@/lib/remote";
+import { limitRequest } from "@/lib/rate-limit";
 
 /** Status przesyłki: /api/tracking?number=… */
 export async function GET(request: Request) {
+  const limited = await limitRequest(request, "tracking", 30, 600);
+  if (limited) return limited;
   const number = (new URL(request.url).searchParams.get("number") ?? "").trim().toUpperCase();
   if (!/^[A-Z0-9-]{8,40}$/.test(number)) return Response.json({ error: "invalid-number" }, { status: 400 });
 

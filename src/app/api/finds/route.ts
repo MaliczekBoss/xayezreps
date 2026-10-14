@@ -1,4 +1,5 @@
 import { findsByIds, parseCatalogQuery, queryCatalog } from "@/lib/catalog";
+import { limitRequest } from "@/lib/rate-limit";
 
 const HEADERS = { "Cache-Control": "public, max-age=120, s-maxage=600, stale-while-revalidate=86400" };
 
@@ -7,6 +8,8 @@ const HEADERS = { "Cache-Control": "public, max-age=120, s-maxage=600, stale-whi
  * albo konkretne produkty (ulubione): /api/finds?ids=a,b,c
  */
 export async function GET(request: Request) {
+  const limited = await limitRequest(request, "finds", 900, 600);
+  if (limited) return limited;
   const params = new URL(request.url).searchParams;
   const ids = params.get("ids");
   if (ids !== null) {

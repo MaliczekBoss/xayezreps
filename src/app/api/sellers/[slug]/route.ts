@@ -1,11 +1,14 @@
 import { liveSellerItems } from "@/lib/live";
 import { getSellers } from "@/lib/remote";
 import { buildSearchIndex, searchFinds } from "@/lib/search";
+import { limitRequest } from "@/lib/rate-limit";
 
 const PAGE = 60;
 
 /** Produkty jednego sprzedawcy w porcjach, z wyszukiwaniem i sortowaniem: /api/sellers/{slug}?q=…&sort=price_asc|price_desc&offset=… */
 export async function GET(request: Request, ctx: RouteContext<"/api/sellers/[slug]">) {
+  const limited = await limitRequest(request, "sellers", 600, 600);
+  if (limited) return limited;
   const { slug } = await ctx.params;
   const params = new URL(request.url).searchParams;
   const q = (params.get("q") ?? "").trim().slice(0, 80);

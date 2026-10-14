@@ -6,6 +6,7 @@ import { getAgentPrices, PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { fetchAgentPriceCny, getSellers } from "@/lib/remote";
 import { sellerFindId, toSellerFind } from "@/lib/seller-find";
 import { getAllFinds } from "@/lib/store";
+import { tooLarge } from "@/lib/rate-limit";
 
 export const maxDuration = 20;
 
@@ -27,6 +28,7 @@ const ID = /^[a-z0-9-]{1,40}$/;
  * nową) i oddajemy, żeby karta zaktualizowała się bez przeładowania.
  */
 export async function POST(request: Request) {
+  if (tooLarge(request, 16_000)) return Response.json({ error: "bad-request" }, { status: 413 });
   let ids: string[] = [];
   try {
     const body = await request.json();

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
-import { getFindsFresh } from "@/lib/store";
+import { getAllFinds } from "@/lib/store";
 import { StatsDashboard } from "./stats-dashboard";
 
 export const metadata: Metadata = { title: "Statystyki" };
@@ -18,6 +18,6 @@ export default function StatsPage() {
 async function StatsContent() {
   if (!(await isAdmin())) redirect("/admin/login");
   // Nazwy produktów, żeby w „Najczęściej oglądane” zamiast /product/123 była nazwa
-  const productNames = Object.fromEntries((await getFindsFresh()).map((f) => [f.id, f.name]));
+  const productNames = Object.fromEntries((await getAllFinds()).map((f) => [f.id, f.name]));
   return <StatsDashboard productNames={productNames} />;
 }

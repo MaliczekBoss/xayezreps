@@ -90,7 +90,7 @@ export function StatsDashboard({ productNames }: { productNames: Record<string, 
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-      <AdminHeader active="/admin/stats" />
+      <AdminHeader />
 
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label="Okres" className="flex rounded-xl border border-line bg-card p-1">

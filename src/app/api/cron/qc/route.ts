@@ -2,6 +2,7 @@ import { revalidateTag } from "next/cache";
 import { qcCursor, qcKey, syncQc } from "@/lib/qc-store";
 import { fetchQcFromSources } from "@/lib/qc-sources";
 import { getAllFinds } from "@/lib/store";
+import { isCronRequest } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -15,8 +16,7 @@ const CONCURRENCY = 4;
  * więc cały katalog przechodzi się w kółko. Vercel wysyła nagłówek z CRON_SECRET.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!isCronRequest(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 

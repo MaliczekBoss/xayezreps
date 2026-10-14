@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { Logo } from "@/components/logo";
+import { totpEnabled } from "@/lib/auth-token";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
@@ -14,8 +17,10 @@ export default function LoginPage() {
           <h1 className="relative text-2xl font-semibold tracking-[-0.03em]">
             Panel <span className="fancy text-[1.12em] text-muted">admina</span>
           </h1>
-          <p className="relative mt-1.5 text-sm text-muted">Zaloguj się, żeby dodawać i edytować itemy.</p>
-          <LoginForm />
+          <p className="relative mt-1.5 text-sm text-muted">Zaloguj się, żeby zobaczyć statystyki.</p>
+          <Suspense fallback={<div className="mt-6 h-[8.5rem]" />}>
+            <Form />
+          </Suspense>
         </div>
         <p className="mt-6 text-center text-xs text-dim">
           <Link href="/" className="hover:text-fg">
@@ -25,4 +30,10 @@ export default function LoginPage() {
       </div>
     </main>
   );
+}
+
+/** Formularz sprawdza przy każdym wejściu, czy włączone jest 2FA (zmienna może dojść bez przebudowy strony) */
+async function Form() {
+  await connection();
+  return <LoginForm twoFactor={totpEnabled()} />;
 }

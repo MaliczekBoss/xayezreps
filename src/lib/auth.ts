@@ -2,12 +2,12 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { connection } from "next/server";
-import { SESSION_COOKIE, verifySessionToken } from "./auth-token";
+import { verifySession } from "./admin-session";
+import { SESSION_COOKIE } from "./auth-token";
 
-/** Czy bieżące żądanie pochodzi od zalogowanego admina. Sprawdzaj w każdej akcji i stronie admina. */
+/** Czy bieżące żądanie pochodzi od zalogowanego admina. Sprawdzaj w każdej stronie, akcji i API admina. */
 export async function isAdmin() {
-  // Sprawdzenie zależy od aktualnej godziny, więc zawsze liczymy je w czasie żądania
+  // Sesję sprawdzamy zawsze w czasie żądania (ważność i unieważnienie w bazie)
   await connection();
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  return verifySessionToken(token, Date.now());
+  return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
 }

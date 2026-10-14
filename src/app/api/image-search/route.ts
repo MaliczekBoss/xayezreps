@@ -1,5 +1,6 @@
 import { ImageSearchError, searchByImage } from "@/lib/image-search";
 import { trustedOrigin } from "@/lib/site-url";
+import { tooLarge } from "@/lib/rate-limit";
 
 // Odpowiedź modelu AI może potrwać kilkanaście sekund
 export const maxDuration = 60;
@@ -14,6 +15,8 @@ const STATUS: Record<ImageSearchError["code"], number> = {
 
 /** Szukanie findów po zdjęciu: POST { image: "data:image/jpeg;base64,…" } */
 export async function POST(request: Request) {
+  // Zdjęcie po zmniejszeniu w przeglądarce ma najwyżej ok. 1 MB; większe ciało odrzucamy bez wczytywania
+  if (tooLarge(request, 4_000_000)) return Response.json({ error: "bad-image" }, { status: 413 });
   let image = "";
   try {
     image = String((await request.json())?.image ?? "");

@@ -6,6 +6,7 @@ import { site } from "@/lib/site";
 import { trustedOrigin } from "@/lib/site-url";
 import { getAllFinds } from "@/lib/store";
 import { live } from "@/lib/live";
+import { limitRequest } from "@/lib/rate-limit";
 
 const BATCH_DOT: Record<string, string> = { "Best batch": "#10b981", "Budget batch": "#fbbf24" };
 
@@ -38,6 +39,8 @@ async function productPng(image: string, origin: string) {
 
 /** Grafika do podglądu linku produktu (1200×630): produkt bez tła, nazwa, cena, zdjęcia QC i kod USFans */
 export async function GET(request: Request, ctx: RouteContext<"/api/og/[id]">) {
+  const limited = await limitRequest(request, "og", 300, 600);
+  if (limited) return limited;
   const { id } = await ctx.params;
   const [all, qcIndex, fonts] = await Promise.all([getAllFinds().then(live), getQcIndex(), ogFonts()]);
   const raw = all.find((f) => f.id === id);

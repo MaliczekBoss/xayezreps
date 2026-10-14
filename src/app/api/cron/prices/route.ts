@@ -3,6 +3,7 @@ import { redisCall, storageKind } from "@/lib/analytics/store";
 import { PRICES_TAG, saveAgentPrice } from "@/lib/prices";
 import { fetchAgentPriceCny } from "@/lib/remote";
 import { getAllFinds } from "@/lib/store";
+import { isCronRequest } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -17,8 +18,7 @@ const CURSOR = "px:v1:cursor";
  * także dla ofert, w które nikt nie wchodzi. Vercel wysyła nagłówek z CRON_SECRET.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!isCronRequest(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   if (storageKind() !== "redis") return Response.json({ error: "no-storage" }, { status: 503 });

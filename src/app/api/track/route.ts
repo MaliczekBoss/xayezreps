@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { AGENT_HOSTS, isSource, normalizePath, SESSION_ID } from "@/lib/analytics/shared";
 import { record, stamp, type TrackEvent, type Visitor } from "@/lib/analytics/stats";
 import { getAllFinds } from "@/lib/store";
+import { limitRequest, tooLarge } from "@/lib/rate-limit";
 
 const BOT = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|embedly|whatsapp|curl|wget|python|axios/i;
 const MAX_DUR_S = 30 * 60;
@@ -10,6 +11,8 @@ const done = () => new Response(null, { status: 204 });
 
 /** Zdarzenia statystyk z przeglądarki (sendBeacon, text/plain): odsłona, czas aktywności, klik do agenta */
 export async function POST(request: Request) {
+  if (tooLarge(request, 4096)) return done();
+  if (await limitRequest(request, "track", 600, 600)) return done();
   const ua = request.headers.get("user-agent") ?? "";
   if (!ua || BOT.test(ua)) return done();
 

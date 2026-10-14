@@ -1,9 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth-token";
+import { verifySession } from "@/lib/admin-session";
+import { SESSION_COOKIE } from "@/lib/auth-token";
 
 const DISCORD = /Discordbot/i;
 
-export function proxy(request: NextRequest) {
+/** Odpowiedzi panelu admina: bez zapisu w cache i bez indeksowania */
+function adminHeaders(response: NextResponse) {
+  response.headers.set("Cache-Control", "no-store, max-age=0");
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return response;
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Discord dostaje podgląd linku z białym paskiem i grafiką produktu (src/app/api/embed)
@@ -14,11 +22,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Bramka panelu admina: bez ważnej sesji przekierowuje na logowanie
-  if (pathname === "/admin/login") return NextResponse.next();
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
-  if (verifySessionToken(token, Date.now())) return NextResponse.next();
-  return NextResponse.redirect(new URL("/admin/login", request.url));
+  // Bramka panelu admina: sesja musi mieć ważny podpis i istnieć w bazie (wylogowanie ją unieważnia).
+  // Strony i API admina sprawdzają sesję jeszcze raz same.
+  const signedIn = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
+  if (pathname === "/admin/login") {
+    return adminHeaders(signedIn ? NextResponse.redirect(new URL("/admin/stats", request.url)) : NextResponse.next());
+  }
+  return adminHeaders(signedIn ? NextResponse.next() : NextResponse.redirect(new URL("/admin/login", request.url)));
 }
 
 export const config = {
