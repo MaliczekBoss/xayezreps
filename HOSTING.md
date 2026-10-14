@@ -37,7 +37,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 | `GEMINI_API_KEY` | jedna z trzech opcji AI | zamiennie: Gemini (opcjonalnie `GEMINI_MODEL`) |
 | `ANTHROPIC_API_KEY` | jedna z trzech opcji AI | zamiennie: Claude (opcjonalnie `CLAUDE_MODEL`) |
 | `NEXT_PUBLIC_SITE_URL` | na własnym serwerze | adres strony, np. `https://xayezreps.pl` (na Vercelu brany z domeny produkcyjnej) |
-| `TRUST_PROXY` | na własnym serwerze | `1`, gdy strona stoi za nginx/Caddy ustawiającym `X-Real-IP` – inaczej wszyscy odwiedzający dzielą jeden limit zapytań |
+| `TRUST_PROXY` | na własnym serwerze | nagłówek z adresem klienta ustawiany przez proxy: `1` (= `X-Real-IP`), `x-forwarded-for` (liczy się ostatni adres) albo `cf-connecting-ip`. Bez tego wszyscy odwiedzający dzielą jeden limit zapytań |
 | `IMAGE_SEARCH_HOURLY_LIMIT`, `IMAGE_SEARCH_DAILY_LIMIT` | nie | limity wyszukiwań po zdjęciu (domyślnie 20 na osobę na godzinę i 800 na dzień, z Gemini 500) |
 | `DISCORD_LOGO_EMOJI` | nie | emoji obok nazwy w podglądzie linku na Discordzie, format `<:nazwa:id>` |
 
@@ -69,10 +69,12 @@ npm run build
 npm start -- -p 3000      # uruchamiaj pod pm2 albo systemd, z katalogu projektu
 ```
 
-- **Zmienne** jak w tabeli, plus `NEXT_PUBLIC_SITE_URL` i `TRUST_PROXY=1`.
-- **HTTPS i proxy.** Przed Node'em postaw nginx albo Caddy z certyfikatem. Proxy musi ustawiać prawdziwy adres
-  klienta, np. w nginx: `proxy_set_header X-Real-IP $remote_addr;`. Jeśli przed serwerem jest jeszcze proxy
-  Cloudflare, adres klienta weź z `CF-Connecting-IP` (moduł `real_ip` w nginx z zakresami IP Cloudflare).
+- **Zmienne** jak w tabeli, plus `NEXT_PUBLIC_SITE_URL` i `TRUST_PROXY`.
+- **HTTPS i proxy.** Przed Node'em postaw nginx albo Caddy z certyfikatem. Proxy musi **nadpisywać** nagłówek
+  z adresem klienta (klient nie może przemycić własnego), np. w nginx: `proxy_set_header X-Real-IP $remote_addr;`
+  i `TRUST_PROXY=1`. Strona czyta tylko ten jeden nagłówek. Jeśli przed serwerem jest jeszcze proxy Cloudflare,
+  ustaw w nginx moduł `real_ip` z zakresami IP Cloudflare (`real_ip_header CF-Connecting-IP;`), żeby
+  `$remote_addr` był adresem odwiedzającego, i wpuszczaj ruch tylko z adresów Cloudflare.
 - **Crony** z systemowego crona (czas UTC):
 
   ```cron

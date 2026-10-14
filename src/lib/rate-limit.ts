@@ -8,17 +8,20 @@ import { run, storageKind } from "./analytics/store";
 
 /**
  * Adres klienta. Na Vercelu nagłówki x-real-ip i x-forwarded-for nadpisuje platforma, więc klient ich nie podmieni.
- * Na własnym serwerze za odwrotnym proxy (nginx, Caddy) ustaw TRUST_PROXY=1 – wtedy liczy się x-real-ip ustawiany
- * przez proxy albo ostatni adres z x-forwarded-for (dopisany przez proxy, a nie przez klienta).
- * Bez tego (lokalnie) nagłówki może wysłać każdy, więc wszyscy dzielą jeden licznik.
+ * Na własnym serwerze za odwrotnym proxy TRUST_PROXY wskazuje jeden nagłówek, który ustawia proxy:
+ * „1” albo „x-real-ip” (nginx: proxy_set_header X-Real-IP $remote_addr), „x-forwarded-for” (liczy się ostatni adres –
+ * dopisany przez proxy) albo np. „cf-connecting-ip”. Innych nagłówków nie czytamy, bo te może wysłać sam klient.
+ * Bez TRUST_PROXY (lokalnie) wszyscy dzielą jeden licznik.
  */
 export function clientIp(request: Request | Headers) {
   const headers = request instanceof Headers ? request : request.headers;
   if (process.env.VERCEL === "1") {
     return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",")[0] ?? "").trim() || "unknown";
   }
-  if (process.env.TRUST_PROXY === "1") {
-    return (headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",").at(-1) ?? "").trim() || "unknown";
+  const trusted = process.env.TRUST_PROXY === "1" ? "x-real-ip" : (process.env.TRUST_PROXY ?? "").trim().toLowerCase();
+  if (/^[a-z][a-z-]*$/.test(trusted)) {
+    const value = headers.get(trusted) ?? "";
+    return ((trusted === "x-forwarded-for" ? value.split(",").at(-1) : value) ?? "").trim() || "unknown";
   }
   return "local";
 }
