@@ -25,12 +25,11 @@ export type Find = {
   featured?: boolean;
   /** Strona oferty, gdy to nie /product/<id> – np. produkt sprzedawcy (seller-find.ts) */
   href?: string;
-  /** Dla kogo (filtr „Dla niego” / „Dla niej”); bez pola – unisex: jest w „Dla niego”, a „Dla niej” to tylko rzeczy damskie */
+  /** Dla kogo jest produkt (npm run gender:classify); bez pola – unisex. Strona na razie nie filtruje po tym polu */
   gender?: Gender;
 };
 
 export type Gender = "men" | "women";
-export const genders: Gender[] = ["men", "women"];
 
 export const categories = [
   "Bluzy",

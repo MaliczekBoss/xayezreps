@@ -1,6 +1,6 @@
 import "server-only";
 
-import { categories, genders, sortNewest, sortPopular, type Find, type Gender } from "./finds";
+import { categories, sortNewest, sortPopular, type Find } from "./finds";
 import { getQcIndex, withQc } from "./qc-feed";
 import { buildSearchIndex, searchFinds, type SearchIndex } from "./search";
 import { getFinds } from "./store";
@@ -21,8 +21,6 @@ export type CatalogQuery = {
   category?: string;
   batch?: string;
   qcOnly?: boolean;
-  /** „Dla niego” – wszystko oprócz rzeczy damskich, „Dla niej” – tylko rzeczy damskie */
-  gender?: Gender | "";
   /** Bez sortowania przy wpisanym zapytaniu liczy się trafność */
   sort?: CatalogSort | null;
   offset?: number;
@@ -49,18 +47,19 @@ type Prepared = { finds: Find[]; index: SearchIndex; facets: CatalogFacets };
 
 // Indeks wyszukiwania budujemy raz na wersję katalogu, a nie przy każdym zapytaniu.
 // Przez 30 s nie sprawdzamy nawet, czy katalog się zmienił – zapytania idą prosto do gotowego indeksu.
+// Czas mierzy performance.now(): Date.now() Next blokuje przy prerenderze strony katalogu.
 const FRESH_MS = 30_000;
 let prepared: { key: string; at: number; value: Prepared } | null = null;
 
 const signature = (list: Find[]) => `${list.length}|${list.reduce((h, f) => (h * 31 + f.id.length * 7 + f.name.length + f.pricePln + (f.qc ?? 0) + f.views) | 0, 7)}`;
 
 async function prepare(): Promise<Prepared> {
-  if (prepared && Date.now() - prepared.at < FRESH_MS) return prepared.value;
+  if (prepared && performance.now() - prepared.at < FRESH_MS) return prepared.value;
   const [raw, qcIndex] = await Promise.all([getFinds().then(live), getQcIndex()]);
   const finds = sortPopular(withQc(raw, qcIndex));
   const key = signature(finds);
   if (prepared?.key === key) {
-    prepared.at = Date.now();
+    prepared.at = performance.now();
     return prepared.value;
   }
 
@@ -72,7 +71,7 @@ async function prepare(): Promise<Prepared> {
     hasQc: finds.some((f) => f.qc),
   };
   const value = { finds, index: buildSearchIndex(finds), facets };
-  prepared = { key, at: Date.now(), value };
+  prepared = { key, at: performance.now(), value };
   return value;
 }
 
@@ -87,8 +86,7 @@ export async function queryCatalog(query: CatalogQuery): Promise<CatalogPage> {
     (f) =>
       (!query.category || f.category === query.category) &&
       (!query.batch || f.batch === query.batch) &&
-      (!query.qcOnly || Boolean(f.qc)) &&
-      (!query.gender || (query.gender === "women" ? f.gender === "women" : f.gender !== "women")),
+      (!query.qcOnly || Boolean(f.qc)),
   );
   const found = searchFinds(index, base, q);
 
@@ -144,7 +142,6 @@ export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
     category: params.get("category") ?? "",
     batch: params.get("batch") ?? "",
     qcOnly: params.get("qc") === "1",
-    gender: genders.find((g) => g === params.get("gender")) ?? "",
     sort: SORTS.includes(sort as CatalogSort) ? (sort as CatalogSort) : null,
     offset: Number(params.get("offset")) || 0,
   };

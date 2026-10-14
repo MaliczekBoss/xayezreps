@@ -74,8 +74,8 @@ function RisingWords({ text, start }: { text: string; start: number }) {
 
 export type HeroCategory = { category: string; image: string };
 
-/** Liczby pod wyszukiwarką i miniatury produktów bez tła do nich */
-export type HeroProof = { finds: number; qc: number; findThumbs: string[]; qcThumbs: string[] };
+/** Liczba findów pod wyszukiwarką i miniatury produktów bez tła do niej */
+export type HeroProof = { finds: number; findThumbs: string[] };
 
 /** Trzy zachodzące na siebie miniatury; po najechaniu na link lekko się rozsuwają */
 function Stack({ images }: { images: string[] }) {
@@ -193,16 +193,14 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
             <HeroSearch typeIn={intro} />
           </div>
 
-          {/* Trzy prawdziwe liczby kręcące się jak licznik: kupujący, findy w katalogu i findy ze zdjęciami QC */}
+          {/* Społeczność kupujących i liczba findów w katalogu, kręcąca się jak licznik */}
           <ul className="intro-fade mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted" style={at(1000)}>
             <li className="flex items-center gap-2.5">
               <span aria-hidden="true" className="relative grid size-2 place-items-center">
                 <span className="absolute size-2 rounded-full bg-gl/60 [animation-duration:2.2s] motion-safe:animate-ping" />
                 <span className="relative size-2 rounded-full bg-gl" />
               </span>
-              <span>
-                <RollingNumber value={site.buyers} roll={intro} start={1150} /> {t("hero.proofBuyers")}
-              </span>
+              <span className="font-medium text-fg">{t("hero.proofTrust")}</span>
             </li>
             <li>
               <Link href={site.routes.finds} className="group/p flex items-center gap-2.5 transition-colors hover:text-fg">
@@ -212,16 +210,6 @@ export function Hero({ categories, proof, previews }: { categories: HeroCategory
                 </span>
               </Link>
             </li>
-            {proof.qc > 0 && (
-              <li>
-                <Link href={`${site.routes.finds}?qc=1`} className="group/p flex items-center gap-2.5 transition-colors hover:text-fg">
-                  <Stack images={proof.qcThumbs} />
-                  <span>
-                    <RollingNumber value={proof.qc.toLocaleString(f.locale)} roll={intro} start={1350} /> {t("hero.proofQc")}
-                  </span>
-                </Link>
-              </li>
-            )}
           </ul>
         </div>
 
