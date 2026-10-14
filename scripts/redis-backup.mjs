@@ -4,7 +4,8 @@
 //
 //   KV_REST_API_URL=… KV_REST_API_READ_ONLY_TOKEN=… npm run db:backup -- <folder>
 //
-// W kopii są sesje admina i skróty adresów IP z limitów zapytań – trzymaj ją prywatnie, nie wrzucaj do repozytorium.
+// Sesji admina (adm:) i liczników limitów zapytań ze skrótami adresów IP (rl:) nie kopiujemy – i tak szybko wygasają.
+// Pliki są tylko dla właściciela (na Linuksie/macOS); kopię trzymaj prywatnie, nie wrzucaj do repozytorium.
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -22,6 +23,7 @@ const HEADERS = { Authorization: `Bearer ${token}`, "Upstash-Encoding": "base64"
 const BATCH = 50;
 // Duże napisy (np. cały katalog) pobieramy pojedynczo
 const BIG_STRING = 512 * 1024;
+const SKIP = /^(adm|rl):/;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const b64 = (s) => Buffer.from(s, "base64");
@@ -60,8 +62,8 @@ do {
   for (const k of batch) keys.push(b64(k).toString("utf8"));
   process.stdout.write(`\rKlucze: ${keys.length}`);
 } while (cursor !== "0");
-const unique = [...new Set(keys)].sort();
-console.log(`\rKluczy w bazie: ${unique.length}`);
+const unique = [...new Set(keys)].filter((k) => !SKIP.test(k)).sort();
+console.log(`\rKluczy w bazie: ${new Set(keys).size}, w kopii: ${unique.length} (bez sesji admina i limitów zapytań)`);
 
 // 2. Typ, czas wygaśnięcia i długość napisów, potem wartości według typu
 const dump = {};
@@ -106,10 +108,10 @@ for (const entry of Object.values(dump)) {
 
 // 4. Zapis i podsumowanie po przedrostkach kluczy
 const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
-await mkdir(outDir, { recursive: true });
+await mkdir(outDir, { recursive: true, mode: 0o700 });
 const file = path.join(outDir, `redis-${stamp}.json`);
 const json = JSON.stringify({ exportedAt: new Date().toISOString(), database: new URL(url).host, keys: dump }, null, 1);
-await writeFile(file, json);
+await writeFile(file, json, { mode: 0o600 });
 
 const groups = new Map();
 for (const [key, entry] of Object.entries(dump)) {
@@ -129,5 +131,5 @@ const summary = [
   "Przedrostek klucza".padEnd(34) + "Kluczy".padStart(8) + "Rozmiar".padStart(12) + "  Typ",
   ...rows.map(([p, g]) => p.padEnd(34) + String(g.keys).padStart(8) + kb(g.bytes).padStart(12) + "  " + [...g.types].join(", ")),
 ].join("\n");
-await writeFile(path.join(outDir, `redis-${stamp}-podsumowanie.txt`), `${summary}\n`);
+await writeFile(path.join(outDir, `redis-${stamp}-podsumowanie.txt`), `${summary}\n`, { mode: 0o600 });
 console.log(summary);
