@@ -145,8 +145,8 @@ export type ItemDetails = {
  * (np. link wklejony w narzędziu QC) – stara strona, dopóki odpowiada.
  */
 export async function fetchItemDetails(source: ProductSource): Promise<ItemDetails | null> {
-  const goods = await fetchUsfansGoods(source);
-  const live = goods && parseUsfansGoods(goods);
+  const { data } = await fetchUsfansGoods(source);
+  const live = data && parseUsfansGoods(data);
   if (live) return live;
   const saved = await snapshotItem(source);
   if (saved !== undefined) return saved && parseItemDetails(saved);
@@ -248,47 +248,46 @@ function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
 
 const USFANS_CHANNEL: Record<ProductSource["platform"], number> = { "1688": 1, taobao: 2, weidian: 3 };
 
-// Cena i szczegóły biorą tę samą odpowiedź USFans: zapytania o tę samą aukcję w tej samej chwili idą raz
-const goodsInFlight = new Map<string, Promise<Record<string, unknown> | null>>();
-// Ostatnia odpowiedź USFans dla aukcji (kod z ich API, „http 503”, „błąd”) – do nagłówka X-Agent-Status w /api/item
-const goodsStatus = new Map<string, string>();
+// Cena i szczegóły biorą tę samą odpowiedź USFans: zapytania o tę samą aukcję w tej samej chwili idą raz.
+// status – krótki opis odpowiedzi (tylko ASCII) do nagłówka X-Agent-Status w /api/item, np. „200 title=1 skus=12 prices=12”
+type Goods = { data: Record<string, unknown> | null; status: string };
+const goodsInFlight = new Map<string, Promise<Goods>>();
 
-/** Jak USFans odpowiedział ostatnio na pytanie o tę aukcję (na tej instancji serwera) */
-export const agentStatus = (source: ProductSource) => goodsStatus.get(`${source.platform}:${source.id}`) ?? "";
-
-/** Dane aukcji z USFans (api/goods/info) albo null, gdy nie odpowiedział */
-function fetchUsfansGoods(source: ProductSource): Promise<Record<string, unknown> | null> {
+function fetchUsfansGoods(source: ProductSource): Promise<Goods> {
   const key = `${source.platform}:${source.id}`;
   let pending = goodsInFlight.get(key);
   if (!pending) {
-    pending = (async () => {
+    pending = (async (): Promise<Goods> => {
       const url = `https://www.usfans.com/api/goods/info?channel=${USFANS_CHANNEL[source.platform]}&goodsId=${encodeURIComponent(source.id)}&refresh=false&queryDelivery=false&activityId=`;
       const res = await fetch(url, {
         headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
         signal: AbortSignal.timeout(10000),
         cache: "no-store",
       });
-      if (!res.ok) {
-        goodsStatus.set(key, `http ${res.status}`);
-        return null;
-      }
+      if (!res.ok) return { data: null, status: `http-${res.status}` };
       const d = await res.json().catch(() => null);
-      goodsStatus.set(key, String(d?.code ?? "brak kodu"));
-      return d?.code === 200 && d.data && typeof d.data === "object" ? (d.data as Record<string, unknown>) : null;
+      const code = typeof d?.code === "number" && Number.isInteger(d.code) ? d.code : null;
+      if (code === null) return { data: null, status: "bad-response" };
+      const data = code === 200 && d.data && typeof d.data === "object" ? (d.data as Record<string, unknown>) : null;
+      const shape = data ? ` title=${text(data.titleEn) || text(data.title) ? 1 : 0} skus=${list(data.skuList).length} prices=${skuPrices(data).length}` : "";
+      return { data, status: `${code}${shape}` };
     })()
-      .catch(() => {
-        goodsStatus.set(key, "błąd");
-        return null;
-      })
+      .catch((): Goods => ({ data: null, status: "error" }))
       .finally(() => setTimeout(() => goodsInFlight.delete(key), 5000));
     goodsInFlight.set(key, pending);
   }
   return pending;
 }
 
+/** Jak USFans odpowiedział na ostatnie (sprzed najwyżej kilku sekund) pytanie o tę aukcję; pusty – nie pytaliśmy */
+export async function agentStatus(source: ProductSource) {
+  const pending = goodsInFlight.get(`${source.platform}:${source.id}`);
+  return pending ? (await pending).status : "";
+}
+
 /** Aktualna cena u agenta (USFans) w juanach: najtańszy wariant, z promocją, jeśli jest */
 export async function fetchAgentPriceCny(source: ProductSource): Promise<number | null> {
-  const d = await fetchUsfansGoods(source);
+  const { data: d } = await fetchUsfansGoods(source);
   if (!d) return null;
   const prices = skuPrices(d);
   return prices.length ? Math.min(...prices) : amount(d.price) || null;

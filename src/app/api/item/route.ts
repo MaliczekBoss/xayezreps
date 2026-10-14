@@ -33,7 +33,7 @@ export async function GET(request: Request) {
   // X-Agent-Status: kod odpowiedzi USFans (200 = dane na żywo) – widać, czy szczegóły są od agenta, czy z zapisu
   return Response.json(
     { source, item, agentPriceCny },
-    { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600", "X-Agent-Status": agentStatus(source) } },
+    { headers: { "Cache-Control": "public, max-age=300, s-maxage=900, stale-while-revalidate=3600", "X-Agent-Status": await agentStatus(source) } },
   );
 }
 
