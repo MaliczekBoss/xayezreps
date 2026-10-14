@@ -29,9 +29,11 @@ async function price({ platform, id }) {
       }
       const d = await res.json().catch(() => null);
       if (d?.code !== 200 || !d.data) return null;
+      // Kwoty bywają tekstem („89.00”) – tak samo jak na stronie (remote.ts → skuPrices)
+      const amount = (v) => (Number.isFinite(Number(v)) && Number(v) > 0 && v !== "" && v !== null ? Number(v) : 0);
       const skus = Array.isArray(d.data.skuList) ? d.data.skuList : [];
-      const prices = skus.map((s) => (s.discountPrice > 0 ? s.discountPrice : s.price)).filter((p) => typeof p === "number" && p > 0);
-      const cny = prices.length ? Math.min(...prices) : d.data.price > 0 ? d.data.price : null;
+      const prices = skus.map((s) => amount(s.discountPrice) || amount(s.price)).filter((p) => p > 0);
+      const cny = prices.length ? Math.min(...prices) : amount(d.data.price) || null;
       return cny ? { cny, at: new Date().toISOString() } : null;
     } catch {
       await sleep(2000);

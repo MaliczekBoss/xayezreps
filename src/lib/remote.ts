@@ -156,7 +156,17 @@ export async function fetchItemDetails(source: ProductSource): Promise<ItemDetai
 
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-const amount = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+/** Kwota z odpowiedzi agenta – liczba albo liczba zapisana tekstem („89.00”); inaczej 0 */
+const amount = (v: unknown) => {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
+/** Ceny wariantów u USFans w juanach, z promocją, jeśli jest */
+const skuPrices = (d: Record<string, unknown>) =>
+  (list(d.skuList) as { price?: unknown; discountPrice?: unknown }[])
+    .map((s) => amount(s.discountPrice) || amount(s.price))
+    .filter((p) => p > 0);
 /** Adres zdjęcia ze sklepu: „//host/…” i http → https, inne odrzucamy */
 const httpsUrl = (v: unknown) => {
   const url = text(v).replace(/^\/\//, "https://").replace(/^http:\/\//, "https://");
@@ -173,7 +183,7 @@ function parseUsfansGoods(d: Record<string, unknown>): ItemDetails | null {
   if (!title) return null;
   type Value = { valueName?: unknown; valueNameEn?: unknown; picUrl?: unknown };
   type Prop = { propName?: unknown; propNameEn?: unknown; valuesList?: unknown };
-  type Sku = { price?: unknown; discountPrice?: unknown; stock?: unknown };
+  type Sku = { stock?: unknown };
 
   const props = list(d.properties) as Prop[];
   const values = (re: RegExp) => list(props.find((p) => re.test(`${text(p.propNameEn)} ${text(p.propName)}`))?.valuesList) as Value[];
@@ -184,7 +194,7 @@ function parseUsfansGoods(d: Record<string, unknown>): ItemDetails | null {
   const sizes = values(/size|尺码|尺寸/i).map(nameOf).filter(Boolean);
 
   const skus = list(d.skuList) as Sku[];
-  const prices = skus.map((s) => (amount(s.discountPrice) > 0 ? amount(s.discountPrice) : amount(s.price))).filter((p) => p > 0);
+  const prices = skuPrices(d);
   const base = prices.length ? Math.min(...prices) : amount(d.price);
   const all = prices.length ? prices : [base];
   // Stan magazynu: suma wariantów, a bez niej – całej aukcji; brak danych = dostępny
@@ -214,11 +224,11 @@ function parseItemDetails(d: Record<string, unknown>): ItemDetails | null {
   const findAttr = (re: RegExp) => attrs.find((a) => re.test(`${a.tag ?? ""} ${a.name ?? ""}`));
   const colors = (findAttr(/colou?r|颜色/i)?.values ?? []).filter((v) => v.name).map((v) => ({ name: v.name!, image: v.image }));
   const sizes = (findAttr(/size|尺码|尺寸/i)?.values ?? []).filter((v) => v.name).map((v) => v.name!);
-  const skuPrices = list(d.skus)
+  const variantPrices = list(d.skus)
     .map((s) => (s as { price?: unknown }).price)
     .filter((p): p is number => typeof p === "number");
   const base = typeof d.price === "number" ? d.price : 0;
-  const all = skuPrices.length ? skuPrices : [base];
+  const all = variantPrices.length ? variantPrices : [base];
   const seller = (d.seller as { name?: unknown } | null | undefined)?.name;
 
   return {
@@ -268,11 +278,8 @@ function fetchUsfansGoods(source: ProductSource): Promise<Record<string, unknown
 export async function fetchAgentPriceCny(source: ProductSource): Promise<number | null> {
   const d = await fetchUsfansGoods(source);
   if (!d) return null;
-  type Sku = { price?: number; discountPrice?: number | null };
-  const skus = list(d.skuList) as Sku[];
-  const prices = skus.map((s) => (s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price)).filter((p): p is number => typeof p === "number" && p > 0);
-  if (prices.length) return Math.min(...prices);
-  return typeof d.price === "number" && d.price > 0 ? d.price : null;
+  const prices = skuPrices(d);
+  return prices.length ? Math.min(...prices) : amount(d.price) || null;
 }
 
 /**
