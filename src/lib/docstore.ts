@@ -10,7 +10,7 @@ export type DocName = "finds" | "outfits";
 type WithId = { id: string };
 
 const RESET: Record<DocName, string> = {
-  finds: "2026-10-14-gender-live-prices",
+  finds: "2026-10-15-ai-categories",
   outfits: "2026-10-14-outfits-local-images",
 };
 

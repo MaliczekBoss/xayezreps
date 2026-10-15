@@ -6098,7 +6098,7 @@
   {
     "id": "oxpvcjuik6",
     "name": "Denim Tears Backpack",
-    "category": "Spodnie",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 92,
     "priceCny": 144.22,
@@ -8102,7 +8102,7 @@
   {
     "id": "s87gxpdzse",
     "name": "Denim Tears headscarf",
-    "category": "Spodnie",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 93,
     "priceCny": 146.75,
@@ -8391,7 +8391,7 @@
   {
     "id": "fs1ygpxg3w",
     "name": "Wanna Lab 2 in 1 detachable camo pants/shorts",
-    "category": "Spodenki",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 187,
     "priceCny": 294.43,
@@ -10696,7 +10696,7 @@
   {
     "id": "5fv9fjmq7x",
     "name": "Denim Tears Tracksuit (T-shirt)",
-    "category": "Komplety",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 75,
     "priceCny": 118,
@@ -12896,7 +12896,7 @@
   {
     "id": "mca1g99cgt",
     "name": "Nike Basketball Ball",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 161,
     "priceCny": 253.67,
@@ -13248,7 +13248,7 @@
   {
     "id": "rtu1qase3o",
     "name": "Taichiism Knitted zip-up",
-    "category": "Bluzy",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 426,
     "priceCny": 670.66,
@@ -15138,7 +15138,7 @@
   {
     "id": "0y5tixgg6e",
     "name": "Moncler x Palm Angels Rodmar Short Down Jacket",
-    "category": "Spodenki",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 339,
     "priceCny": 533.65,
@@ -20091,7 +20091,7 @@
   {
     "id": "hx2vwrcxp8",
     "name": "Nike Shin Guards",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 25,
     "priceCny": 39,
@@ -21436,7 +21436,7 @@
   {
     "id": "mmqa6hs32g",
     "name": "IHF RAW DENIM JORTS",
-    "category": "Spodnie",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 49,
     "priceCny": 76.36,
@@ -21724,7 +21724,7 @@
   {
     "id": "fgjd9qd5gf",
     "name": "Polo Ralph Lauren Sweaters",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.41,
@@ -22637,7 +22637,7 @@
   {
     "id": "vo3ojgsy5d",
     "name": "Moncler Solayan Hooded Short Down jacket",
-    "category": "Spodenki",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 351,
     "priceCny": 552.3,
@@ -22861,7 +22861,7 @@
   {
     "id": "h6jvo7hrm4",
     "name": "Corteiz Track suit 5th anniversary alcatraz 4 stars black pant",
-    "category": "Komplety",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 148,
     "priceCny": 232.76,
@@ -25600,7 +25600,7 @@
   {
     "id": "9259lff6kj",
     "name": "Off White Shoe laces",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 8,
     "priceCny": 13,
@@ -27715,7 +27715,7 @@
   {
     "id": "qgibigixix",
     "name": "Moncler Jacket with Knitted Sleeves",
-    "category": "Swetry",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 285,
     "priceCny": 448.95,
@@ -27763,7 +27763,7 @@
   {
     "id": "mogwj6cb5m",
     "name": "Rick Owens Full Zip",
-    "category": "Buty",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 173,
     "priceCny": 272.49,
@@ -29671,7 +29671,7 @@
   {
     "id": "gmq9kgbk7h",
     "name": "Basic Shoe Laces",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 4,
     "priceCny": 6,
@@ -30779,7 +30779,7 @@
   {
     "id": "lyhxecpmvc",
     "name": "Chrome Hearts Hats",
-    "category": "Buty",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 14,
     "priceCny": 22.3,
@@ -30989,7 +30989,7 @@
   {
     "id": "v7ai51nbhl",
     "name": "Polo Ralph Lauren Sweatpants",
-    "category": "Koszulki",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 97,
     "priceCny": 153,
@@ -31981,7 +31981,7 @@
   {
     "id": "9h1ubsqw1z",
     "name": "Wanna Lab Distressed large denim tote bag (2 colorways)",
-    "category": "Spodnie",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 87,
     "priceCny": 136.8,
@@ -32382,7 +32382,7 @@
   {
     "id": "8gtvnjhwmt",
     "name": "Without Me DETACHABLE CARGO PANTS AND SHORTS",
-    "category": "Spodenki",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 167,
     "priceCny": 262.7,
@@ -33492,7 +33492,7 @@
   {
     "id": "n499akfyp7",
     "name": "Human Register/Aquatic Tank ® Tape」Physical Peripherals",
-    "category": "Elektronika",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 51,
     "priceCny": 80,
@@ -33828,7 +33828,7 @@
   {
     "id": "rv10mr8u9k",
     "name": "Trapstar Hoodie Set (many cw)",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 289,
     "priceCny": 454.77,
@@ -34372,7 +34372,7 @@
   {
     "id": "939lpopek7",
     "name": "Balenciaga Double Layer Underwear Sweatpants",
-    "category": "Bielizna",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 357,
     "priceCny": 561,
@@ -34517,7 +34517,7 @@
   {
     "id": "b9d8a0qzdj",
     "name": "Rick Owens EDFU Cargo Jorts",
-    "category": "Spodnie",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 106,
     "priceCny": 166.6,
@@ -37645,7 +37645,7 @@
   {
     "id": "4hamzrjrmd",
     "name": "400% Supreme Bearbrick",
-    "category": "Klocki",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 80,
     "priceCny": 126,
@@ -38142,7 +38142,7 @@
   {
     "id": "0geyqp1ix3",
     "name": "Nike 2023 Tech Fleece (26cw)",
-    "category": "Buty",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.41,
@@ -39087,7 +39087,7 @@
   {
     "id": "kmzjbsqdlo",
     "name": "Polo USA Flag Sweater ( Navy)",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 128,
     "priceCny": 201.2,
@@ -39519,7 +39519,7 @@
   {
     "id": "of7tcpcjh0",
     "name": "Polo USA Flag Sweater ( Beige )",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 128,
     "priceCny": 201.2,
@@ -39567,7 +39567,7 @@
   {
     "id": "50whqb8dab",
     "name": "Supreme Shoe Laces",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 6,
     "priceCny": 10,
@@ -42114,7 +42114,7 @@
   {
     "id": "qvlg3xk0cb",
     "name": "Nike tank top Shirt",
-    "category": "Buty",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 76,
     "priceCny": 120,
@@ -42483,7 +42483,7 @@
   {
     "id": "jb8xelkd8n",
     "name": "Rick Owens Baggy Cragos",
-    "category": "Buty",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 182,
     "priceCny": 285.42,
@@ -43187,7 +43187,7 @@
   {
     "id": "hg3oeilozy",
     "name": "Supreme FW22 Hoodie + Pants",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 189,
     "priceCny": 298,
@@ -44258,7 +44258,7 @@
   {
     "id": "gj1bq0rpo6",
     "name": "Brazil Jerscy CBF Logo Hoodie Set",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 245,
     "priceCny": 385,
@@ -45548,7 +45548,7 @@
   {
     "id": "jt1lzjuj75",
     "name": "Stone Island Compass Patch Ribbed Knit Zip Hoodie",
-    "category": "Bluzy",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 134,
     "priceCny": 210,
@@ -45938,7 +45938,7 @@
   {
     "id": "xgs7tpohk5",
     "name": "Nike ZoomX Invincible Run Flyknit 3",
-    "category": "Swetry",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 221,
     "priceCny": 348,
@@ -46805,7 +46805,7 @@
   {
     "id": "wbh69hh6p1",
     "name": "Polo Ralph Lauren Drawstring Shorts",
-    "category": "Koszulki",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188,
@@ -46856,7 +46856,7 @@
   {
     "id": "qeqe17gmtx",
     "name": "Fear Of God Essentials T-Shirt & Shorts",
-    "category": "Koszulki",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 134,
     "priceCny": 210,
@@ -46924,7 +46924,7 @@
   {
     "id": "smaz04mtnj",
     "name": "Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 51,
     "priceCny": 80,
@@ -48469,7 +48469,7 @@
   {
     "id": "cyscenw2p4",
     "name": "CPE technical hoodie jacket (3 colorways)",
-    "category": "Bluzy",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 457,
     "priceCny": 718.26,
@@ -49093,7 +49093,7 @@
   {
     "id": "6l7b6hwet1",
     "name": "Denim Tears Caps",
-    "category": "Spodnie",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 84,
@@ -50813,7 +50813,7 @@
   {
     "id": "ax73f30b0o",
     "name": "Denim Tears Caps",
-    "category": "Spodnie",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 84,
@@ -51790,7 +51790,7 @@
   {
     "id": "yuxv81hw91",
     "name": "Dark Fog Heavy leather hoodie jacket",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 213,
     "priceCny": 335.34,
@@ -52078,7 +52078,7 @@
   {
     "id": "idqr3yx2bc",
     "name": "Supreme Shoe Laces",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 6,
     "priceCny": 10,
@@ -53536,7 +53536,7 @@
   {
     "id": "k36sb9rkl4",
     "name": "Broken Planet Knit Zip Up",
-    "category": "Bluzy",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 93,
     "priceCny": 146,
@@ -53552,7 +53552,7 @@
   {
     "id": "jd5bu6k3v2",
     "name": "Real Madrid 16-17",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 23,
     "priceCny": 36.14,
@@ -54033,7 +54033,7 @@
   {
     "id": "nsu8g0qxy1",
     "name": "Dior Card Holder",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 113,
     "priceCny": 178,
@@ -54402,7 +54402,7 @@
   {
     "id": "g0lgt1serc",
     "name": "Lady DIOR",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 451,
     "priceCny": 709.78,
@@ -54644,7 +54644,7 @@
   {
     "id": "gf1ws39rv0",
     "name": "Valentino Garavani VL7N",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 250,
     "priceCny": 392.92,
@@ -55447,7 +55447,7 @@
   {
     "id": "533p5lg9t9",
     "name": "Balenciaga Shorts with Underwear ( Grey-Red )",
-    "category": "Bielizna",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 101,
     "priceCny": 158.77,
@@ -55639,7 +55639,7 @@
   {
     "id": "1o2fhm8jwi",
     "name": "DETW Mohair zip-up",
-    "category": "Bluzy",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 644,
     "priceCny": 1013.2,
@@ -55655,7 +55655,7 @@
   {
     "id": "qlcoksff8y",
     "name": "Corteiz a sleeveless garment",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 43,
     "priceCny": 67.07,
@@ -55816,7 +55816,7 @@
   {
     "id": "c9fp01ghfp",
     "name": "Iiimiii thights",
-    "category": "Akcesoria",
+    "category": "Bielizna",
     "batch": "Random batch",
     "pricePln": 104,
     "priceCny": 164.16,
@@ -56314,7 +56314,7 @@
   {
     "id": "hy27dqf4hi",
     "name": "Paiki Cyrus Empire leather jacekt",
-    "category": "Akcesoria",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 304,
     "priceCny": 477.5,
@@ -56827,7 +56827,7 @@
   {
     "id": "zlxylu4vqe",
     "name": "Balenciaga raver Shirtt",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 69,
     "priceCny": 108.89,
@@ -60848,7 +60848,7 @@
   {
     "id": "g6wb0npkv4",
     "name": "Air Force 1 Lace Accesories",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 6,
     "priceCny": 10,
@@ -60912,7 +60912,7 @@
   {
     "id": "mrv1zsjio9",
     "name": "NIKE KYRIE 5 SPONGEBOB SQUAREPANTS",
-    "category": "Spodnie",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 181,
     "priceCny": 284.15,
@@ -62161,7 +62161,7 @@
   {
     "id": "l2uvxcgp6u",
     "name": "Keyboard Switches",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 14,
     "priceCny": 22,
@@ -62833,7 +62833,7 @@
   {
     "id": "76jt0qwmvt",
     "name": "I Feel Like Chief Keef 2012Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 25,
     "priceCny": 40,
@@ -62929,7 +62929,7 @@
   {
     "id": "wsfvwps19h",
     "name": "Off-White Nike Phone Case",
-    "category": "Buty",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 13,
     "priceCny": 21,
@@ -63329,7 +63329,7 @@
   {
     "id": "28o223mrhn",
     "name": "ADWYSDTee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 65,
     "priceCny": 103,
@@ -64386,7 +64386,7 @@
   {
     "id": "gihgu4nnpt",
     "name": "Apple Pencil",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 92,
     "priceCny": 144,
@@ -65380,7 +65380,7 @@
   {
     "id": "33cxgg03ik",
     "name": "Nike Nocta Tech Fleece Green",
-    "category": "Buty",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 112,
     "priceCny": 176.7,
@@ -65396,7 +65396,7 @@
   {
     "id": "812w4704gv",
     "name": "Polo Ralph Lauren track pant",
-    "category": "Koszulki",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 96,
     "priceCny": 151.08,
@@ -65541,7 +65541,7 @@
   {
     "id": "w9wzq7jvsq",
     "name": "Moncler Acorus Packable Short Down Jacket",
-    "category": "Spodenki",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 272,
     "priceCny": 427.6,
@@ -66070,7 +66070,7 @@
   {
     "id": "6h2ez7sxma",
     "name": "Rick Owens x Stussy Shirt",
-    "category": "Buty",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 82,
     "priceCny": 129.27,
@@ -66246,7 +66246,7 @@
   {
     "id": "ti55qctcrk",
     "name": "Moncler Padded Cotton Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 311,
     "priceCny": 489.2,
@@ -66582,7 +66582,7 @@
   {
     "id": "qfru92yg7w",
     "name": "Chrome Hearts Jersey + Pants",
-    "category": "Koszulki",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 98,
     "priceCny": 153.45,
@@ -66678,7 +66678,7 @@
   {
     "id": "7fh5c3vq2w",
     "name": "Nike Suits",
-    "category": "Buty",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 33,
     "priceCny": 51.15,
@@ -66870,7 +66870,7 @@
   {
     "id": "l4kszfrqxs",
     "name": "Chrome Hearts Mirror",
-    "category": "Torby",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 51,
     "priceCny": 80,
@@ -67928,7 +67928,7 @@
   {
     "id": "rttsf6nnxo",
     "name": "Nike Nocta Tech Fleece Blue",
-    "category": "Buty",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.77,
@@ -68360,7 +68360,7 @@
   {
     "id": "89q3i0l1gp",
     "name": "Air Force 1 Lace Accesories",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 6,
     "priceCny": 10,
@@ -69593,7 +69593,7 @@
   {
     "id": "xiq3f84g8t",
     "name": "Balenciaga Strike 20mm",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 289,
     "priceCny": 453.69,
@@ -70058,7 +70058,7 @@
   {
     "id": "2qamjnssyx",
     "name": "Nike Shirt",
-    "category": "Buty",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 172,
     "priceCny": 270,
@@ -70380,7 +70380,7 @@
   {
     "id": "c78mt5plyp",
     "name": "Embroidered denim baseball cap",
-    "category": "Spodnie",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 82,
     "priceCny": 128.27,
@@ -70669,7 +70669,7 @@
   {
     "id": "l2kpb2y43h",
     "name": "Fake Samsung Galaxy S24Ultra",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 610,
     "priceCny": 960,
@@ -71118,7 +71118,7 @@
   {
     "id": "50aacjb6la",
     "name": "Moncler Cardigan Jacket",
-    "category": "Swetry",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 253,
     "priceCny": 397.66,
@@ -72240,7 +72240,7 @@
   {
     "id": "ydenlr6hmw",
     "name": "Moncler Padded Cotton Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 311,
     "priceCny": 489.2,
@@ -72304,7 +72304,7 @@
   {
     "id": "ymms2iumw5",
     "name": "Short Nike Socks",
-    "category": "Spodenki",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 22,
     "priceCny": 35,
@@ -72448,7 +72448,7 @@
   {
     "id": "rcqwo2dp82",
     "name": "Polo USA Flag Sweater ( Navy)",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 128,
     "priceCny": 201.2,
@@ -73537,7 +73537,7 @@
   {
     "id": "69gask9o08",
     "name": "Polo Ralph Lauren Sweaters",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.41,
@@ -75301,7 +75301,7 @@
   {
     "id": "3okjoic16u",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -75333,7 +75333,7 @@
   {
     "id": "al7ahczso5",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -75397,7 +75397,7 @@
   {
     "id": "h2ve057p5d",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -75446,7 +75446,7 @@
   {
     "id": "hfb9bfz251",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -75478,7 +75478,7 @@
   {
     "id": "73zduix03o",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -75510,7 +75510,7 @@
   {
     "id": "firmiwe37a",
     "name": "Supreme Thrasher tee",
-    "category": "Spodenki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 66,
     "priceCny": 104,
@@ -76278,7 +76278,7 @@
   {
     "id": "fsrl217vql",
     "name": "Polo Ralph Lauren ankle socks",
-    "category": "Koszulki",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 35,
     "priceCny": 55,
@@ -76310,7 +76310,7 @@
   {
     "id": "x8jyfvkwpe",
     "name": "Polo Ralph Lauren ankle socks",
-    "category": "Koszulki",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 35,
     "priceCny": 55,
@@ -76342,7 +76342,7 @@
   {
     "id": "zde1s4fe7s",
     "name": "Nike socks set",
-    "category": "Komplety",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 22,
     "priceCny": 34,
@@ -76854,7 +76854,7 @@
   {
     "id": "pw66vz668g",
     "name": "Acne Studios long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 123,
     "priceCny": 193,
@@ -76870,7 +76870,7 @@
   {
     "id": "x6ubnpw0hu",
     "name": "Acne Studios long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 123,
     "priceCny": 193,
@@ -76902,7 +76902,7 @@
   {
     "id": "752o3rcjch",
     "name": "Acne Studios long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 123,
     "priceCny": 193,
@@ -76934,7 +76934,7 @@
   {
     "id": "aufc0wknv9",
     "name": "Acne Studios long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 123,
     "priceCny": 193,
@@ -78182,7 +78182,7 @@
   {
     "id": "8erenqll71",
     "name": "Corteiz Long Sleeve T-shirt Collection",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 62,
     "priceCny": 97.44,
@@ -78214,7 +78214,7 @@
   {
     "id": "frjfx88yux",
     "name": "Corteiz Long Sleeve T-shirt Collection",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 62,
     "priceCny": 97.44,
@@ -78278,7 +78278,7 @@
   {
     "id": "n2rj95ws0d",
     "name": "Corteiz Long Sleeve T-shirt Collection",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 62,
     "priceCny": 97.44,
@@ -78727,7 +78727,7 @@
   {
     "id": "4plh2846zs",
     "name": "Nike Sweatshirt & Sweatpants Set",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 115,
     "priceCny": 180.35,
@@ -80233,7 +80233,7 @@
   {
     "id": "tan2l4niqc",
     "name": "Moncler Padded Cotton Zip-Up Cardigan（With NFC scanning）",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 200,
     "priceCny": 314.81,
@@ -80457,7 +80457,7 @@
   {
     "id": "4zud0ac8nb",
     "name": "Bape Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 14,
     "priceCny": 22.74,
@@ -81754,7 +81754,7 @@
   {
     "id": "bsn3m5m208",
     "name": "So Sick Music Therapy Two-Piece short sleeve polo shirt",
-    "category": "Komplety",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 55,
     "priceCny": 86.71,
@@ -81883,7 +81883,7 @@
   {
     "id": "0hpf7upo1i",
     "name": "Moncler Navy Blue Padded Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 266,
     "priceCny": 419,
@@ -82460,7 +82460,7 @@
   {
     "id": "4i8o8ljlny",
     "name": "Balenciaga Shorts with Underwear ( Black-Black )",
-    "category": "Bielizna",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 124,
     "priceCny": 195.52,
@@ -82686,7 +82686,7 @@
   {
     "id": "ltm4fbpfdg",
     "name": "Balenciaga Shorts with Underwear ( Black-Red )",
-    "category": "Bielizna",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 101,
     "priceCny": 158.7,
@@ -83455,7 +83455,7 @@
   {
     "id": "3x12cykc0j",
     "name": "Denim tears Shirt",
-    "category": "Spodnie",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 57,
     "priceCny": 89.28,
@@ -84496,7 +84496,7 @@
   {
     "id": "b95x6jdlql",
     "name": "Ralph Lauren Denim Cap",
-    "category": "Spodnie",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 33,
     "priceCny": 51.89,
@@ -84849,7 +84849,7 @@
   {
     "id": "0y0942c2ed",
     "name": "Moncler Padded Cotton Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 311,
     "priceCny": 489.2,
@@ -84881,7 +84881,7 @@
   {
     "id": "3hl734mk0s",
     "name": "YVL Polo",
-    "category": "Czapki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 57,
     "priceCny": 88.88,
@@ -85825,7 +85825,7 @@
   {
     "id": "agti92k6nb",
     "name": "Corteiz fur trim zip hoodie",
-    "category": "Kurtki",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 231,
     "priceCny": 362.7,
@@ -85857,7 +85857,7 @@
   {
     "id": "vcl81hhjtg",
     "name": "C.P. Company goggle zip hoodie",
-    "category": "Kurtki",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 165,
     "priceCny": 258.7,
@@ -86641,7 +86641,7 @@
   {
     "id": "tzyr6jebbi",
     "name": "Palm Angels long sleeve tee",
-    "category": "Swetry",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 83.83,
@@ -86689,7 +86689,7 @@
   {
     "id": "629qi4d24e",
     "name": "Ralph Lauren half zip sweatshirt",
-    "category": "Kurtki",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 126,
     "priceCny": 198,
@@ -86705,7 +86705,7 @@
   {
     "id": "xiz29tfzwl",
     "name": "Stussy plaid cardigan",
-    "category": "Kurtki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 95,
     "priceCny": 148.8,
@@ -86769,7 +86769,7 @@
   {
     "id": "8zkcp8bgep",
     "name": "Cole Buxton CB set",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 80,
     "priceCny": 126,
@@ -88355,7 +88355,7 @@
   {
     "id": "rs9kqeu7qu",
     "name": "Ralph Lauren long sleeve polos",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 82,
     "priceCny": 129,
@@ -89636,7 +89636,7 @@
   {
     "id": "25jytuvw2v",
     "name": "Polo Ralph Lauren Sweaters",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.41,
@@ -90343,7 +90343,7 @@
   {
     "id": "p6zg2fb7q6",
     "name": "True Religion Tracksuit(Pants)",
-    "category": "Komplety",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 149,
     "priceCny": 234,
@@ -91756,7 +91756,7 @@
   {
     "id": "zni9hmd5y1",
     "name": "Burning long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 76,
     "priceCny": 119,
@@ -92830,7 +92830,7 @@
   {
     "id": "33o6qutlu2",
     "name": "Acne Studios long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 123,
     "priceCny": 193,
@@ -94225,7 +94225,7 @@
   {
     "id": "y7pr24f0a9",
     "name": "Polo Ralph Lauren ankle socks",
-    "category": "Koszulki",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 35,
     "priceCny": 55,
@@ -94577,7 +94577,7 @@
   {
     "id": "nbsz95yoxu",
     "name": "Acne Studios tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 64,
     "priceCny": 100,
@@ -94929,7 +94929,7 @@
   {
     "id": "nfkd02onxs",
     "name": "Corteiz short set",
-    "category": "Koszulki",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 91,
     "priceCny": 142.8,
@@ -95009,7 +95009,7 @@
   {
     "id": "hnuybi4ifg",
     "name": "Corteiz long tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 98,
     "priceCny": 153.6,
@@ -95602,7 +95602,7 @@
   {
     "id": "koaldgsl0f",
     "name": "Supreme hoodie set",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 102,
     "priceCny": 159.8,
@@ -96532,7 +96532,7 @@
   {
     "id": "66izvopxj2",
     "name": "Ralph Lauren knit polo",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 76,
     "priceCny": 120,
@@ -97270,7 +97270,7 @@
   {
     "id": "1fy9irdklx",
     "name": "Stussy tees",
-    "category": "Komplety",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 56,
     "priceCny": 87.36,
@@ -98519,7 +98519,7 @@
   {
     "id": "52091zc5be",
     "name": "Corteiz Sun Print Hoodie & Sweatpants Set",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 62,
     "priceCny": 98,
@@ -98727,7 +98727,7 @@
   {
     "id": "srbaulrt1j",
     "name": "Corteiz long sleeve tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 62,
     "priceCny": 97.44,
@@ -98743,7 +98743,7 @@
   {
     "id": "ak3ya252ig",
     "name": "Kith long sleeve soccer jersey",
-    "category": "Kurtki",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 92,
     "priceCny": 144,
@@ -98808,7 +98808,7 @@
   {
     "id": "ku0juclob1",
     "name": "Palm Angels long sleeve tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 83.83,
@@ -99176,7 +99176,7 @@
   {
     "id": "zqpzlqjihu",
     "name": "Emotion long sleeve tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 121,
     "priceCny": 189.6,
@@ -100554,7 +100554,7 @@
   {
     "id": "xwwh6mbyag",
     "name": "Polo Ralph Lauren Pony Logo Fleece Crewneck Sweatshirt",
-    "category": "Swetry",
+    "category": "Bluzy",
     "batch": "Random batch",
     "pricePln": 98,
     "priceCny": 154,
@@ -100794,7 +100794,7 @@
   {
     "id": "hmz6mkzs1r",
     "name": "Nike Reflective Line Technical Hooded Jacket",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 97,
     "priceCny": 152.4,
@@ -100986,7 +100986,7 @@
   {
     "id": "p3zl2b0qyu",
     "name": "Chrome Hearts long sleeve tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 95,
     "priceCny": 150,
@@ -101418,7 +101418,7 @@
   {
     "id": "spsph1mgd0",
     "name": "GALL cap",
-    "category": "Torby",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 43,
     "priceCny": 68,
@@ -101482,7 +101482,7 @@
   {
     "id": "gwgn4pizgd",
     "name": "Trapstar tracksuit",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 95,
     "priceCny": 150,
@@ -101498,7 +101498,7 @@
   {
     "id": "afh45wf246",
     "name": "Chrome Hearts long sleeve tee",
-    "category": "Bluzy",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 104,
     "priceCny": 163,
@@ -103516,7 +103516,7 @@
   {
     "id": "b08fwrlvrn",
     "name": "Nike Shin Guards",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 25,
     "priceCny": 39,
@@ -104893,7 +104893,7 @@
   {
     "id": "mssc3r0whw",
     "name": "Rick Owens Ripped Denim Ramones",
-    "category": "Spodnie",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 203,
     "priceCny": 320,
@@ -105198,7 +105198,7 @@
   {
     "id": "8o40rdshgc",
     "name": "Iiimiii thights",
-    "category": "Akcesoria",
+    "category": "Bielizna",
     "batch": "Random batch",
     "pricePln": 104,
     "priceCny": 164.16,
@@ -105518,7 +105518,7 @@
   {
     "id": "088oih2f0o",
     "name": "Vlone x Nav DPBATee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 41,
     "priceCny": 65,
@@ -106479,7 +106479,7 @@
   {
     "id": "z7sph5ycd8",
     "name": "Nike Shirt",
-    "category": "Buty",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 48,
     "priceCny": 75,
@@ -107024,7 +107024,7 @@
   {
     "id": "uzw0s0390m",
     "name": "Rick Owens Vans Sneakers Denim",
-    "category": "Spodnie",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 302,
     "priceCny": 474.63,
@@ -108288,7 +108288,7 @@
   {
     "id": "9aofqurily",
     "name": "Nike AS M NK DF UNLMTD SWOOSH SHRT",
-    "category": "Buty",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 64,
     "priceCny": 100.99,
@@ -108336,7 +108336,7 @@
   {
     "id": "k3sjhsl9jd",
     "name": "Maison Margiela Button Up",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 127,
     "priceCny": 200,
@@ -109025,7 +109025,7 @@
   {
     "id": "tq4n86wtv4",
     "name": "ADWYSDTee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 65,
     "priceCny": 103,
@@ -109825,7 +109825,7 @@
   {
     "id": "l94v6x695q",
     "name": "Nike Elite Basketball",
-    "category": "Buty",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 227,
     "priceCny": 357,
@@ -110001,7 +110001,7 @@
   {
     "id": "j00h6v33wq",
     "name": "Balenciaga Shorts with Underwear ( Black-Red )",
-    "category": "Bielizna",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 101,
     "priceCny": 158.7,
@@ -110337,7 +110337,7 @@
   {
     "id": "g8tug2io3m",
     "name": "Land of Rookward No war, No paincap",
-    "category": "Akcesoria",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 183,
     "priceCny": 287,
@@ -110738,7 +110738,7 @@
   {
     "id": "dfyxz7xiyz",
     "name": "MCM Stark Visetos",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 196,
     "priceCny": 308.51,
@@ -111012,7 +111012,7 @@
   {
     "id": "590hkqlnca",
     "name": "Supreme Comme des Garcons SHIRT Sweater",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Random batch",
     "pricePln": 146,
     "priceCny": 230,
@@ -111349,7 +111349,7 @@
   {
     "id": "95tr0py2a1",
     "name": "Off-White ODSY-1000",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 233,
     "priceCny": 366.5,
@@ -111573,7 +111573,7 @@
   {
     "id": "46vl631x65",
     "name": "Vacuum Sealer",
-    "category": "Elektronika",
+    "category": "Akcesoria",
     "batch": "Random batch",
     "pricePln": 26,
     "priceCny": 40.6,
@@ -111815,7 +111815,7 @@
   {
     "id": "z794o5hrad",
     "name": "Nike Tech Fleece Black Top",
-    "category": "Buty",
+    "category": "Komplety",
     "batch": "Random batch",
     "pricePln": 120,
     "priceCny": 188.69,
@@ -111912,7 +111912,7 @@
   {
     "id": "7jqfh6wesw",
     "name": "Denim Tears Caps",
-    "category": "Spodnie",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 84,
@@ -111960,7 +111960,7 @@
   {
     "id": "qex7blrrsx",
     "name": "99Club Camo waffle longlseeve",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 187,
     "priceCny": 294.24,
@@ -112056,7 +112056,7 @@
   {
     "id": "6bptem7t8y",
     "name": "ADWYSDTee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 65,
     "priceCny": 103,
@@ -112520,7 +112520,7 @@
   {
     "id": "0jv4eko4go",
     "name": "Polo Ralph Lauren Sweatpants",
-    "category": "Koszulki",
+    "category": "Spodnie",
     "batch": "Random batch",
     "pricePln": 85,
     "priceCny": 134,
@@ -112936,7 +112936,7 @@
   {
     "id": "h9xdo1g7tm",
     "name": "Moncler Padded Cotton Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 311,
     "priceCny": 489.2,
@@ -113000,7 +113000,7 @@
   {
     "id": "akfxgikd6a",
     "name": "Republic gunboat bagged",
-    "category": "Akcesoria",
+    "category": "Klocki",
     "batch": "Random batch",
     "pricePln": 53,
     "priceCny": 84,
@@ -113256,7 +113256,7 @@
   {
     "id": "1a23uf25d6",
     "name": "Louis Vuitton Trainer Monogram Denim White Blue",
-    "category": "Spodnie",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 325,
     "priceCny": 510.8,
@@ -113304,7 +113304,7 @@
   {
     "id": "iijoxxyqwx",
     "name": "Moncler Padded Cotton Zip-Up Cardigan",
-    "category": "Bluzy",
+    "category": "Kurtki",
     "batch": "Random batch",
     "pricePln": 311,
     "priceCny": 489.2,
@@ -114040,7 +114040,7 @@
   {
     "id": "1ij1zq449d",
     "name": "Off-White ODSY-1000",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Random batch",
     "pricePln": 233,
     "priceCny": 366.5,
@@ -114328,7 +114328,7 @@
   {
     "id": "qq0i46c02c",
     "name": "Essentials FOGTee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Random batch",
     "pricePln": 57,
     "priceCny": 90,
@@ -114472,7 +114472,7 @@
   {
     "id": "wqq23vp10e",
     "name": "Balenciaga Shorts with Underwear ( Grey-Red )",
-    "category": "Bielizna",
+    "category": "Spodenki",
     "batch": "Random batch",
     "pricePln": 101,
     "priceCny": 158.77,
@@ -116587,7 +116587,7 @@
   {
     "id": "w9u87t6v97",
     "name": "MCM Stark Visetos",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 196,
     "priceCny": 308.51,
@@ -118541,7 +118541,7 @@
   {
     "id": "441",
     "name": "Apple Watch Series Ultra 2",
-    "category": "Elektronika",
+    "category": "Zegarki",
     "batch": "Random batch",
     "pricePln": 93,
     "weightGrams": 250,
@@ -118589,7 +118589,7 @@
   {
     "id": "1484",
     "name": "Nike 2023 Tech Fleece (26cw)",
-    "category": "Bluzy",
+    "category": "Komplety",
     "batch": "Best batch",
     "pricePln": 120,
     "weightGrams": 750,
@@ -118701,7 +118701,7 @@
   {
     "id": "365",
     "name": "High-quality polarized phone case 6",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 10,
     "weightGrams": 150,
@@ -118733,7 +118733,7 @@
   {
     "id": "7409",
     "name": "Oversized Sweatpants",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 180,
     "weightGrams": 150,
@@ -118861,7 +118861,7 @@
   {
     "id": "377",
     "name": "High-quality polarized phone case 9",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 10,
     "weightGrams": 150,
@@ -119085,7 +119085,7 @@
   {
     "id": "1405",
     "name": "Corteiz Balaclava",
-    "category": "Akcesoria",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 19,
     "weightGrams": 150,
@@ -119117,7 +119117,7 @@
   {
     "id": "1964",
     "name": "Amiri Vest",
-    "category": "Koszulki",
+    "category": "Kurtki",
     "batch": "Best batch",
     "pricePln": 70,
     "weightGrams": 250,
@@ -119133,7 +119133,7 @@
   {
     "id": "7445",
     "name": "chanel bags",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Best batch",
     "pricePln": 328,
     "weightGrams": 150,
@@ -119614,7 +119614,7 @@
   {
     "id": "31",
     "name": "air force 1",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 57,
     "weightGrams": 150,
@@ -120014,7 +120014,7 @@
   {
     "id": "62",
     "name": "yeezy slides",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 105.01,
     "weightGrams": 150,
@@ -120847,7 +120847,7 @@
   {
     "id": "121",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121167,7 +121167,7 @@
   {
     "id": "153",
     "name": "LV Wallet",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 26.45,
     "weightGrams": 150,
@@ -121199,7 +121199,7 @@
   {
     "id": "160",
     "name": "True Religion Pants",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 143,
     "weightGrams": 150,
@@ -121215,7 +121215,7 @@
   {
     "id": "161",
     "name": "Margiela Wallet",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Random batch",
     "pricePln": 70.4,
     "weightGrams": 150,
@@ -121311,7 +121311,7 @@
   {
     "id": "170",
     "name": "Timberland",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 215,
     "weightGrams": 150,
@@ -121327,7 +121327,7 @@
   {
     "id": "177",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121391,7 +121391,7 @@
   {
     "id": "183",
     "name": "Jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 40,
     "weightGrams": 150,
@@ -121407,7 +121407,7 @@
   {
     "id": "184",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121439,7 +121439,7 @@
   {
     "id": "186",
     "name": "Maison Mihara",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 201,
     "weightGrams": 150,
@@ -121455,7 +121455,7 @@
   {
     "id": "192",
     "name": "Jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 40,
     "weightGrams": 150,
@@ -121503,7 +121503,7 @@
   {
     "id": "202",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121519,7 +121519,7 @@
   {
     "id": "203",
     "name": "Sp5der Hoodie",
-    "category": "Akcesoria",
+    "category": "Bluzy",
     "batch": "Best batch",
     "pricePln": 158,
     "weightGrams": 150,
@@ -121535,7 +121535,7 @@
   {
     "id": "204",
     "name": "Lv Skate",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 276,
     "weightGrams": 150,
@@ -121551,7 +121551,7 @@
   {
     "id": "209",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121647,7 +121647,7 @@
   {
     "id": "222",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121679,7 +121679,7 @@
   {
     "id": "224",
     "name": "Maison Mihara",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 201,
     "weightGrams": 150,
@@ -121727,7 +121727,7 @@
   {
     "id": "234",
     "name": "Blank Jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 82,
     "weightGrams": 150,
@@ -121743,7 +121743,7 @@
   {
     "id": "235",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121759,7 +121759,7 @@
   {
     "id": "237",
     "name": "Maison Margiela Gats",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 233,
     "weightGrams": 150,
@@ -121775,7 +121775,7 @@
   {
     "id": "243",
     "name": "Jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 107,
     "weightGrams": 150,
@@ -121791,7 +121791,7 @@
   {
     "id": "244",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -121871,7 +121871,7 @@
   {
     "id": "253",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -122191,7 +122191,7 @@
   {
     "id": "291",
     "name": "Blank tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 57,
     "weightGrams": 150,
@@ -122303,7 +122303,7 @@
   {
     "id": "306",
     "name": "TRIANGLE PROJECT Hat",
-    "category": "Akcesoria",
+    "category": "Czapki",
     "batch": "Best batch",
     "pricePln": 24.48,
     "weightGrams": 150,
@@ -122335,7 +122335,7 @@
   {
     "id": "308",
     "name": "Blank Tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -122607,7 +122607,7 @@
   {
     "id": "338",
     "name": "Digital - High-Quality Phone Case TNF",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 18.79,
     "weightGrams": 150,
@@ -122655,7 +122655,7 @@
   {
     "id": "346",
     "name": "High-quality polarized phone case 2",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.71,
     "weightGrams": 150,
@@ -122751,7 +122751,7 @@
   {
     "id": "357",
     "name": "High-quality polarized phone case 4",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.66,
     "weightGrams": 150,
@@ -122783,7 +122783,7 @@
   {
     "id": "363",
     "name": "High-quality polarized phone case 5",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.66,
     "weightGrams": 150,
@@ -122815,7 +122815,7 @@
   {
     "id": "368",
     "name": "blank jorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 61,
     "weightGrams": 150,
@@ -122879,7 +122879,7 @@
   {
     "id": "375",
     "name": "blank tracksuit",
-    "category": "Akcesoria",
+    "category": "Komplety",
     "batch": "Best batch",
     "pricePln": 191,
     "weightGrams": 150,
@@ -122895,7 +122895,7 @@
   {
     "id": "376",
     "name": "blank tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 16,
     "weightGrams": 150,
@@ -122943,7 +122943,7 @@
   {
     "id": "380",
     "name": "High-quality polarized phone case 10",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.71,
     "weightGrams": 150,
@@ -122959,7 +122959,7 @@
   {
     "id": "381",
     "name": "asics kayano 14",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 140,
     "weightGrams": 150,
@@ -123007,7 +123007,7 @@
   {
     "id": "390",
     "name": "gallery dept shorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 43,
     "weightGrams": 150,
@@ -123023,7 +123023,7 @@
   {
     "id": "391",
     "name": "chrome hearts tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 36,
     "weightGrams": 150,
@@ -123039,7 +123039,7 @@
   {
     "id": "392",
     "name": "High-quality polarized phone case 14",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.71,
     "weightGrams": 150,
@@ -123087,7 +123087,7 @@
   {
     "id": "399",
     "name": "purple jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 133,
     "weightGrams": 150,
@@ -123103,7 +123103,7 @@
   {
     "id": "400",
     "name": "High-quality polarized phone case 16",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.71,
     "weightGrams": 150,
@@ -123119,7 +123119,7 @@
   {
     "id": "401",
     "name": "zip up ralph",
-    "category": "Akcesoria",
+    "category": "Bluzy",
     "batch": "Best batch",
     "pricePln": 90,
     "weightGrams": 150,
@@ -123135,7 +123135,7 @@
   {
     "id": "402",
     "name": "High-quality polarized phone case 17",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.68,
     "weightGrams": 150,
@@ -123167,7 +123167,7 @@
   {
     "id": "405",
     "name": "denim tears hoodie",
-    "category": "Akcesoria",
+    "category": "Komplety",
     "batch": "Best batch",
     "pricePln": 39,
     "weightGrams": 150,
@@ -123183,7 +123183,7 @@
   {
     "id": "406",
     "name": "High-quality polarized phone case 18",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 9.71,
     "weightGrams": 150,
@@ -123199,7 +123199,7 @@
   {
     "id": "410",
     "name": "jeans basic",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 82,
     "weightGrams": 150,
@@ -123231,7 +123231,7 @@
   {
     "id": "412",
     "name": "Ami sweater",
-    "category": "Akcesoria",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 93,
     "weightGrams": 150,
@@ -123279,7 +123279,7 @@
   {
     "id": "416",
     "name": "High-quality metal calendar cross-body card case for mobile phone",
-    "category": "Akcesoria",
+    "category": "Elektronika",
     "batch": "Random batch",
     "pricePln": 34.87,
     "weightGrams": 150,
@@ -123327,7 +123327,7 @@
   {
     "id": "419",
     "name": "lv skate",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 277,
     "weightGrams": 150,
@@ -123359,7 +123359,7 @@
   {
     "id": "422",
     "name": "Apple WatchSeries 10",
-    "category": "Elektronika",
+    "category": "Zegarki",
     "batch": "Random batch",
     "pricePln": 159.21,
     "weightGrams": 250,
@@ -123503,7 +123503,7 @@
   {
     "id": "433",
     "name": "Apple Watch Ultra 2",
-    "category": "Elektronika",
+    "category": "Zegarki",
     "batch": "Random batch",
     "pricePln": 158.39,
     "weightGrams": 250,
@@ -123519,7 +123519,7 @@
   {
     "id": "434",
     "name": "canada goose jacket",
-    "category": "Akcesoria",
+    "category": "Kurtki",
     "batch": "Best batch",
     "pricePln": 324,
     "weightGrams": 150,
@@ -123567,7 +123567,7 @@
   {
     "id": "437",
     "name": "Apple Watch Series 9",
-    "category": "Elektronika",
+    "category": "Zegarki",
     "batch": "Random batch",
     "pricePln": 85.03,
     "weightGrams": 250,
@@ -123583,7 +123583,7 @@
   {
     "id": "438",
     "name": "lv skate",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 277,
     "weightGrams": 150,
@@ -124111,7 +124111,7 @@
   {
     "id": "499",
     "name": "jordan 11",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 327,
     "weightGrams": 150,
@@ -124223,7 +124223,7 @@
   {
     "id": "507",
     "name": "camo shorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 350,
     "weightGrams": 150,
@@ -124255,7 +124255,7 @@
   {
     "id": "509",
     "name": "longsleeve",
-    "category": "Akcesoria",
+    "category": "Bluzy",
     "batch": "Best batch",
     "pricePln": 97,
     "weightGrams": 150,
@@ -124271,7 +124271,7 @@
   {
     "id": "510",
     "name": "nocta hotstep 2",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 90,
     "weightGrams": 150,
@@ -124303,7 +124303,7 @@
   {
     "id": "516",
     "name": "lv skate",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 277,
     "weightGrams": 150,
@@ -124335,7 +124335,7 @@
   {
     "id": "518",
     "name": "essentials shorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 82,
     "weightGrams": 150,
@@ -124351,7 +124351,7 @@
   {
     "id": "519",
     "name": "blank tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -124383,7 +124383,7 @@
   {
     "id": "521",
     "name": "balenciaga track",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 274,
     "weightGrams": 150,
@@ -124399,7 +124399,7 @@
   {
     "id": "522",
     "name": "jorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 61,
     "weightGrams": 150,
@@ -124415,7 +124415,7 @@
   {
     "id": "523",
     "name": "blank tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 17,
     "weightGrams": 150,
@@ -124431,7 +124431,7 @@
   {
     "id": "524",
     "name": "mertra tshirt",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 72,
     "weightGrams": 150,
@@ -124447,7 +124447,7 @@
   {
     "id": "525",
     "name": "birkenstock",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 93,
     "weightGrams": 150,
@@ -124463,7 +124463,7 @@
   {
     "id": "526",
     "name": "blank shorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 65,
     "weightGrams": 150,
@@ -124495,7 +124495,7 @@
   {
     "id": "528",
     "name": "Balenciaga track",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 274,
     "weightGrams": 150,
@@ -124511,7 +124511,7 @@
   {
     "id": "529",
     "name": "blank jorts",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 61,
     "weightGrams": 150,
@@ -124543,7 +124543,7 @@
   {
     "id": "531",
     "name": "rick owens x vans",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 324,
     "weightGrams": 150,
@@ -124559,7 +124559,7 @@
   {
     "id": "532",
     "name": "baggy sweats",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 88,
     "weightGrams": 150,
@@ -124575,7 +124575,7 @@
   {
     "id": "533",
     "name": "bape tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 89,
     "weightGrams": 150,
@@ -124591,7 +124591,7 @@
   {
     "id": "534",
     "name": "Balenciaga Runner",
-    "category": "Akcesoria",
+    "category": "Buty",
     "batch": "Best batch",
     "pricePln": 319,
     "weightGrams": 150,
@@ -124607,7 +124607,7 @@
   {
     "id": "535",
     "name": "bape shark",
-    "category": "Akcesoria",
+    "category": "Spodenki",
     "batch": "Best batch",
     "pricePln": 54,
     "weightGrams": 150,
@@ -124878,7 +124878,7 @@
   {
     "id": "551",
     "name": "ralph tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 72,
     "weightGrams": 150,
@@ -126206,7 +126206,7 @@
   {
     "id": "1065",
     "name": "Hellstar Balaclava",
-    "category": "Akcesoria",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 33.95,
     "weightGrams": 150,
@@ -126254,7 +126254,7 @@
   {
     "id": "1122",
     "name": "Nike Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 31.3,
     "weightGrams": 150,
@@ -126270,7 +126270,7 @@
   {
     "id": "1124",
     "name": "Nike Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 35,
     "weightGrams": 150,
@@ -126286,7 +126286,7 @@
   {
     "id": "1132",
     "name": "Adidas Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 12.48,
     "weightGrams": 150,
@@ -126302,7 +126302,7 @@
   {
     "id": "1134",
     "name": "Bape Socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 14.46,
     "weightGrams": 150,
@@ -126318,7 +126318,7 @@
   {
     "id": "1139",
     "name": "Ralph Lauren Socks Black",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 30,
     "weightGrams": 150,
@@ -126382,7 +126382,7 @@
   {
     "id": "1149",
     "name": "syna socks",
-    "category": "Bielizna",
+    "category": "Akcesoria",
     "batch": "Best batch",
     "pricePln": 1.12,
     "weightGrams": 150,
@@ -126622,7 +126622,7 @@
   {
     "id": "1407",
     "name": "Corteiz Balaclava",
-    "category": "Akcesoria",
+    "category": "Czapki",
     "batch": "Random batch",
     "pricePln": 19.07,
     "weightGrams": 150,
@@ -127070,7 +127070,7 @@
   {
     "id": "2171",
     "name": "Iiimiii Erosion Metal Series Cross Asymmetrical Patchwork Stud Earrings",
-    "category": "Akcesoria",
+    "category": "Biżuteria",
     "batch": "Best batch",
     "pricePln": 61.18,
     "weightGrams": 150,
@@ -127087,7 +127087,7 @@
   {
     "id": "2172",
     "name": "Iiimiii Residual Network I Series Dark Cone Patchwork Stud Earrings",
-    "category": "Akcesoria",
+    "category": "Biżuteria",
     "batch": "Best batch",
     "pricePln": 126.78,
     "weightGrams": 150,
@@ -127104,7 +127104,7 @@
   {
     "id": "2184",
     "name": "Groupmarek Beaded Copper Bead pant chain",
-    "category": "Akcesoria",
+    "category": "Biżuteria",
     "batch": "Best batch",
     "pricePln": 51.47,
     "weightGrams": 150,
@@ -127120,7 +127120,7 @@
   {
     "id": "2187",
     "name": "KLICKCLAK PANT CHAIN",
-    "category": "Akcesoria",
+    "category": "Biżuteria",
     "batch": "Best batch",
     "pricePln": 14.49,
     "weightGrams": 150,
@@ -127456,7 +127456,7 @@
   {
     "id": "2527",
     "name": "Dime Jeans",
-    "category": "Koszulki",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 126.44,
     "weightGrams": 250,
@@ -127520,7 +127520,7 @@
   {
     "id": "2578",
     "name": "IHF DENIM PANT BLACK CHAIN",
-    "category": "Akcesoria",
+    "category": "Biżuteria",
     "batch": "Best batch",
     "pricePln": 20.24,
     "weightGrams": 150,
@@ -127680,7 +127680,7 @@
   {
     "id": "2686",
     "name": "YSL Sweater",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 117.91,
     "weightGrams": 250,
@@ -127744,7 +127744,7 @@
   {
     "id": "2728",
     "name": "corteiz mohair sweater",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 137.98,
     "weightGrams": 250,
@@ -128256,7 +128256,7 @@
   {
     "id": "7105",
     "name": "Rest & Recreation Puffer Jacket",
-    "category": "Koszulki",
+    "category": "Kurtki",
     "batch": "Best batch",
     "pricePln": 252.49,
     "weightGrams": 250,
@@ -128304,7 +128304,7 @@
   {
     "id": "7133",
     "name": "Moncler Sweater",
-    "category": "Bluzy",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 161.85,
     "weightGrams": 750,
@@ -128320,7 +128320,7 @@
   {
     "id": "7153",
     "name": "Ralph Lauren Cropped Sweater Shirt",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 123.55,
     "weightGrams": 250,
@@ -128336,7 +128336,7 @@
   {
     "id": "7154",
     "name": "Ralph Lauren Cropped Sweater Shirt",
-    "category": "Koszulki",
+    "category": "Swetry",
     "batch": "Best batch",
     "pricePln": 107.36,
     "weightGrams": 250,
@@ -128352,7 +128352,7 @@
   {
     "id": "7196",
     "name": "Vacation dress",
-    "category": "Koszulki",
+    "category": "Spódnice",
     "batch": "Best batch",
     "pricePln": 80.93,
     "weightGrams": 250,
@@ -128369,7 +128369,7 @@
   {
     "id": "7198",
     "name": "Vacation dress",
-    "category": "Koszulki",
+    "category": "Spódnice",
     "batch": "Best batch",
     "pricePln": 80.93,
     "weightGrams": 250,
@@ -128386,7 +128386,7 @@
   {
     "id": "7199",
     "name": "Vacation dress",
-    "category": "Bluzy",
+    "category": "Spódnice",
     "batch": "Best batch",
     "pricePln": 80.93,
     "weightGrams": 750,
@@ -128468,7 +128468,7 @@
   {
     "id": "7306",
     "name": "Gym Golden Shark Raglan Unisex Sports Casual Embroidered Logo Raglan Sleeve Elastic Slim-Fit Short Sleeve",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 105,
     "weightGrams": 150,
@@ -128518,7 +128518,7 @@
   {
     "id": "7375",
     "name": "Special Offer! Spring and Autumn Men's Seamless Sports Fitness Quick-Drying Long-Sleeve Round-Neck Elastic Breathable Sweat-Wicking Base Layer Shirt",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 35,
     "weightGrams": 150,
@@ -128535,7 +128535,7 @@
   {
     "id": "7388",
     "name": "Skims Sweatpants/Hoodie",
-    "category": "Koszulki",
+    "category": "Komplety",
     "batch": "Best batch",
     "pricePln": 188,
     "weightGrams": 250,
@@ -128551,7 +128551,7 @@
   {
     "id": "7391",
     "name": "Oversized Hoodie",
-    "category": "Akcesoria",
+    "category": "Bluzy",
     "batch": "Best batch",
     "pricePln": 180,
     "weightGrams": 150,
@@ -128567,7 +128567,7 @@
   {
     "id": "7400",
     "name": "Jaded London Jeans",
-    "category": "Akcesoria",
+    "category": "Spodnie",
     "batch": "Best batch",
     "pricePln": 258,
     "weightGrams": 150,
@@ -128647,7 +128647,7 @@
   {
     "id": "7439",
     "name": "stussy x nike tee",
-    "category": "Akcesoria",
+    "category": "Koszulki",
     "batch": "Best batch",
     "pricePln": 99,
     "weightGrams": 150,
@@ -128663,7 +128663,7 @@
   {
     "id": "7443",
     "name": "CHANEL BAGS",
-    "category": "Akcesoria",
+    "category": "Torby",
     "batch": "Best batch",
     "pricePln": 328,
     "weightGrams": 150,

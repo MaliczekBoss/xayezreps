@@ -16,7 +16,8 @@
     "old-site:snapshot": "node scripts/old-site-snapshot.mjs",
     "db:backup": "node scripts/redis-backup.mjs",
     "db:restore": "node scripts/redis-restore.mjs",
-    "qc:cdn": "node scripts/qc-to-cdn.mjs"
+    "qc:cdn": "node scripts/qc-to-cdn.mjs",
+    "categories:ai": "node --env-file=.env.local scripts/ai-categories.mjs"
   },
   "dependencies": {
     "aws4fetch": "1.0.20",
