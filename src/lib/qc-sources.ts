@@ -1,7 +1,7 @@
 import "server-only";
 
 import { sourceUrl, type ProductSource } from "./agents";
-import { fetchOldSiteQc } from "./remote";
+import { fetchOldSiteQc, markUsfansBlocked, usfansBlocked } from "./remote";
 import { snapshotQc } from "./snapshot";
 
 type QcSource = { name: string; fetch: (source: ProductSource) => Promise<string[] | null> };
@@ -9,13 +9,18 @@ type QcSource = { name: string; fetch: (source: ProductSource) => Promise<string
 const isPhoto = (u: unknown): u is string => typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) && u.length < 500;
 
 async function usfans(source: ProductSource): Promise<string[] | null> {
+  if (await usfansBlocked()) return null;
   const res = await fetch(`https://www.usfans.com/api/goods/estimate-info?goodsId=${encodeURIComponent(source.id)}`, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; xayezreps.pl)", Accept: "application/json" },
     signal: AbortSignal.timeout(10_000),
     cache: "no-store",
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if ([403, 429].includes(res.status) || res.status >= 500) await markUsfansBlocked(`http-${res.status}`);
+    return null;
+  }
   const d = await res.json().catch(() => null);
+  if (d?.code === 90000) await markUsfansBlocked("90000");
   if (d?.code !== 200) return null;
   return Array.isArray(d.data?.qcImages) ? d.data.qcImages.filter(isPhoto) : [];
 }

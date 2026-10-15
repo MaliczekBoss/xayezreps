@@ -1,4 +1,6 @@
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
+import { copyQcPhotos } from "@/lib/qc-cdn";
 import { qcCursor, qcKey, syncQc } from "@/lib/qc-store";
 import { fetchQcFromSources } from "@/lib/qc-sources";
 import { getAllFinds } from "@/lib/store";
@@ -24,6 +26,7 @@ export async function GET(request: Request) {
   let checked = 0;
   let added = 0;
   let withQc = 0;
+  const fresh: string[][] = [];
 
   await Promise.all(
     Array.from({ length: CONCURRENCY }, async () => {
@@ -34,6 +37,7 @@ export async function GET(request: Request) {
           const { photos } = await fetchQcFromSources(source);
           const saved = await syncQc(source, photos);
           added += saved.added;
+          if (saved.added > 0) fresh.push(saved.photos);
           if (saved.photos.length) withQc++;
         } catch (e) {
           console.error("[cron qc]", qcKey(source), (e as Error).message);
@@ -44,5 +48,8 @@ export async function GET(request: Request) {
 
   await qcCursor(next % sources.length);
   if (added > 0) revalidateTag("qc-index", "max");
+  after(async () => {
+    for (const photos of fresh) await copyQcPhotos(photos).catch(() => 0);
+  });
   return Response.json({ checked, withQc, added, from: start, next: next % sources.length, total: sources.length });
 }

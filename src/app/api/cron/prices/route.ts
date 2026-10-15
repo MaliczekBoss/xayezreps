@@ -8,7 +8,7 @@ import { isCronRequest } from "@/lib/rate-limit";
 export const maxDuration = 60;
 
 const BUDGET_MS = 45_000;
-const CONCURRENCY = 4;
+const CONCURRENCY = 2;
 const CURSOR = "px:v1:cursor";
 
 export async function GET(request: Request) {

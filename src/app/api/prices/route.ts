@@ -14,7 +14,7 @@ const MAX_IDS = 40;
 const MAX_FETCH = 10;
 const CONCURRENCY = 4;
 const BUDGET_MS = 8000;
-const RECHECK_S = 6 * 60 * 60;
+const RECHECK_S = 3 * 24 * 60 * 60;
 const PER_HOUR = 150;
 
 const ID = /^[a-z0-9-]{1,40}$/;

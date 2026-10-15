@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
     "/api/qc": ["./data/qc/**"],
     "/api/cron/qc": ["./data/qc/**"],
     "/api/item": ["./data/items/**"],
-    "/**": ["./data/sellers.json"],
+    "/**": ["./data/sellers.json", "./data/qc-cdn.json"],
   },
   images: {
     remotePatterns: [

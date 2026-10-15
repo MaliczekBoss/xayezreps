@@ -5,7 +5,7 @@ import { mongo, mongoConfigured } from "./analytics/mongo";
 const NAME = /^[\w-]+\.webp$/;
 const YEAR = "public, max-age=31536000, immutable";
 
-export async function storedImageResponse(folder: "i" | "s" | "o", file: string) {
+export async function storedImageResponse(folder: "i" | "s" | "o" | "q", file: string) {
   if (!mongoConfigured() || !NAME.test(file)) return new Response("Not found", { status: 404, headers: { "Cache-Control": "public, max-age=300" } });
   try {
     const { images } = await mongo();
