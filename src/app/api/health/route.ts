@@ -25,6 +25,7 @@ export async function GET() {
       }
     );
   } catch (error) {
+    console.error('[health] baza danych:', (error as Error)?.message);
     return NextResponse.json(
       {
         status: 'unhealthy',
@@ -33,7 +34,7 @@ export async function GET() {
         services: {
           database: 'disconnected',
         },
-        error: (error as Error)?.message || 'Database connection error',
+        error: 'Database connection error',
       },
       {
         status: 503,
